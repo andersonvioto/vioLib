@@ -1,0 +1,45 @@
+/* Importa a fonte serifada elegante do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500&display=swap');
+
+:root {
+  --bg-color: #121212; /* Fundo escuro */
+  --surface-color: #1e1e1e; /* Elementos sobre o fundo */
+  --text-primary: #e0e0e0; /* Texto claro para leitura */
+  --accent-gold: #D4AF37; /* Detalhes em dourado */
+  --accent-gold-hover: #b5952f;
+  
+  --font-title: 'Playfair Display', serif; /* Fonte para os títulos */
+  --font-body: 'Roboto', sans-serif; /* Fonte legível para o restante */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  color: var(--accent-gold);
+  font-weight: 700;
+}
+
+/* Estilo global para botões principais */
+.btn-primary {
+  background-color: var(--accent-gold);
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  font-family: var(--font-title);
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-gold-hover);
+}

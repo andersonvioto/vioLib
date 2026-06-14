@@ -1,0 +1,9 @@
+# Dependências do Node
+node_modules/
+
+# Arquivos de Variáveis de Ambiente (Senhas e Chaves)
+.env
+.env.local
+
+# Pasta de uploads de imagens (não queremos subir imagens de teste pro GitHub)
+backend/uploads/

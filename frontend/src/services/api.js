@@ -3,7 +3,7 @@ import axios from 'axios';
 // Configura a URL base do nosso back-end
 const api = axios.create({
   //baseURL: 'http://localhost:3000/api', 
-  baseURL: 'http://127.0.0.1:3000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api'
 });
 
 // Interceptador: injeta o token de segurança em TODAS as requisições automaticamente

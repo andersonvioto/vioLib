@@ -1,0 +1,62 @@
+/* security.css - Estilos específicos para páginas de verificação e recuperação */
+
+/* Centralização do conteúdo do cartão para páginas sem formulário complexo */
+.security-card-centered {
+  text-align: center;
+}
+
+.security-logo {
+  display: block;
+  margin: 0 auto 20px auto;
+}
+
+.security-title {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Sistema de Alertas Visuais */
+.auth-alert {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.alert-error {
+  background-color: rgba(255, 77, 77, 0.12); /* Fundo vermelho translúcido */
+  color: #ff4d4d;
+  border: 1px solid #ff4d4d;
+}
+
+.alert-success {
+  background-color: rgba(77, 255, 136, 0.12); /* Fundo verde translúcido */
+  color: #4dff88;
+  border: 1px solid #4dff88;
+}
+
+/* Status da Verificação de E-mail */
+.status-loading {
+  color: #aaaaaa;
+}
+
+.status-success-block {
+  color: #4dff88;
+  margin-bottom: 20px;
+}
+
+.status-error-block {
+  color: #ff4d4d;
+  margin-bottom: 20px;
+}
+
+.status-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+/* Espaçamento extra para botões isolados */
+.btn-security-action {
+  margin-top: 10px;
+}

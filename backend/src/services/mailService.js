@@ -1,66 +1,68 @@
-const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_HOST, // smtp.gmail.com
-  port: parseInt(process.env.MAIL_PORT, 10), // 465
-  secure: true, // true para porta 465, false para outras portas
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
-  },
-});
+// Configura o cliente OAuth2
+const oAuth2Client = new google.auth.OAuth2(
+  process.env.GMAIL_CLIENT_ID,
+  process.env.GMAIL_CLIENT_SECRET,
+  "https://developers.google.com/oauthplayground" // Redirect URI
+);
 
-/**
- * Envia o link de verificação de conta após o registro
- */
-exports.sendVerificationEmail = async (email, token) => {
-  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const url = `${baseUrl}/verificar-email/${token}`;
+oAuth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
 
-  await transporter.sendMail({
-    from: '"vioLib Admin" <noreply@violib.com>',
-    to: email,
-    subject: 'Ative sua conta no vioLib 📖',
-    html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #1a1a1a; color: #ffffff; border-radius: 8px;">
-        <h2 style="color: #D4AF37; font-family: serif;">Seja bem-vindo ao vioLib!</h2>
-        <p>Agradecemos o seu registo. Para garantir a segurança da plataforma, precisamos de validar se este e-mail é legítimo.</p>
-        <p style="margin: 30px 0;">
-          <a href="${url}" style="background-color: #D4AF37; color: #000000; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block;">
-            Confirmar o meu E-mail
-          </a>
-        </p>
-        <p style="font-size: 0.85em; color: #aaaaaa;">Se o botão não funcionar, copie e cole o seguinte link no seu navegador:</p>
-        <p style="font-size: 0.85em; color: #D4AF37; word-break: break-all;">${url}</p>
-      </div>
-    `,
-  });
+// Instancia a API do Gmail
+const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
+
+// Função auxiliar para codificar o e-mail no formato seguro exigido pelo Gmail
+const makeBody = (to, from, subject, message) => {
+  const str = [
+    `To: ${to}`,
+    `From: ${from}`,
+    `Subject: =?utf-8?B?${Buffer.from(subject).toString('base64')}?=`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset=utf-8',
+    '',
+    message,
+  ].join('\n');
+
+  // O Gmail exige Base64Url (sem +, / e =)
+  return Buffer.from(str)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 };
 
-/**
- * Envia o link para redefinir a senha
- */
-exports.sendResetPasswordEmail = async (email, token) => {
-  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const url = `${baseUrl}/redefinir-senha/${token}`;
+exports.sendVerificationEmail = async (userEmail, token) => {
+  try {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const verifyLink = `${frontendUrl}/verificar-email/${token}`;
+    const myEmail = process.env.GMAIL_USER;
 
-  await transporter.sendMail({
-    from: '"vioLib Segurança" <security@violib.com>',
-    to: email,
-    subject: 'Recuperação de Senha - vioLib 🔒',
-    html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #1a1a1a; color: #ffffff; border-radius: 8px;">
-        <h2 style="color: #D4AF37; font-family: serif;">Redefinição de Senha</h2>
-        <p>Recebemos um pedido para alterar a senha da sua conta.</p>
-        <p>Se não realizou este pedido, pode ignorar este e-mail em segurança.</p>
-        <p style="margin: 30px 0;">
-          <a href="${url}" style="background-color: #D4AF37; color: #000000; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block;">
-            Alterar Senha
+    const emailHtml = `
+      <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #D4AF37;">Bem-vindo ao vioLib!</h2>
+        <p>Ficamos muito felizes em ter você conosco.</p>
+        <p>Para liberar seu acesso e começar a gerenciar sua biblioteca, clique no link abaixo para verificar sua conta:</p>
+        <div style="margin: 30px 0;">
+          <a href="${verifyLink}" style="background-color: #D4AF37; color: #000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+            Verificar Meu E-mail
           </a>
-        </p>
-        <p style="font-size: 0.85em; color: #aaaaaa;">Este link é válido por apenas 1 hora.</p>
-        <p style="font-size: 0.85em; color: #D4AF37; word-break: break-all;">${url}</p>
+        </div>
       </div>
-    `,
-  });
+    `;
+
+    const rawMessage = makeBody(userEmail, myEmail, 'Bem-vindo ao vioLib! Confirme seu e-mail', emailHtml);
+
+    // Dispara o e-mail via requisição HTTP (Bypass do bloqueio de porta do Render)
+    const res = await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: { raw: rawMessage },
+    });
+
+    console.log("E-mail enviado via Gmail API! ID:", res.data.id);
+    return res.data;
+  } catch (error) {
+    console.error("Erro crítico ao enviar via Gmail API:", error);
+    throw error;
+  }
 };

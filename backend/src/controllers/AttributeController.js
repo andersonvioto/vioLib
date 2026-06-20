@@ -17,6 +17,7 @@ exports.getAllAttributes = async (req, res) => {
 
     res.json({ authors, translators, tags, genres });
   } catch (error) {
+    console.error("🕵️ ERRO NO ATTRIBUTE CONTROLLER:", error);
     res.status(500).json({ error: error.message });
   }
 };

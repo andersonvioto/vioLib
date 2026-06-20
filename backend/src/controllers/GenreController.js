@@ -25,6 +25,7 @@ exports.delete = async (req, res) => {
 
     res.json({ message: 'Gênero desativado com sucesso.' });
   } catch (error) {
+    console.error("🕵️ ERRO NO GENRE CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao desativar gênero.' });
   }
 };
@@ -39,7 +40,7 @@ exports.create = async (req, res) => {
     const novoItem = await Genre.create({ name, UserId: req.userId });
     res.status(201).json(novoItem);
   } catch (error) {
-    console.error("Erro no Create:", error);
+    console.error("🕵️ ERRO NO GENRE CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao criar registro.' });
   }
 };
@@ -58,7 +59,7 @@ exports.update = async (req, res) => {
     
     res.json(item);
   } catch (error) {
-    console.error("Erro no Update:", error);
+    console.error("🕵️ ERRO NO GENRE CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao editar registro.' });
   }
 };

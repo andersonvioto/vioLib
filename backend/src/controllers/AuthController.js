@@ -57,6 +57,7 @@ exports.register = async (req, res) => {
     
     res.status(201).json({ message: 'Conta criada com sucesso! Verifique sua caixa de entrada para ativar o acesso.' });
   } catch (error) {
+    console.error("🕵️ ERRO NO AUTHCONTROLLER CONTROLLER:", error);
     res.status(400).json({ error: error.message });
   }
 };
@@ -82,6 +83,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ user: { id: user.id, name: user.name, email: user.email }, token });
   } catch (error) {
+    console.error("🕵️ ERRO NO AUTHCONTROLLER CONTROLLER:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -106,6 +108,7 @@ exports.verifyEmail = async (req, res) => {
 
     res.json({ message: 'E-mail verificado com sucesso! Você já pode fazer login.' });
   } catch (error) {
+    console.error("🕵️ ERRO NO AUTHCONTROLLER CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao verificar e-mail.' });
   }
 };
@@ -129,6 +132,7 @@ exports.forgotPassword = async (req, res) => {
     await mailService.sendResetPasswordEmail(user.email, token);
     res.json({ message: 'Se o e-mail estiver cadastrado, você receberá um link de recuperação em breve.' });
   } catch (error) {
+    console.error("🕵️ ERRO NO AUTHCONTROLLER CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao processar a recuperação de senha.' });
   }
 };
@@ -155,6 +159,7 @@ exports.resetPassword = async (req, res) => {
 
     res.json({ message: 'A sua senha foi redefinida com sucesso!' });
   } catch (error) {
+    console.error("🕵️ ERRO NO AUTHCONTROLLER CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao redefinir a senha.' });
   }
 };

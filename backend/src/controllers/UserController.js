@@ -10,6 +10,7 @@ exports.getProfile = async (req, res) => {
     
     res.json(user);
   } catch (error) {
+    console.error("🕵️ ERRO NO USER CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao buscar perfil.' });
   }
 };

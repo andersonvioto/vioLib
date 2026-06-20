@@ -186,6 +186,7 @@ exports.getAllAuthors = async (req, res) => {
     const authors = await Author.findAll({ where: { UserId: req.userId }, order: [['name', 'ASC']] });
     res.json(authors);
   } catch (error) {
+    console.error("🕵️ ERRO NO BOOK CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao buscar autores.' });
   }
 };
@@ -196,6 +197,7 @@ exports.getAllTranslators = async (req, res) => {
     const translators = await Translator.findAll({ where: { UserId: req.userId }, order: [['name', 'ASC']] });
     res.json(translators);
   } catch (error) {
+    console.error("🕵️ ERRO NO BOOK CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao buscar tradutores.' });
   }
 };

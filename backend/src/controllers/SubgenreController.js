@@ -41,6 +41,7 @@ exports.delete = async (req, res) => {
 
     res.json({ message: 'Subgênero desativado com sucesso.' });
   } catch (error) {
+    console.error("🕵️ ERRO NO SUBGENRE CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao desativar subgênero.' });
   }
 };
@@ -58,7 +59,7 @@ exports.create = async (req, res) => {
     const newSubgenre = await Subgenre.create({ name, GenreId });
     res.status(201).json(newSubgenre);
   } catch (error) {
-    console.error("Erro no Create do Subgênero:", error);
+    console.error("🕵️ ERRO NO SUBGENRE CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao criar subgênero.' });
   }
 };
@@ -81,7 +82,7 @@ exports.update = async (req, res) => {
     
     res.json(subgenre);
   } catch (error) {
-    console.error("Erro no Update do Subgênero:", error);
+    console.error("🕵️ ERRO NO SUBGENRE CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao editar subgênero.' });
   }
 };

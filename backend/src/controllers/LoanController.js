@@ -11,6 +11,7 @@ exports.createLoan = async (req, res) => {
     const loan = await Loan.create({ borrowerName, loanDate, BookId });
     res.status(201).json({ message: 'Empréstimo registrado.', loan });
   } catch (error) {
+    console.error("🕵️ ERRO NO LOAN CONTROLLER:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -28,6 +29,7 @@ exports.returnLoan = async (req, res) => {
 
     res.json({ message: 'Livro devolvido com sucesso.', loan });
   } catch (error) {
+    console.error("🕵️ ERRO NO LOAN CONTROLLER:", error);
     res.status(500).json({ error: error.message });
   }
 };

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
-import './Auth.css'; // Importa a nova folha de estilo
+import './auth.css'; // Importa a nova folha de estilo
 import logoImg from '../assets/violib-logo-full.png'; // Importa o logo para usar na página
 
 const Auth = () => {

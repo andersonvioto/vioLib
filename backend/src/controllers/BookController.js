@@ -179,3 +179,23 @@ exports.updateBook = async (req, res) => {
     res.status(500).json({ error: 'Erro ao atualizar o livro.' });
   }
 };
+
+// Busca todos os autores únicos do usuário logado
+exports.getAllAuthors = async (req, res) => {
+  try {
+    const authors = await Author.findAll({ where: { UserId: req.userId }, order: [['name', 'ASC']] });
+    res.json(authors);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar autores.' });
+  }
+};
+
+// Busca todos os tradutores únicos do usuário logado
+exports.getAllTranslators = async (req, res) => {
+  try {
+    const translators = await Translator.findAll({ where: { UserId: req.userId }, order: [['name', 'ASC']] });
+    res.json(translators);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar tradutores.' });
+  }
+};

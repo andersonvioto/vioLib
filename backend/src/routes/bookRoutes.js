@@ -15,7 +15,10 @@ router.post('/', upload.single('coverImage'), bookController.createBook);
 router.put('/:id', upload.single('coverImage'), bookController.updateBook);
 
 router.get('/', bookController.getAllBooks);
+router.get('/authors', bookController.getAllAuthors);
+router.get('/translators', bookController.getAllTranslators);
 router.get('/:id', bookController.getBookById);
+
 router.delete('/:id', bookController.deleteBook);
 
 module.exports = router;

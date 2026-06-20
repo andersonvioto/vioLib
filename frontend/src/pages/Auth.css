@@ -1,0 +1,141 @@
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1a1a1a 0%, var(--bg-main) 100%);
+  padding: 20px;
+}
+
+.auth-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-top: 4px solid var(--accent-gold);
+  border-radius: var(--radius-md);
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.auth-logo-img {
+  width: 100%;
+  max-width: 220px; /* Tamanho ideal para não dominar a tela toda */
+  height: auto;
+  margin: 0 auto 30px auto;
+  display: block;
+  border-radius: var(--radius-sm); /* Dá um acabamento suave caso a imagem não seja totalmente transparente */
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Grupo de Input com Label Flutuante */
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  transition: var(--transition-smooth);
+  pointer-events: none;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 14px 40px 14px 42px; /* Espaço para ícones e texto */
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95em;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+
+.auth-input:focus {
+  border-color: var(--border-focus);
+  background-color: #333333;
+  box-shadow: 0 0 0 3px var(--accent-gold-glow);
+}
+
+/* Interação do Ícone quando o Input ganha foco */
+.auth-input:focus ~ .input-icon {
+  color: var(--accent-gold);
+}
+
+/* Botão de Revelar Senha Interativo */
+.btn-toggle-password {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  transition: var(--transition-smooth);
+}
+
+.btn-toggle-password:hover {
+  color: var(--text-primary);
+}
+
+/* Botão de Ação Principal Premium */
+.btn-auth-submit {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--accent-gold);
+  color: #000000;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1em;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(214, 175, 55, 0.1);
+}
+
+.btn-auth-submit:hover {
+  background-color: var(--accent-gold-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(214, 175, 55, 0.2);
+}
+
+.btn-auth-submit:active {
+  transform: translateY(0);
+}
+
+/* Links de Alternância (Login <-> Cadastro) */
+.auth-footer {
+  margin-top: 25px;
+  font-size: 0.85em;
+  color: var(--text-secondary);
+}
+
+.auth-link {
+  color: var(--accent-gold);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition-smooth);
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.auth-link:hover {
+  color: var(--accent-gold-hover);
+  text-decoration: underline;
+}

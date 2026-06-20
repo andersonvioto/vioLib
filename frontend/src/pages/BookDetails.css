@@ -1,0 +1,156 @@
+/* --- CONTAINER E CABEÇALHO --- */
+.details-container {
+  padding: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+}
+
+/* --- LAYOUT EDITORIAL ASSIMÉTRICO --- */
+.editorial-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr; /* Coluna da esquerda fixa (capa), direita fluida */
+  gap: 50px;
+  align-items: start;
+}
+
+/* --- COLUNA ESQUERDA: CAPA --- */
+.cover-wrapper {
+  position: sticky;
+  top: 40px; /* Faz a capa rolar graciosamente acompanhando a tela */
+}
+
+.details-cover {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+  border: 1px solid var(--border-color);
+}
+
+/* --- COLUNA DIREITA: INFORMAÇÕES --- */
+.details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.book-main-title {
+  font-family: serif;
+  font-size: 3em;
+  color: var(--accent-gold);
+  margin: 0 0 10px 0;
+  line-height: 1.1;
+}
+
+.book-main-authors {
+  font-size: 1.3em;
+  color: var(--text-secondary);
+  margin: 0;
+  font-style: italic;
+}
+
+/* --- MÓDULO DE EMPRÉSTIMO --- */
+.loan-module {
+  background: linear-gradient(145deg, #1a1a1a, var(--bg-input));
+  padding: 25px;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--accent-gold);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.loan-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent-gold);
+  margin: 0 0 15px 0;
+  font-size: 1.2em;
+}
+
+.active-loan-info {
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+.loan-form {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* --- GRID DE METADADOS (Gênero, Ano, etc) --- */
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 25px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 30px;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.meta-label {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.meta-value {
+  color: var(--text-primary);
+  font-size: 1.05em;
+  font-weight: 500;
+}
+
+/* --- MÓDULO DE NOTAS --- */
+.notes-module {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 25px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.notes-text {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  white-space: pre-wrap; /* Respeita as quebras de linha que você digitou */
+}
+
+/* --- RESPONSIVIDADE (Celulares e Tablets menores) --- */
+@media (max-width: 850px) {
+  .editorial-layout {
+    grid-template-columns: 1fr; /* Transforma em uma única coluna */
+    gap: 30px;
+  }
+  .cover-wrapper {
+    position: static;
+    max-width: 300px;
+    margin: 0 auto; /* Centraliza a capa no celular */
+  }
+  .book-main-title {
+    font-size: 2.2em;
+    text-align: center;
+  }
+  .book-main-authors {
+    text-align: center;
+  }
+}

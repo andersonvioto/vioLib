@@ -11,7 +11,8 @@ const Translator = sequelize.define('Translator', {
   },
 }, { 
   tableName: 'TRANSLATORS', 
-  timestamps: true 
+  timestamps: true ,
+  paranoid: true
 });
 
 module.exports = Translator;

@@ -1,0 +1,8 @@
+const path = require('path');
+
+module.exports = {
+  'config': path.resolve('src', 'config', 'config.js'), // caminho do seu arquivo de conexões
+  'models-path': path.resolve('src', 'models'),          // onde já estão os seus modelos
+  'seeders-path': path.resolve('src', 'seeders'),
+  'migrations-path': path.resolve('src', 'migrations')    // onde ficarão as suas migrations
+};

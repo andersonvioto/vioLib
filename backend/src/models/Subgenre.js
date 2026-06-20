@@ -11,7 +11,8 @@ const Subgenre = sequelize.define('Subgenre', {
   }
 }, { 
   tableName: 'SUBGENRES', 
-  timestamps: true 
+  timestamps: true ,
+  paranoid: true
 });
 
 module.exports = Subgenre;

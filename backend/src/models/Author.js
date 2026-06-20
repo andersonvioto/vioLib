@@ -11,7 +11,8 @@ const Author = sequelize.define('Author', {
   },
 }, { 
   tableName: 'AUTHORS', 
-  timestamps: true 
+  timestamps: true,
+  paranoid: true
 });
 
 module.exports = Author;

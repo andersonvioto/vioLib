@@ -25,6 +25,7 @@ const bookRoutes = require('./routes/bookRoutes');
 const attributeRoutes = require('./routes/attributeRoutes');
 const loanRoutes = require('./routes/loanRoutes');
 const accessRoutes = require('./routes/accessRoutes'); 
+const userRoutes = require('./routes/userRoutes');
 
 // 2. Conexão das rotas no Express
 app.use('/api/auth', authRoutes);
@@ -32,6 +33,7 @@ app.use('/api/books', bookRoutes);
 app.use('/api/attributes', attributeRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/access', accessRoutes); 
+app.use('/api/users', userRoutes);
 
 const PORT = process.env.PORT || 3000;
 

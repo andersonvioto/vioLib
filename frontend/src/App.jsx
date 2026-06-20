@@ -7,6 +7,7 @@ import BookForm from './pages/BookForm';
 import BookDetails from './pages/BookDetails';
 import SharedLibraries from './pages/SharedLibraries';
 import SharedLibraryView from './pages/SharedLibraryView';
+import Settings from './pages/Settings'; 
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/editar-livro/:id" element={<BookForm />} />
         <Route path="/bibliotecas-compartilhadas" element={<SharedLibraries />} />
         <Route path="/compartilhada/:ownerId" element={<SharedLibraryView />} />
+        <Route path="/configuracoes" element={<Settings />} />
       </Routes>
     </Router>
   );

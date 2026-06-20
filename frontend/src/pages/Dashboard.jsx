@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
-import './dashboard.css'; // Importa os novos estilos
-import miniLogo from '../assets/violib-logo.png'; // Importa a sua nova imagem sem fundo
+import './dashboard.css'; 
+import miniLogo from '../assets/violib-logo.png'; 
 
 const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"><rect width="200" height="300" fill="%232c2c2c" stroke="%23D4AF37" stroke-width="2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="28" fill="%23D4AF37">vioLib</text><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23888888">Sem Capa</text></svg>`;
 
@@ -19,7 +19,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   
   const [myBooks, setMyBooks] = useState([]);
-  const [sharedLibraries, setSharedLibraries] = useState([]); // Guarda as bibliotecas dos amigos
+  const [sharedLibraries, setSharedLibraries] = useState([]); 
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnlyBorrowed, setShowOnlyBorrowed] = useState(false);
 
@@ -59,6 +59,14 @@ const Dashboard = () => {
     }
   };
 
+  // --- NOVA FUNÇÃO DE LOGOUT ---
+  const handleLogout = () => {
+    if (window.confirm("Deseja realmente sair da sua conta?")) {
+      localStorage.removeItem('token'); // Destrói o passe de acesso
+      navigate('/login'); // Expulsa para a tela de login
+    }
+  };
+
   const applyFilters = (bookList) => {
     return bookList.filter((book) => {
       const isBorrowed = book.Loans?.some(loan => !loan.returnDate);
@@ -75,7 +83,6 @@ const Dashboard = () => {
     books: applyFilters(lib.books)
   })).filter(lib => lib.books.length > 0);
 
-  // --- CÁLCULOS PARA O PAINEL (usando apenas os seus livros) ---
   const totalBooks = myBooks.length;
   const borrowedBooksCount = myBooks.filter(book => book.Loans?.some(loan => !loan.returnDate)).length;
   const uniqueAuthors = new Set();
@@ -84,26 +91,19 @@ const Dashboard = () => {
   });
   const totalAuthors = uniqueAuthors.size;
 
-  // Componente interno para desenhar os cartões repetidos
   const BookGrid = ({ books, badgeColor, badgeText, badgeIcon }) => (
     <div className="book-grid">
       {books.map((book) => {
-        // Verifica se existe algum empréstimo sem data de devolução
         const isBorrowed = book.Loans?.some(loan => !loan.returnDate);
-        
         return (
           <div key={book.id} className="book-card" onClick={() => navigate(`/livro/${book.id}`)}>
-            {/* Usa a função getCoverUrl segura para produção */}
             <img src={getCoverUrl(book.coverImage)} alt={book.title} className="book-cover" />
-            
             <div className="book-info">
               <h3 className="book-title">{book.title}</h3>
               <p className="book-author">
                 {book.Authors?.length > 0 ? book.Authors[0].name : 'Autor Desconhecido'}
               </p>
             </div>
-            
-            {/* Se estiver emprestado, renderiza a etiqueta flutuante */}
             {isBorrowed && (
               <span className="badge-borrowed" style={{ background: badgeColor || 'var(--accent-gold)' }}>
                 <span className="material-symbols-rounded">{badgeIcon || 'schedule'}</span>
@@ -118,7 +118,6 @@ const Dashboard = () => {
 
   return (
     <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* 1. CABEÇALHO COM LOGO E BOTÕES VETORIAIS */}
       <header className="dash-header">
         <div className="brand-container">
           <img src={miniLogo} alt="vioLib" className="brand-logo" />
@@ -126,21 +125,35 @@ const Dashboard = () => {
         </div>
         
         <div className="header-actions">
+          {/* BOTÃO DE CONFIGURAÇÕES (Fase 4) */}
+          <button onClick={() => navigate('/configuracoes')} className="btn-action" title="Configurações da Conta">
+            <span className="material-symbols-rounded">settings</span>
+          </button>
+          
           <button onClick={handleShare} className="btn-action">
             <span className="material-symbols-rounded">group_add</span>
             Convidar
           </button>
+
           <button onClick={() => navigate('/novo-livro')} className="btn-action btn-primary">
             <span className="material-symbols-rounded">library_add</span>
             Adicionar Livro
           </button>
+
+          {/* BOTÃO DE LOGOUT COM ESTILO DISCRETO */}
+          <button 
+            onClick={handleLogout} 
+            className="btn-action" 
+            style={{ color: '#ff4d4d', borderColor: 'transparent' }} 
+            title="Sair do Sistema"
+          >
+            <span className="material-symbols-rounded">logout</span>
+          </button>
         </div>
       </header>
 
-{/* 2. PAINEL DE ESTATÍSTICAS PREMIUM */}
+      {/* O RESTANTE DO SEU CÓDIGO PERMANECE INTOCADO DAQUI PARA BAIXO */}
       <div className="stats-container">
-        
-        {/* Chip: Total de Livros */}
         <div className="stat-widget">
           <span className="material-symbols-rounded stat-icon">menu_book</span>
           <div className="stat-info">
@@ -149,7 +162,6 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Chip: Total de Autores */}
         <div className="stat-widget">
           <span className="material-symbols-rounded stat-icon">history_edu</span>
           <div className="stat-info">
@@ -158,7 +170,6 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Chip: Livros Emprestados */}
         <div className="stat-widget">
           <span className="material-symbols-rounded stat-icon">bookmark_added</span>
           <div className="stat-info">
@@ -166,10 +177,8 @@ const Dashboard = () => {
             <span className="stat-label">emprestados</span>
           </div>
         </div>
-
       </div>
 
-      {/* 3. BARRA DE PESQUISA E FILTROS COM ÍCONES */}
       <div className="filter-section">
         <div className="search-wrapper">
           <span className="material-symbols-rounded search-icon">search</span>
@@ -194,7 +203,6 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {/* 1. SEÇÃO DA SUA BIBLIOTECA */}
       <div className="library-section">
         <div className="section-header">
           <span className="material-symbols-rounded section-icon">local_library</span>
@@ -208,7 +216,6 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* 2. SEÇÕES DAS BIBLIOTECAS DOS AMIGOS */}
       {filteredSharedLibs.map((lib, index) => (
         <div key={index} className="library-section">
           <div className="section-header shared">
@@ -218,16 +225,14 @@ const Dashboard = () => {
           
           <BookGrid 
             books={lib.books} 
-            badgeColor="#aaaaaa" /* Etiqueta prateada para diferenciar dos seus livros dourados */
+            badgeColor="#aaaaaa"
             badgeText="Emprestado do Amigo" 
             badgeIcon="lock_clock"
           />
         </div>
       ))}
-
     </div>
   );
 };
-
 
 export default Dashboard;

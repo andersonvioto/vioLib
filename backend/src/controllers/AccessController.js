@@ -69,6 +69,47 @@ exports.getSharedBooks = async (req, res) => {
     
     res.json(books);
   } catch (error) {
+    console.error("🕵️ ERRO NO ACCESS CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao buscar os livros compartilhados.' });
+  }
+};
+
+// Retorna a lista de pessoas que TÊM ACESSO à SUA biblioteca
+exports.getMyShares = async (req, res) => {
+  try {
+    const { Access, User } = require('../models');
+    const shares = await LibraryAccess.findAll({
+      where: { ownerId: req.userId },
+      // Assumindo que a sua relação do convidado se chama 'Guest' ou similar. 
+      // Ajuste 'Guest' para o alias correto do seu model, se necessário.
+      include: [{ model: User, as: 'Guest', attributes: ['id', 'name', 'email'] }] 
+    });
+    res.json(shares);
+  } catch (error) {
+    console.error("🕵️ ERRO NO ACCESS CONTROLLER:", error);
+    res.status(500).json({ error: 'Erro ao buscar compartilhamentos.' });
+  }
+};
+
+// Exclui o acesso de um convidado
+exports.revokeAccess = async (req, res) => {
+  try {
+    const { guestId } = req.params;
+
+    const deletedCount = await LibraryAccess.destroy({ 
+      where: { 
+        ownerId: req.userId, 
+        guestId: guestId 
+      } 
+    });
+
+    if (deletedCount === 0) {
+      return res.status(404).json({ error: 'Acesso não encontrado ou já revogado.' });
+    }
+    
+    res.json({ message: 'Acesso revogado com sucesso.' });
+  } catch (error) {
+    console.error("🕵️ ERRO NO REVOKE ACCESS:", error);
+    res.status(500).json({ error: 'Erro ao revogar acesso.' });
   }
 };

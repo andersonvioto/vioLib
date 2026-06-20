@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const accessController = require('../controllers/AccessController');
-const verifyToken = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware'); // Mantemos apenas um para ficar limpo
 
-router.use(verifyToken); // Protege todas as rotas abaixo
+// Protege TODAS as rotas deste arquivo automaticamente
+router.use(authMiddleware); 
 
-router.post('/share', accessController.shareLibrary);
 router.get('/shared-with-me', accessController.getSharedWithMe);
 router.get('/:ownerId/books', accessController.getSharedBooks);
+router.get('/my-shares', accessController.getMyShares);
+router.post('/share', accessController.shareLibrary);
+router.delete('/revoke/:guestId', accessController.revokeAccess);
 
 module.exports = router;

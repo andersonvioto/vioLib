@@ -139,3 +139,52 @@
   color: var(--accent-gold-hover);
   text-decoration: underline;
 }
+
+/* Spinner de Carregamento para o Botão Principal */
+.auth-spinner {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(0, 0, 0, 0.2); /* Cor de fundo da argola adaptada ao botão dourado */
+  border-radius: 50%;
+  border-top-color: #000000; /* Cor escura para contrastar com o fundo dourado */
+  animation: authSpin 0.8s ease-in-out infinite;
+}
+
+@keyframes authSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Estado Desabilitado: Inputs */
+.auth-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #222222; /* Escurece um pouco mais para indicar bloqueio */
+  color: #777777;
+}
+
+/* Estado Desabilitado: Botão de Revelar Senha */
+.btn-toggle-password:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Estado Desabilitado: Botão Principal */
+.btn-auth-submit:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+  transform: none; /* Remove o efeito de subir no hover */
+  box-shadow: none; /* Remove o brilho no hover */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #b3942e; /* Dourado levemente mais escuro/apagado */
+}
+
+/* Estado Desabilitado: Links de Navegação do Rodapé */
+.disabled-link {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  pointer-events: none; /* Impede completamente o clique no CSS */
+  text-decoration: none !important;
+}

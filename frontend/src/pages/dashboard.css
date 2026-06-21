@@ -433,6 +433,10 @@
     transform: none; 
   }
 
+  .header-actions .btn-primary {
+    color:var(--accent-gold);
+  }
+
   /* Ajustes do Grid para Celular (Garantindo 2 capas visíveis) */
   .book-grid {
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));

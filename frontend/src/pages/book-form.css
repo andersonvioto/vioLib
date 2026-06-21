@@ -75,6 +75,32 @@
   color: var(--text-muted);
 }
 
+/* --- GRUPO DE BUSCA DE ISBN --- */
+.isbn-wrapper {
+  display: flex;
+  gap: 10px;
+}
+
+.isbn-wrapper .form-input {
+  flex: 1; /* O input cresce para ocupar o espaço máximo */
+}
+
+.isbn-wrapper .btn-action {
+  padding: 0 20px; /* Reduz padding lateral para não ficar enorme */
+}
+
+.isbn-wrapper .btn-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@keyframes authSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* --- INPUTS --- */
 .form-input, .form-select, .form-textarea {
   padding: 12px 15px;
@@ -200,5 +226,15 @@
     width: 100%;
     justify-content: center;
     padding: 15px; /* Botão bem alto para o polegar */
+  }
+
+  /* O input e botão do ISBN ficam empilhados em telas pequenas */
+  .isbn-wrapper {
+    flex-direction: column;
+  }
+  
+  .isbn-wrapper .btn-action {
+    width: 100%;
+    padding: 15px;
   }
 }

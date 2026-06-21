@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
-import CreatableSelect from 'react-select/creatable'; // A nova biblioteca mágica
+import CreatableSelect from 'react-select/creatable'; 
 import './book-form.css';
 
 const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"><rect width="200" height="300" fill="%232c2c2c" stroke="%23D4AF37" stroke-width="2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="28" fill="%23D4AF37">vioLib</text><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23888888">Sem Capa</text></svg>`;
@@ -13,7 +13,7 @@ const getCoverUrl = (filename) => {
   return `${apiUrl.replace('/api', '/files')}/${filename}`;
 };
 
-// --- ESTILOS CUSTOMIZADOS PARA O REACT-SELECT (Tema Dourado/Escuro) ---
+// --- ESTILOS CUSTOMIZADOS PARA O REACT-SELECT ---
 const customSelectStyles = {
   control: (provided, state) => ({
     ...provided,
@@ -69,28 +69,27 @@ const BookForm = () => {
   const { id } = useParams();
   const isEditMode = Boolean(id);
   
-  // O estado agora guarda Arrays VAZIOS para Autores e Tradutores (para o Select entender)
+  // Adicionado o campo ISBN no formData
   const [formData, setFormData] = useState({
-    title: '', edition: '', releaseYear: '', publisher: '', acquisitionDate: '',
+    isbn: '', title: '', edition: '', releaseYear: '', publisher: '', acquisitionDate: '',
     notes: '', coverImage: '', authors: [], translators: [], tags: '',
     selectedGenre: '', selectedSubgenres: []
   });
 
   const [attributes, setAttributes] = useState({ genres: [] });
   const [availableSubgenres, setAvailableSubgenres] = useState([]);
-  
-  // Listas de opções que vêm do banco de dados
   const [availableAuthors, setAvailableAuthors] = useState([]);
   const [availableTranslators, setAvailableTranslators] = useState([]);
 
   const [coverFile, setCoverFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  
+  // Estado para controlar o botão de busca da API
+  const [isLoadingIsbn, setIsLoadingIsbn] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // Busca TODOS os dados de uma vez (Gêneros, Autores e Tradutores)
-        // OBS: Ajuste a rota '/books/authors' se você a criou em outro lugar no Back-end
         const [attrRes, authRes, transRes] = await Promise.all([
           api.get('/attributes'),
           api.get('/books/authors').catch(() => ({ data: [] })), 
@@ -99,7 +98,6 @@ const BookForm = () => {
         
         setAttributes(attrRes.data);
         
-        // Transforma os dados em { value, label } que é o padrão que o Select exige
         setAvailableAuthors(authRes.data.map(a => ({ value: a.name, label: a.name })));
         setAvailableTranslators(transRes.data.map(t => ({ value: t.name, label: t.name })));
 
@@ -108,6 +106,7 @@ const BookForm = () => {
           const b = bookRes.data;
           
           setFormData({
+            isbn: b.isbn || '', // Carrega o ISBN se existir
             title: b.title || '',
             edition: b.edition || '',
             releaseYear: b.releaseYear || '',
@@ -115,7 +114,6 @@ const BookForm = () => {
             acquisitionDate: b.acquisitionDate ? b.acquisitionDate.split('T')[0] : '',
             notes: b.notes || '',
             coverImage: b.coverImage || '',
-            // Se já tiver autores salvos, converte eles para o formato do Select
             authors: b.Authors ? b.Authors.map(a => ({ value: a.name, label: a.name })) : [],
             translators: b.Translators ? b.Translators.map(t => ({ value: t.name, label: t.name })) : [],
             tags: b.Tags ? b.Tags.map(t => t.name).join(', ') : '',
@@ -154,10 +152,75 @@ const BookForm = () => {
     setPreviewUrl(file ? URL.createObjectURL(file) : null);
   };
 
+  // ==========================================
+  // BUSCA INTELIGENTE POR ISBN (Brasil API + Google Books Fallback)
+  // ==========================================
+  const handleIsbnSearch = async () => {
+    if (!formData.isbn) return;
+    setIsLoadingIsbn(true);
+    
+    // Remove traços e espaços para a busca
+    const cleanIsbn = formData.isbn.replace(/\D/g, '');
+    let fetchedData = null;
+
+    try {
+      // 1ª Tentativa: BRASIL API (Foco em livros em português)
+      try {
+        const response = await fetch(`https://brasilapi.com.br/api/isbn/v1/${cleanIsbn}`);
+        if (response.ok) {
+          const data = await response.json();
+          fetchedData = {
+            title: data.title || '',
+            publisher: data.publisher || '',
+            releaseYear: data.year ? String(data.year) : '',
+            authors: data.authors ? data.authors.map(a => ({ value: a, label: a })) : []
+          };
+        }
+      } catch (error) {
+        console.warn("Brasil API falhou, tentando Google Books...");
+      }
+
+      // 2ª Tentativa: GOOGLE BOOKS API (Livros globais, caso o Brasil API não ache)
+      if (!fetchedData) {
+        const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}`);
+        const data = await response.json();
+        
+        if (data.items && data.items.length > 0) {
+          const info = data.items[0].volumeInfo;
+          fetchedData = {
+            title: info.title || '',
+            publisher: info.publisher || '',
+            releaseYear: info.publishedDate ? info.publishedDate.substring(0, 4) : '',
+            authors: info.authors ? info.authors.map(a => ({ value: a, label: a })) : []
+          };
+        }
+      }
+
+      // Se encontrou dados em alguma das APIs, preenche o formulário
+      if (fetchedData) {
+        setFormData(prev => ({
+          ...prev,
+          title: fetchedData.title || prev.title,
+          publisher: fetchedData.publisher || prev.publisher,
+          releaseYear: fetchedData.releaseYear || prev.releaseYear,
+          authors: fetchedData.authors.length > 0 ? fetchedData.authors : prev.authors
+        }));
+      } else {
+        alert('Livro não encontrado nas bases de dados. Você pode preencher manualmente.');
+      }
+    } catch (error) {
+      alert('Erro ao buscar as informações. O servidor pode estar indisponível.');
+    } finally {
+      setIsLoadingIsbn(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payloadForm = new FormData();
     
+    // Adicionado envio do ISBN
+    payloadForm.append('isbn', formData.isbn);
     payloadForm.append('title', formData.title);
     payloadForm.append('edition', formData.edition);
     payloadForm.append('releaseYear', formData.releaseYear);
@@ -165,7 +228,6 @@ const BookForm = () => {
     payloadForm.append('acquisitionDate', formData.acquisitionDate);
     payloadForm.append('notes', formData.notes);
 
-    // Converte os objetos {value, label} do Select de volta para uma lista de strings simples
     const authorsArr = formData.authors ? formData.authors.map(a => a.value) : [];
     payloadForm.append('authors', JSON.stringify(authorsArr));
 
@@ -229,12 +291,42 @@ const BookForm = () => {
             <span className="material-symbols-rounded">auto_stories</span> Informações Principais
           </h2>
           <div className="form-grid">
+            
+            {/* NOVO CAMPO: BUSCA POR ISBN */}
+            <div className="form-group full-width">
+              <label className="form-label">
+                <span className="material-symbols-rounded">barcode_scanner</span> ISBN (Código de Barras)
+              </label>
+              <div className="isbn-wrapper">
+                <input 
+                  type="text" 
+                  name="isbn" 
+                  value={formData.isbn} 
+                  onChange={handleChange} 
+                  className="form-input" 
+                  placeholder="Ex: 9788535914849 (Preenche os dados automaticamente)" 
+                />
+                <button 
+                  type="button" 
+                  className="btn-action btn-primary" 
+                  onClick={handleIsbnSearch}
+                  disabled={isLoadingIsbn || !formData.isbn}
+                >
+                  {isLoadingIsbn ? (
+                    <span className="material-symbols-rounded spinner-icon" style={{ animation: 'authSpin 1s linear infinite' }}>sync</span>
+                  ) : (
+                    <span className="material-symbols-rounded">search</span>
+                  )}
+                  Buscar
+                </button>
+              </div>
+            </div>
+
             <div className="form-group full-width">
               <label className="form-label"><span className="material-symbols-rounded">title</span> Título do Livro *</label>
               <input type="text" name="title" value={formData.title} onChange={handleChange} required className="form-input" />
             </div>
             
-            {/* NOVO CAMPO: AUTORES (Creatable Multi-Select) */}
             <div className="form-group">
               <label className="form-label"><span className="material-symbols-rounded">person</span> Autores *</label>
               <CreatableSelect
@@ -249,7 +341,6 @@ const BookForm = () => {
               />
             </div>
             
-            {/* NOVO CAMPO: TRADUTORES (Creatable Multi-Select) */}
             <div className="form-group">
               <label className="form-label"><span className="material-symbols-rounded">translate</span> Tradutores</label>
               <CreatableSelect
@@ -296,7 +387,7 @@ const BookForm = () => {
           </div>
         </div>
 
-        {/* SEÇÃO 4: DETALHES EDITORIAIS (Mantido igual) */}
+        {/* SEÇÃO 4: DETALHES EDITORIAIS */}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">domain</span> Detalhes Editoriais

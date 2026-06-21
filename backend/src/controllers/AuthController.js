@@ -21,7 +21,7 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password, language } = req.body;
     
-    // 1. CHECAGEM DE DUPLICIDADE (Novo)
+    // 1. CHECAGEM DE DUPLICIDADE
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: 'Este e-mail já está em uso.' });
@@ -30,7 +30,7 @@ exports.register = async (req, res) => {
     // 2. Criptografa a senha antes de salvar
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // 3. Geração do token de validação de e-mail (Novo)
+    // 3. Geração do token de validação de e-mail
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
     // 4. Cria o usuário no banco (isVerified entra como falso por padrão)
@@ -51,8 +51,7 @@ exports.register = async (req, res) => {
       }
     }
 
-    // 6. Envio de E-mail de Confirmação (Novo)
-    // Não geramos mais o JWT automático, pois ele precisa validar o e-mail primeiro.
+    // 6. Envio de E-mail de Confirmação
     await mailService.sendVerificationEmail(user.email, verificationToken);
     
     res.status(201).json({ message: 'Conta criada com sucesso! Verifique sua caixa de entrada para ativar o acesso.' });
@@ -64,7 +63,8 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    // Passo 1: Recebemos o 'rememberMe' vindo do formulário do Front-end
+    const { email, password, rememberMe } = req.body;
     
     // Busca o usuário pelo e-mail
     const user = await User.findOne({ where: { email } });
@@ -74,13 +74,22 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'E-mail ou senha inválidos' });
     }
 
-    // TRAVA DE SEGURANÇA: Bloqueia login se e-mail não for verificado (Novo)
+    // TRAVA DE SEGURANÇA: Bloqueia login se e-mail não for verificado
     if (!user.isVerified) {
       return res.status(403).json({ error: 'Por favor, confirme seu e-mail antes de fazer login.' });
     }
 
-    // Gera o token de acesso
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    // Passo 2: Definimos a expiração do token dinamicamente
+    // Se 'rememberMe' for true, token dura 30 dias. Se for false, dura apenas 1 dia.
+    const expiresIn = rememberMe ? '30d' : '1d';
+
+    // Passo 3: Gera o token de acesso aplicando a variável expiresIn
+    const token = jwt.sign(
+      { userId: user.id }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: expiresIn } // <- Aqui aplicamos o tempo configurado
+    );
+    
     res.json({ user: { id: user.id, name: user.name, email: user.email }, token });
   } catch (error) {
     console.error("🕵️ ERRO NO AUTHCONTROLLER CONTROLLER:", error);
@@ -89,7 +98,7 @@ exports.login = async (req, res) => {
 };
 
 // ==========================================
-// NOVAS FUNÇÕES DE SEGURANÇA
+// FUNÇÕES DE SEGURANÇA (Verificação e Senha)
 // ==========================================
 
 exports.verifyEmail = async (req, res) => {
@@ -118,7 +127,7 @@ exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ where: { email } });
     
-    // Por segurança, sempre retornamos a mesma mensagem mesmo se o e-mail não existir (evita invasores descobrindo e-mails)
+    // Por segurança, sempre retornamos a mesma mensagem mesmo se o e-mail não existir
     if (!user) {
       return res.json({ message: 'Se o e-mail estiver cadastrado, você receberá um link de recuperação em breve.' });
     }
@@ -144,7 +153,7 @@ exports.resetPassword = async (req, res) => {
     const user = await User.findOne({
       where: {
         resetPasswordToken: token,
-        resetPasswordExpires: { [Op.gt]: new Date() } // Op.gt significa "Greater Than" (Maior que agora)
+        resetPasswordExpires: { [Op.gt]: new Date() } // Maior que a data atual
       }
     });
 

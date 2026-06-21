@@ -15,21 +15,25 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
-  
-  // NOVO: Estado para controlar o carregamento e bloqueio da tela
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Estado para controlar o carregamento e bloqueio da tela
   const [isLoading, setIsLoading] = useState(false);
+
+  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const switchView = (newView) => {
-    if (isLoading) return; // Impede a troca de tela se estiver processando
+    if (isLoading) return;
     setView(newView);
     setFormData({ name: '', email: '', password: '', confirmPassword: '' });
     setMessage({ type: '', text: '' });
     setShowPassword(false);
     setShowConfirmPassword(false);
+    setRememberMe(false); // <-- Limpa o checkbox ao trocar de aba
     setIsLoading(false);
   };
 
@@ -55,7 +59,7 @@ const Auth = () => {
         const response = await api.post('/auth/register', {
           name: formData.name,
           email: formData.email,
-          password: formData.password
+          password: formData.password,
         });
         
         setMessage({ type: 'success', text: response.data.message });
@@ -69,7 +73,8 @@ const Auth = () => {
       else if (view === 'login') {
         const response = await api.post('/auth/login', {
           email: formData.email,
-          password: formData.password
+          password: formData.password,
+          rememberMe: rememberMe
         });
         
         localStorage.setItem('token', response.data.token);
@@ -191,6 +196,21 @@ const Auth = () => {
             </div>
           )}
           
+            {view === 'login' && (
+              <div className="remember-me-container">
+                <label className="remember-me-label">
+                  <input 
+                    type="checkbox" 
+                    checked={rememberMe} 
+                    onChange={(e) => setRememberMe(e.target.checked)} 
+                    disabled={isLoading}
+                    className="remember-me-checkbox"
+                  />
+                  <span>Me mantenha conectado</span>
+                </label>
+              </div>
+            )}
+
           <button type="submit" className="btn-auth-submit" disabled={isLoading}>
             {isLoading ? (
               <span className="auth-spinner"></span>

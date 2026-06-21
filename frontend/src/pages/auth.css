@@ -188,3 +188,66 @@
   pointer-events: none; /* Impede completamente o clique no CSS */
   text-decoration: none !important;
 }
+
+.remember-me-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: -5px; /* Ajusta o espaçamento em relação ao campo de senha */
+  margin-bottom: 5px;
+}
+
+.remember-me-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 0.9em;
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition-smooth);
+}
+
+.remember-me-label:hover {
+  color: var(--text-primary);
+}
+
+.remember-me-checkbox {
+  appearance: none; /* Remove o estilo padrão feio do navegador */
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+  outline: none;
+}
+
+.remember-me-checkbox:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 2px var(--accent-gold-glow);
+}
+
+/* Quando a caixinha for marcada */
+.remember-me-checkbox:checked {
+  background-color: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
+/* Cria o ícone de "check" (v) usando CSS puro quando marcado */
+.remember-me-checkbox:checked::before {
+  content: "✓";
+  color: #000000;
+  font-weight: bold;
+  font-size: 0.85em;
+}
+
+.remember-me-checkbox:disabled,
+.remember-me-label[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

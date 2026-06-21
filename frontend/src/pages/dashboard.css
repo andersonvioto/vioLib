@@ -40,6 +40,7 @@
   height: 45px;
   width: auto;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  transition: var(--transition-smooth);
 }
 
 .brand-title {
@@ -48,6 +49,7 @@
   color: var(--accent-gold);
   margin: 0;
   letter-spacing: 1px;
+  transition: var(--transition-smooth);
 }
 
 /* Oculta o Hamburger no Computador */
@@ -351,14 +353,24 @@
   }
 
   .dash-header {
-    /* Ajusta o truque do fundo para as margens do telemóvel */
+    /* MÁGICA: Impede a quebra de linha! A logo e o botão ficarão sempre lado a lado */
+    flex-wrap: nowrap;
+    justify-content: space-between;
+
     margin: -15px -15px 20px -15px;
     padding: 15px 20px 15px 15px;
     border-bottom: 1px solid var(--border-color);
   }
 
-  /* Oculta os rótulos de botões no header original? Não, no dropdown eles ficam! */
-  
+  /* Redução elegante do logo para evitar espremer o botão em telas muito estreitas */
+  .brand-logo {
+    height: 35px;
+  }
+
+  .brand-title {
+    font-size: 1.8em;
+  }
+
   /* Botão Hamburguer Torna-se Visível */
   .mobile-menu-toggle {
     display: flex;

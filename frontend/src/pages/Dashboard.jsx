@@ -22,6 +22,7 @@ const Dashboard = () => {
   const [sharedLibraries, setSharedLibraries] = useState([]); 
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnlyBorrowed, setShowOnlyBorrowed] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -59,11 +60,10 @@ const Dashboard = () => {
     }
   };
 
-  // --- NOVA FUNÇÃO DE LOGOUT ---
   const handleLogout = () => {
     if (window.confirm("Deseja realmente sair da sua conta?")) {
-      localStorage.removeItem('token'); // Destrói o passe de acesso
-      navigate('/login'); // Expulsa para a tela de login
+      localStorage.removeItem('token'); 
+      navigate('/login'); 
     }
   };
 
@@ -117,42 +117,66 @@ const Dashboard = () => {
   );
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="dashboard-container">
       <header className="dash-header">
         <div className="brand-container">
           <img src={miniLogo} alt="vioLib" className="brand-logo" />
           <h1 className="brand-title">{t('library')}</h1>
         </div>
         
-        <div className="header-actions">
-          {/* BOTÃO DE CONFIGURAÇÕES (Fase 4) */}
-          <button onClick={() => navigate('/configuracoes')} className="btn-action" title="Configurações da Conta">
-            <span className="material-symbols-rounded">settings</span>
-          </button>
+        {/* NOVO CONTAINER PADRONIZADO (Idêntico ao Detalhe do Livro) */}
+        <div className="user-actions-container">
           
-          <button onClick={handleShare} className="btn-action">
-            <span className="material-symbols-rounded">group_add</span>
-            Convidar
-          </button>
-
-          <button onClick={() => navigate('/novo-livro')} className="btn-action btn-primary">
-            <span className="material-symbols-rounded">library_add</span>
-            Adicionar Livro
-          </button>
-
-          {/* BOTÃO DE LOGOUT COM ESTILO DISCRETO */}
+          {/* BOTÃO 3 PONTINHOS (Aparece apenas no Mobile) */}
           <button 
-            onClick={handleLogout} 
-            className="btn-action" 
-            style={{ color: '#ff4d4d', borderColor: 'transparent' }} 
-            title="Sair do Sistema"
+            className="mobile-menu-toggle" 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            title="Menu"
           >
-            <span className="material-symbols-rounded">logout</span>
+            <span className="material-symbols-rounded">
+              {isMenuOpen ? 'close' : 'more_vert'}
+            </span>
           </button>
+
+          {/* MENU: No Desktop fica alinhado no header. No Mobile vira Dropdown. */}
+          <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
+            <button 
+              onClick={() => { navigate('/configuracoes'); setIsMenuOpen(false); }} 
+              className="btn-action" 
+              title="Configurações da Conta"
+            >
+              <span className="material-symbols-rounded">settings</span>
+              <span className="action-label">Ajustes</span>
+            </button>
+            
+            <button 
+              onClick={() => { handleShare(); setIsMenuOpen(false); }} 
+              className="btn-action"
+            >
+              <span className="material-symbols-rounded">group_add</span>
+              <span className="action-label">Convidar</span>
+            </button>
+
+            <button 
+              onClick={() => { navigate('/novo-livro'); setIsMenuOpen(false); }} 
+              className="btn-action btn-primary"
+            >
+              <span className="material-symbols-rounded">library_add</span>
+              <span className="action-label">Novo</span>
+            </button>
+
+            <button 
+              onClick={() => { handleLogout(); setIsMenuOpen(false); }} 
+              className="btn-action btn-logout" 
+              title="Sair do Sistema"
+            >
+              <span className="material-symbols-rounded">logout</span>
+              <span className="action-label">Sair</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* O RESTANTE DO SEU CÓDIGO PERMANECE INTOCADO DAQUI PARA BAIXO */}
       <div className="stats-container">
         <div className="stat-widget">
           <span className="material-symbols-rounded stat-icon">menu_book</span>
@@ -199,7 +223,7 @@ const Dashboard = () => {
           <span className="material-symbols-rounded">
             {showOnlyBorrowed ? 'filter_alt_off' : 'filter_list'}
           </span>
-          {showOnlyBorrowed ? 'Todos os Livros' : 'Apenas Emprestados'}
+          <span className="action-label">{showOnlyBorrowed ? 'Todos' : 'Emprestados'}</span>
         </button>
       </div>
 
@@ -226,7 +250,7 @@ const Dashboard = () => {
           <BookGrid 
             books={lib.books} 
             badgeColor="#aaaaaa"
-            badgeText="Emprestado do Amigo" 
+            badgeText="Emprestado" 
             badgeIcon="lock_clock"
           />
         </div>

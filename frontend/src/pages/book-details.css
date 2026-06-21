@@ -9,14 +9,57 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
   flex-wrap: wrap;
   gap: 15px;
+  
+  /* EFEITO CABEÇALHO FIXO (APP BAR) */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: var(--bg-main);
+  
+  /* Truque mágico: o fundo expande para cobrir o scroll nas laterais */
+  margin: -40px -40px 40px -40px;
+  padding: 40px 40px 20px 40px;
+  border-bottom: 1px solid var(--border-color); /* Linha sutil separando o conteúdo */
+}
+
+.btn-back-clean {
+  border: none;
+  padding-left: 0;
+  color: var(--text-secondary);
+}
+
+.btn-back-clean:hover {
+  background: transparent;
+  color: var(--accent-gold);
+  transform: translateX(-3px); /* Move levemente para a esquerda ao invés de subir */
+}
+
+/* --- CONTAINER DOS BOTÕES DE AÇÃO --- */
+.owner-actions-container {
+  display: flex;
+  align-items: center;
+  position: relative; /* Fundamental para ancorar o menu suspenso */
+}
+
+.mobile-menu-toggle {
+  display: none; /* Escondido no computador */
 }
 
 .header-actions {
   display: flex;
   gap: 15px;
+}
+
+.edit-btn {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+
+.delete-btn {
+  border-color: var(--text-danger);
+  color: var(--text-danger);
 }
 
 /* --- LAYOUT EDITORIAL ASSIMÉTRICO --- */
@@ -30,7 +73,7 @@
 /* --- COLUNA ESQUERDA: CAPA --- */
 .cover-wrapper {
   position: sticky;
-  top: 40px; /* Faz a capa rolar graciosamente acompanhando a tela */
+  top: 120px; /* Ajustado para dar espaço ao cabeçalho fixo */
 }
 
 .details-cover {
@@ -135,22 +178,135 @@
   white-space: pre-wrap; /* Respeita as quebras de linha que você digitou */
 }
 
-/* --- RESPONSIVIDADE (Celulares e Tablets menores) --- */
-@media (max-width: 850px) {
+/* ==========================================================================
+   RESPONSIVIDADE: TABLETS E CELULARES
+   ========================================================================== */
+
+/* TABLET RETRATO (até 900px) */
+@media (max-width: 900px) {
+  .details-container {
+    padding: 20px;
+  }
+  
   .editorial-layout {
-    grid-template-columns: 1fr; /* Transforma em uma única coluna */
+    /* Reduz a capa de 300px para 220px para dar espaço ao texto no tablet */
+    grid-template-columns: 220px 1fr; 
     gap: 30px;
   }
-  .cover-wrapper {
-    position: static;
-    max-width: 300px;
-    margin: 0 auto; /* Centraliza a capa no celular */
-  }
+  
   .book-main-title {
     font-size: 2.2em;
+  }
+}
+
+/* CELULAR (até 600px) */
+@media (max-width: 600px) {
+  .details-container {
+    padding: 15px;
+    padding-bottom: 40px;
+  }
+
+  /* Mantém o botão de voltar e os 3 pontinhos na mesma linha */
+  .details-header {
+    flex-direction: row; 
+    justify-content: space-between;
+    align-items: center;
+    /* Ajusta o truque do fundo para as margens do telemóvel */
+    margin: -15px -15px 25px -15px;
+    padding: 15px 20px 15px 15px;
+  }
+
+  /* Ativa os 3 pontinhos */
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--accent-gold);
+    cursor: pointer;
+    padding: 5px;
+  }
+
+  .mobile-menu-toggle .material-symbols-rounded {
+    font-size: 2.2em !important;
+    margin: 0;
+  }
+
+  /* Transforma a div .header-actions num Menu Dropdown Suspenso */
+  .header-actions {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    width: 200px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    z-index: 1000;
+    
+    /* Animação Inicial Oculta */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-15px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Revela o Menu Suspenso */
+  .header-actions.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  /* Ajusta os botões dentro do menu */
+  .header-actions .btn-action {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 15px;
+    background: transparent;
+    border: none !important; /* Remove bordas para parecer menu */
+    box-shadow: none !important;
+  }
+
+  .header-actions .btn-action:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    transform: none; /* Evita que o botão pule ao clicar */
+  }
+
+  /* --- RESTANTE DO LAYOUT MOBILE --- */
+  .editorial-layout {
+    grid-template-columns: 1fr; 
+    gap: 20px;
+  }
+
+  .cover-wrapper {
+    position: static; 
+    max-width: 180px;
+    margin: 0 auto 15px auto;
+  }
+
+  .book-main-title {
+    font-size: 1.8em;
     text-align: center;
   }
+
   .book-main-authors {
+    font-size: 1.1em;
     text-align: center;
+  }
+
+  .loan-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .meta-grid {
+    grid-template-columns: 1fr; 
+    gap: 15px;
   }
 }

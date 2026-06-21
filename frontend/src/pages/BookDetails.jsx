@@ -22,6 +22,9 @@ const BookDetails = () => {
   const [borrowerName, setBorrowerName] = useState('');
   const [loanDate, setLoanDate] = useState('');
 
+  // NOVO: Estado para controlar o menu de opções no mobile
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   // Busca os detalhes da obra na API
   const fetchBookDetails = async () => {
     try {
@@ -83,22 +86,44 @@ const BookDetails = () => {
       
       {/* CABEÇALHO COM AÇÕES */}
       <div className="details-header">
-        <button onClick={() => navigate(-1)} className="btn-action" style={{ border: 'none' }}>
+        <button onClick={() => navigate(-1)} className="btn-action btn-back-clean">
           <span className="material-symbols-rounded">arrow_back</span>
           Voltar
         </button>
         
         {/* SÓ MOSTRA OS BOTÕES DE EDIÇÃO/EXCLUSÃO SE FOR O DONO */}
         {book.isOwner && (
-          <div className="header-actions">
-            <button onClick={() => navigate(`/editar-livro/${id}`)} className="btn-action" style={{ borderColor: 'var(--accent-gold)', color: 'var(--accent-gold)' }}>
-              <span className="material-symbols-rounded">edit</span>
-              Editar Obra
+          <div className="owner-actions-container">
+            
+            {/* Botão de 3 pontinhos para disparar o menu no Mobile */}
+            <button 
+              className="mobile-menu-toggle" 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              title="Opções da Obra"
+            >
+              <span className="material-symbols-rounded">
+                {isMenuOpen ? 'close' : 'more_vert'}
+              </span>
             </button>
-            <button onClick={handleDelete} className="btn-action" style={{ color: 'var(--text-danger)', borderColor: 'var(--text-danger)' }}>
-              <span className="material-symbols-rounded">delete</span>
-              Excluir
-            </button>
+
+            {/* Menu de Ações (Fixo no Desktop, Dropdown no Mobile) */}
+            <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
+              <button 
+                onClick={() => navigate(`/editar-livro/${id}`)} 
+                className="btn-action edit-btn"
+              >
+                <span className="material-symbols-rounded">edit</span>
+                Editar Obra
+              </button>
+              
+              <button 
+                onClick={handleDelete} 
+                className="btn-action delete-btn"
+              >
+                <span className="material-symbols-rounded">delete</span>
+                Excluir
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -336,23 +336,41 @@
 /* --------------------------------------------------------------------------
    RESPONSIVIDADE (Tablets e Celulares)
    -------------------------------------------------------------------------- */
-@media (max-width: 768px) {
+/* TABLETS E CELULARES (até 900px) */
+@media (max-width: 900px) {
+  .settings-container {
+    padding: 20px 15px;
+  }
+
   .settings-layout {
-    flex-direction: column;
+    flex-direction: column; /* Coloca o menu acima do conteúdo */
+    gap: 20px;
   }
   
+  /* A MÁGICA: Transforma o Menu Lateral em Abas Deslizantes (Swipeable Tabs) */
   .settings-sidebar {
     flex: none;
     width: 100%;
     flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-wrap: nowrap; /* Impede que os botões caiam para a linha de baixo */
+    overflow-x: auto; /* Habilita a rolagem horizontal */
+    -webkit-overflow-scrolling: touch; /* Rolagem suave no iOS */
+    padding: 10px;
+    border-radius: 8px;
+    scrollbar-width: none; /* Esconde a barra de rolagem no Firefox */
+  }
+
+  .settings-sidebar::-webkit-scrollbar {
+    display: none; /* Esconde a barra de rolagem no Chrome/Safari */
   }
 
   .settings-sidebar button {
+    flex: 0 0 auto; /* Impede que os botões encolham */
     text-align: center;
     border-left: none;
     border-bottom: 3px solid transparent;
+    padding: 10px 20px;
+    white-space: nowrap; /* Mantém o texto do botão numa só linha */
   }
 
   .settings-sidebar button.active {
@@ -360,7 +378,14 @@
     border-bottom: 3px solid #D4AF37;
   }
 
+  /* Ajusta o grid de Gêneros para caber melhor em telas menores */
   .genres-container {
     grid-template-columns: 1fr;
+  }
+  
+  /* Ajusta os inputs para toques mais fáceis */
+  .settings-form .auth-input,
+  .settings-input-wrapper input {
+    padding: 14px 15px; /* Aumenta a altura (Touch Target) */
   }
 }

@@ -146,8 +146,59 @@
 }
 
 /* Responsividade: Tela pequena vira 1 coluna só */
-@media (max-width: 768px) {
+/* TABLET RETRATO E CELULAR GRANDE (até 900px) */
+@media (max-width: 900px) {
+  .form-container {
+    padding: 20px;
+  }
+  
+  .form-section {
+    padding: 20px; /* Reduz o padding interno dos cartões para poupar espaço */
+  }
+  
   .form-grid {
-    grid-template-columns: 1fr;
+    /* Mantém 2 colunas no tablet, mas com menos espaçamento */
+    gap: 15px; 
+  }
+}
+
+/* CELULAR (até 600px) */
+@media (max-width: 600px) {
+  .form-container {
+    padding: 10px;
+    padding-bottom: 80px; /* Espaço extra para não conflitar com a navegação nativa do celular */
+  }
+
+  .form-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 5px;
+  }
+
+  .form-title {
+    font-size: 1.8em;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr; /* Transforma TUDO numa única coluna */
+  }
+
+  /* Aumenta as áreas de toque (Touch Targets) para 48px de altura */
+  .form-input, 
+  .form-select {
+    padding: 14px 15px;
+    font-size: 16px; /* Evita Zoom no iOS */
+  }
+
+  /* Botões de Ação na base do formulário esticam para a largura total */
+  .form-actions {
+    flex-direction: column-reverse; /* Coloca o Salvar no topo e o Cancelar embaixo */
+    gap: 10px;
+  }
+  
+  .form-actions .btn-action {
+    width: 100%;
+    justify-content: center;
+    padding: 15px; /* Botão bem alto para o polegar */
   }
 }

@@ -1,12 +1,33 @@
+/* Container Base */
+.dashboard-container {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 .dash-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border-color);
   flex-wrap: wrap;
   gap: 15px;
+
+  /* EFEITO CABEÇALHO FIXO (APP BAR) */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: var(--bg-main);
+  
+  /* Truque para o fundo cobrir o padding ao rolar */
+  margin: -40px -40px 30px -40px;
+  padding: 40px 40px 20px 40px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.user-actions-container {
+  display: flex;
+  align-items: center;
+  position: relative; 
 }
 
 .brand-container {
@@ -16,9 +37,9 @@
 }
 
 .brand-logo {
-  height: 45px; /* Tamanho proporcional ao texto */
+  height: 45px;
   width: auto;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); /* Leve sombra para destacar o dourado */
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
 
 .brand-title {
@@ -27,6 +48,11 @@
   color: var(--accent-gold);
   margin: 0;
   letter-spacing: 1px;
+}
+
+/* Oculta o Hamburger no Computador */
+.mobile-menu-toggle {
+  display: none;
 }
 
 .header-actions {
@@ -70,7 +96,16 @@
   transform: translateY(-2px);
 }
 
-/* --- CARTÕES DE ESTATÍSTICAS (ESTILO CHIPS/PÍLULAS DISCRETAS) --- */
+.btn-logout {
+  color: #ff4d4d;
+  border-color: transparent;
+}
+
+.btn-logout:hover {
+  background: rgba(255, 77, 77, 0.1);
+}
+
+/* --- CARTÕES DE ESTATÍSTICAS --- */
 .stats-container {
   display: flex;
   gap: 15px;
@@ -78,7 +113,6 @@
   flex-wrap: wrap;
 }
 
-/* O fundo fica mais neutro e o formato fica arredondado como uma pílula */
 .stat-widget {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -90,26 +124,22 @@
   transition: var(--transition-smooth);
 }
 
-/* Efeito sutil ao passar o mouse */
 .stat-widget:hover {
   border-color: var(--accent-gold);
-  background: rgba(212, 175, 55, 0.05); /* Fundo levemente dourado */
+  background: rgba(212, 175, 55, 0.05);
 }
 
-/* Ícone menor para não chamar tanta atenção */
 .stat-icon {
   font-size: 1.2em !important;
   color: var(--accent-gold);
 }
 
-/* Coloca o número e o texto na mesma linha */
 .stat-info {
   display: flex;
-  align-items: baseline; /* Alinha a base das letras */
+  align-items: baseline;
   gap: 5px;
 }
 
-/* Número ganha destaque com negrito, mas tamanho reduzido */
 .stat-number {
   font-size: 1.1em;
   font-family: var(--font-sans);
@@ -118,7 +148,6 @@
   margin: 0;
 }
 
-/* Rótulo simplificado e em letras minúsculas/discretas */
 .stat-label {
   color: var(--text-secondary);
   font-size: 0.85em;
@@ -166,9 +195,9 @@
   box-shadow: 0 0 0 3px var(--accent-gold-glow);
 }
 
-/* --- SEPARADORES DE BIBLIOTECA --- */
+/* --- SEPARADORES E GRADE DE LIVROS --- */
 .library-section {
-  margin-bottom: 50px; /* Espaço generoso entre bibliotecas diferentes */
+  margin-bottom: 50px;
 }
 
 .section-header {
@@ -184,11 +213,9 @@
   font-size: 1.5em;
   color: var(--accent-gold);
   margin: 0;
-  font-family: var(--font-sans);
   font-weight: 600;
 }
 
-/* Modificador para as bibliotecas de amigos (mais discreto) */
 .section-header.shared {
   border-bottom-color: var(--border-color);
 }
@@ -197,20 +224,17 @@
   color: var(--text-secondary);
 }
 
-/* --- GRADE DINÂMICA --- */
 .book-grid {
   display: grid;
-  /* Cria colunas automáticas de no mínimo 200px. Otimizado para celular e desktop! */
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 25px;
 }
 
-/* --- CARTÃO DO LIVRO --- */
 .book-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  overflow: hidden; /* Impede que a imagem da capa "vaze" pelos cantos arredondados */
+  overflow: hidden;
   cursor: pointer;
   position: relative;
   display: flex;
@@ -218,28 +242,24 @@
   transition: var(--transition-smooth);
 }
 
-/* Efeito de Elevação ao Passar o Mouse */
 .book-card:hover {
-  transform: translateY(-8px); /* Sobe o cartão 8 pixels */
+  transform: translateY(-8px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
-  border-color: var(--accent-gold); /* Destaca a borda */
+  border-color: var(--accent-gold);
 }
 
-/* Imagem da Capa */
 .book-cover {
   width: 100%;
   height: 280px;
-  object-fit: cover; /* Garante que a imagem não fique esticada/distorcida */
+  object-fit: cover;
   border-bottom: 1px solid var(--border-color);
   transition: var(--transition-smooth);
 }
 
-/* Leve brilho na imagem ao passar o mouse no cartão */
 .book-card:hover .book-cover {
   filter: brightness(1.1);
 }
 
-/* Informações abaixo da capa */
 .book-info {
   padding: 15px;
   display: flex;
@@ -253,7 +273,6 @@
   margin: 0;
   font-weight: 600;
   line-height: 1.3;
-  /* Truque CSS para limitar o título a 2 linhas e colocar "..." no final se for muito grande */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -266,7 +285,6 @@
   margin: 0;
 }
 
-/* --- BADGE (ETIQUETA) DE EMPRESTADO --- */
 .badge-borrowed {
   position: absolute;
   top: 12px;
@@ -283,7 +301,150 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-/* Ajusta o tamanho do ícone de relógio dentro da etiqueta */
 .badge-borrowed .material-symbols-rounded {
   font-size: 1.3em !important;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE: TABLETS E CELULARES
+   ========================================================================== */
+
+/* TABLET RETRATO E CELULAR GRANDE (até 900px) */
+@media (max-width: 900px) {
+  .dashboard-container {
+    padding: 20px;
+  }
+  
+  .book-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 20px;
+  }
+  
+  .book-cover {
+    height: 240px;
+  }
+
+  /* Transforma a lista de estatísticas em um carrossel deslizante (Swipe) */
+  .stats-container {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 10px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  
+  .stats-container::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .stat-widget {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+}
+
+/* CELULAR (até 600px) - MÁGICA DO MENU DROPDOWN */
+@media (max-width: 600px) {
+  .dashboard-container {
+    padding: 15px;
+  }
+
+  .dash-header {
+    /* Ajusta o truque do fundo para as margens do telemóvel */
+    margin: -15px -15px 20px -15px;
+    padding: 15px 20px 15px 15px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  /* Oculta os rótulos de botões no header original? Não, no dropdown eles ficam! */
+  
+  /* Botão Hamburguer Torna-se Visível */
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--accent-gold);
+    cursor: pointer;
+    padding: 5px;
+  }
+
+  .mobile-menu-toggle .material-symbols-rounded {
+    font-size: 2.2em !important;
+    margin: 0;
+  }
+
+  /* Transforma a barra de ações num Menu Dropdown Elegante */
+  .header-actions {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    width: 200px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    z-index: 1000;
+    
+    /* Animação Inicial Oculta */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-15px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Revela o Menu Suspenso */
+  .header-actions.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  /* Ajusta os botões dentro do menu */
+  .header-actions .btn-action {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 15px;
+    background: transparent;
+    border: none !important; 
+    box-shadow: none !important;
+  }
+
+  .header-actions .btn-action:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    transform: none; 
+  }
+
+  /* Ajustes do Grid para Celular (Garantindo 2 capas visíveis) */
+  .book-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
+  
+  .book-cover {
+    height: 190px;
+  }
+
+  .book-title {
+    font-size: 0.95em;
+  }
+  
+  .book-author {
+    font-size: 0.8em;
+  }
+  
+  .filter-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-wrapper {
+    min-width: 100%;
+  }
 }

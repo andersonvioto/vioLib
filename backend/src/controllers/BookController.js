@@ -3,26 +3,27 @@ const { Book, Author, Translator, Genre, Subgenre, Tag, Loan } = require('../mod
 exports.createBook = async (req, res) => {
   try {
     const userId = req.userId; 
-    const { title, edition, releaseYear, publisher, acquisitionDate, notes } = req.body;
+    // ADICIONADO o isbn aqui
+    const { isbn, title, edition, releaseYear, publisher, acquisitionDate, notes } = req.body;
 
-    // Converte os textos recebidos de volta para Arrays
     const authors = req.body.authors ? JSON.parse(req.body.authors) : [];
     const translators = req.body.translators ? JSON.parse(req.body.translators) : [];
     const genres = req.body.genres ? JSON.parse(req.body.genres) : [];
     const subgenres = req.body.subgenres ? JSON.parse(req.body.subgenres) : [];
     const tags = req.body.tags ? JSON.parse(req.body.tags) : [];
 
-    // Pega o nome do arquivo salvo pelo Multer, se existir
-    const coverImage = req.file ? req.file.filename : null;
+    // CLOUDINARY: A URL pública da imagem fica guardada em req.file.path
+    const coverImage = req.file ? req.file.path : null;
 
     const safeData = {
+      isbn: isbn || null, // ADICIONADO o isbn aqui
       title,
       edition: edition || null,
       releaseYear: releaseYear ? parseInt(releaseYear, 10) : null,
       publisher: publisher || null,
       acquisitionDate: acquisitionDate || null,
       notes: notes || null,
-      coverImage, // Nome do arquivo salvo
+      coverImage, // Agora isto guarda "https://res.cloudinary.com/..."
       UserId: userId
     };
 
@@ -125,7 +126,8 @@ exports.updateBook = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.userId;
-    const { title, edition, releaseYear, publisher, acquisitionDate, notes } = req.body;
+    // ADICIONADO o isbn aqui
+    const { isbn, title, edition, releaseYear, publisher, acquisitionDate, notes } = req.body;
 
     const book = await Book.findOne({ where: { id, UserId: userId } });
     if (!book) return res.status(404).json({ error: 'Livro não encontrado.' });
@@ -136,10 +138,11 @@ exports.updateBook = async (req, res) => {
     const subgenres = req.body.subgenres ? JSON.parse(req.body.subgenres) : [];
     const tags = req.body.tags ? JSON.parse(req.body.tags) : [];
 
-    // Se um novo arquivo foi enviado, atualiza. Se não, mantém a imagem antiga ou a nova instrução
-    const coverImage = req.file ? req.file.filename : (req.body.coverImage || book.coverImage);
+    // CLOUDINARY: Se vier ficheiro novo, usa o req.file.path. Se não, mantém a capa antiga
+    const coverImage = req.file ? req.file.path : (req.body.coverImage || book.coverImage);
 
     const safeData = {
+      isbn: isbn || null, // ADICIONADO o isbn aqui
       title,
       edition: edition || null,
       releaseYear: releaseYear ? parseInt(releaseYear, 10) : null,

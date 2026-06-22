@@ -1,16 +1,22 @@
 const multer = require('multer');
-const path = require('path');
-const crypto = require('crypto');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
 
-// Configura onde e como os arquivos serão salvos
-module.exports = {
-  storage: multer.diskStorage({
-    destination: path.resolve(__dirname, '..', '..', 'uploads'), // Salva na pasta 'uploads' na raiz do backend
-    filename: (req, file, cb) => {
-      // Gera um código aleatório para evitar que duas capas com o mesmo nome se sobrescrevam
-      const hash = crypto.randomBytes(8).toString('hex');
-      const fileName = `${hash}-${file.originalname.replace(/\s/g, '_')}`;
-      cb(null, fileName);
-    }
-  })
-};
+// Configura as credenciais do Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configura o armazenamento direto na nuvem
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'violib_covers', // Nome da pasta que será criada lá no Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'], // Formatos aceites
+    // Opcional: transformation: [{ width: 500, height: 750, crop: 'limit' }] // Pode otimizar o tamanho na hora do upload!
+  }
+});
+
+module.exports = { storage };

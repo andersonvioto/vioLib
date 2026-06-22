@@ -9,9 +9,14 @@ const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/200
 // 2. FUNÇÃO AUXILIAR PRONTA PARA PRODUÇÃO
 const getCoverUrl = (filename) => {
   if (!filename) return DEFAULT_COVER;
-  // Lê a URL do servidor dinamicamente (Local ou Nuvem)
+  
+  // SE JÁ FOR UM LINK DA NUVEM (CLOUDINARY), RETORNA ELE DIRETO!
+  if (filename.startsWith('http')) return filename; 
+  
+  // Se for uma imagem antiga que ainda está no  disco local, faz o tratamento antigo:
   const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api';
-  return `${apiUrl.replace('/api', '/files')}/${filename}`;
+  const fileBaseUrl = apiUrl.replace('/api', '/files');
+  return `${fileBaseUrl}/${filename}`;
 };
 
 const BookDetails = () => {

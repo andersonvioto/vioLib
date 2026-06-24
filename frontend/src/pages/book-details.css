@@ -21,30 +21,31 @@
   /* Truque mágico: o fundo expande para cobrir o scroll nas laterais */
   margin: -40px -40px 40px -40px;
   padding: 40px 40px 20px 40px;
-  border-bottom: 1px solid var(--border-color); /* Linha sutil separando o conteúdo */
+  border-bottom: 1px solid var(--border-color);
 }
 
 .btn-back-clean {
   border: none;
   padding-left: 0;
   color: var(--text-secondary);
+  transition: all 0.2s ease;
 }
 
 .btn-back-clean:hover {
   background: transparent;
   color: var(--accent-gold);
-  transform: translateX(-3px); /* Move levemente para a esquerda ao invés de subir */
+  transform: translateX(-3px);
 }
 
 /* --- CONTAINER DOS BOTÕES DE AÇÃO --- */
 .owner-actions-container {
   display: flex;
   align-items: center;
-  position: relative; /* Fundamental para ancorar o menu suspenso */
+  position: relative;
 }
 
 .mobile-menu-toggle {
-  display: none; /* Escondido no computador */
+  display: none;
 }
 
 .header-actions {
@@ -65,7 +66,7 @@
 /* --- LAYOUT EDITORIAL ASSIMÉTRICO --- */
 .editorial-layout {
   display: grid;
-  grid-template-columns: 300px 1fr; /* Coluna da esquerda fixa (capa), direita fluida */
+  grid-template-columns: 300px 1fr;
   gap: 50px;
   align-items: start;
 }
@@ -73,7 +74,7 @@
 /* --- COLUNA ESQUERDA: CAPA --- */
 .cover-wrapper {
   position: sticky;
-  top: 120px; /* Ajustado para dar espaço ao cabeçalho fixo */
+  top: 120px;
 }
 
 .details-cover {
@@ -139,58 +140,105 @@
 /* --- GRID DE METADADOS (Gênero, Ano, etc) --- */
 .meta-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 25px;
-  border-top: 1px solid var(--border-color);
-  padding-top: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px 16px;
+  background: rgba(255, 255, 255, 0.02); 
+  padding: 25px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
 }
 
 .meta-item {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
+}
+
+.meta-item.full-width {
+  grid-column: 1 / -1;
 }
 
 .meta-label {
   color: var(--text-muted);
-  font-size: 0.85em;
+  font-size: 0.75em;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
 .meta-value {
   color: var(--text-primary);
-  font-size: 1.05em;
+  font-size: 1.05rem;
   font-weight: 500;
+  line-height: 1.4;
+}
+
+.meta-empty-state {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+/* --- ESTILO DAS TAGS --- */
+.meta-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.meta-tag-pill {
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--accent-gold);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.meta-tag-pill:hover {
+  background: rgba(212, 175, 55, 0.2);
+  transform: translateY(-2px);
 }
 
 /* --- MÓDULO DE NOTAS --- */
 .notes-module {
   background: rgba(255, 255, 255, 0.02);
   padding: 25px;
-  border-radius: var(--radius-md);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
   border: 1px solid var(--border-color);
+  border-left: 4px solid var(--accent-gold);
+}
+
+.notes-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1em;
+  color: var(--text-primary);
+  margin: 0 0 15px 0;
 }
 
 .notes-text {
   color: var(--text-secondary);
   line-height: 1.8;
-  white-space: pre-wrap; /* Respeita as quebras de linha que você digitou */
+  font-size: 1rem;
+  white-space: pre-wrap;
 }
 
 /* --- CONTAINER E MENU DE CITAÇÕES DROPDOWN --- */
 .citation-container-dropdown {
-  position: relative; /* Base de ancoragem absoluta para telas grandes */
+  position: relative;
   display: inline-block;
 }
 
-/* Força uma pequena seta ao lado do botão para dar a pista visual de menu */
 .citation-trigger-btn .arrow-icon {
   font-size: 1.1em !important;
   color: var(--text-muted);
 }
 
-/* Estilo do Dropdown Flutuante (Desktop) */
 .citation-dropdown-menu {
   position: absolute;
   top: calc(100% + 5px);
@@ -204,7 +252,7 @@
   flex-direction: column;
   gap: 4px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-  z-index: 1005; /* Fica acima do cabeçalho fixo */
+  z-index: 1005;
   animation: citationFadeDown 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -246,6 +294,31 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ==========================================================================
+   SKELETON ANIMATIONS (CARREGAMENTO FANTASMA)
+   ========================================================================== */
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+.skeleton-base {
+  /* Animação contínua linear deslizando da esquerda para a direita */
+  animation: shimmer 2s infinite linear;
+  
+  /* Gradiente que cria o efeito de 'brilho' varrendo a tela.
+     Usando variáveis do sistema para garantir o contraste perfeito. */
+  background: linear-gradient(
+    to right, 
+    var(--bg-input, #2a2a2a) 4%, 
+    var(--border-color, #3a3a3a) 25%, 
+    var(--bg-input, #2a2a2a) 36%
+  );
+  
+  background-size: 1000px 100%;
+  border-radius: 4px;
+}
 
 /* ==========================================================================
    RESPONSIVIDADE: TABLETS E CELULARES
@@ -258,7 +331,6 @@
   }
   
   .editorial-layout {
-    /* Reduz a capa de 300px para 220px para dar espaço ao texto no tablet */
     grid-template-columns: 220px 1fr; 
     gap: 30px;
   }
@@ -266,11 +338,6 @@
   .book-main-title {
     font-size: 2.2em;
   }
-
-  .details-container { padding: 20px; }
-  .editorial-layout { grid-template-columns: 220px 1fr; gap: 30px; }
-  .book-main-title { font-size: 2.2em; }
-
 }
 
 /* CELULAR (até 600px) */
@@ -280,115 +347,6 @@
     padding-bottom: 40px;
   }
 
-  /* Mantém o botão de voltar e os 3 pontinhos na mesma linha */
-  .details-header {
-    flex-direction: row; 
-    justify-content: space-between;
-    align-items: center;
-    /* Ajusta o truque do fundo para as margens do telemóvel */
-    margin: -15px -15px 25px -15px;
-    padding: 15px 20px 15px 15px;
-  }
-
-  /* Ativa os 3 pontinhos */
-  .mobile-menu-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    color: var(--accent-gold);
-    cursor: pointer;
-    padding: 5px;
-  }
-
-  .mobile-menu-toggle .material-symbols-rounded {
-    font-size: 2.2em !important;
-    margin: 0;
-  }
-
-  /* Transforma a div .header-actions num Menu Dropdown Suspenso */
-  .header-actions {
-    position: absolute;
-    top: calc(100% + 5px);
-    right: 0;
-    width: 200px;
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    z-index: 1000;
-    
-    /* Animação Inicial Oculta */
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-15px);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Revela o Menu Suspenso */
-  .header-actions.open {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
-
-  /* Ajusta os botões dentro do menu */
-  .header-actions .btn-action {
-    width: 100%;
-    justify-content: flex-start;
-    padding: 12px 15px;
-    background: transparent;
-    border: none !important; /* Remove bordas para parecer menu */
-    box-shadow: none !important;
-  }
-
-  .header-actions .btn-action:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-    transform: none; /* Evita que o botão pule ao clicar */
-  }
-
-  /* --- RESTANTE DO LAYOUT MOBILE --- */
-  .editorial-layout {
-    grid-template-columns: 1fr; 
-    gap: 20px;
-  }
-
-  .cover-wrapper {
-    position: static; 
-    max-width: 180px;
-    margin: 0 auto 15px auto;
-  }
-
-  .book-main-title {
-    font-size: 1.8em;
-    text-align: center;
-  }
-
-  .book-main-authors {
-    font-size: 1.1em;
-    text-align: center;
-  }
-
-  .loan-form {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .meta-grid {
-    grid-template-columns: 1fr; 
-    gap: 15px;
-  }
-
-  .details-container {
-    padding: 15px;
-    padding-bottom: 40px;
-  }
-
   .details-header {
     flex-direction: row; 
     justify-content: space-between;
@@ -413,7 +371,6 @@
     margin: 0;
   }
 
-  /* Gaveta de opções principal móvel */
   .header-actions {
     position: absolute;
     top: calc(100% + 5px);
@@ -454,22 +411,21 @@
     transform: none; 
   }
 
-  /* --- MÁGICA MOBILE: Transforma o submenu de citação em Sanfona (Accordion) --- */
   .citation-container-dropdown {
     display: block;
     width: 100%;
   }
 
   .citation-dropdown-menu {
-    position: static; /* Desativa a flutuação absoluta no celular */
+    position: static;
     width: 100%;
     box-shadow: none;
-    background-color: rgba(0, 0, 0, 0.15); /* Cria um leve recuo visual de subgrupo */
+    background-color: rgba(0, 0, 0, 0.15);
     border-radius: var(--radius-sm);
     border: none;
     padding: 5px;
     margin: 5px 0;
-    animation: none; /* Desativa a animação desktop para não engasgar no mobile */
+    animation: none;
   }
 
   .citation-menu-item {
@@ -477,11 +433,34 @@
     font-size: 0.85em;
   }
 
-  /* --- LAYOUT DO CORPO NO MOBILE --- */
-  .editorial-layout { grid-template-columns: 1fr; gap: 20px; }
-  .cover-wrapper { position: static; max-width: 180px; margin: 0 auto 15px auto; }
-  .book-main-title { font-size: 1.8em; text-align: center; }
-  .book-main-authors { font-size: 1.1em; text-align: center; }
-  .loan-form { flex-direction: column; align-items: stretch; }
-  .meta-grid { grid-template-columns: 1fr; gap: 15px; }
+  .editorial-layout { 
+    grid-template-columns: 1fr; 
+    gap: 20px; 
+  }
+  
+  .cover-wrapper { 
+    position: static; 
+    max-width: 180px; 
+    margin: 0 auto 15px auto; 
+  }
+  
+  .book-main-title { 
+    font-size: 1.8em; 
+    text-align: center; 
+  }
+  
+  .book-main-authors { 
+    font-size: 1.1em; 
+    text-align: center; 
+  }
+  
+  .loan-form { 
+    flex-direction: column; 
+    align-items: stretch; 
+  }
+  
+  .meta-grid { 
+    grid-template-columns: 1fr; 
+    gap: 15px; 
+  }
 }

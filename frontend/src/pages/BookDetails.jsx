@@ -7,6 +7,7 @@ import { getCoverUrl } from '../utils/bookHelpers';
 import BookDetailHeader from '../components/BookDetailHeader';
 import LoanManager from '../components/LoanManager';
 import BookMetadataGrid from '../components/BookMetadataGrid';
+import BookDetailSkeleton from '../components/BookDetailSkeleton'; // <-- NOVO
 
 import './book-details.css';
 
@@ -45,9 +46,9 @@ const BookDetails = () => {
     }
   };
 
-  // Trava de Segurança (Loading)
+  // Trava de Segurança visual elegante (Skeleton Loading)
   if (!book) {
-    return <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>Carregando detalhes da obra...</div>;
+    return <BookDetailSkeleton />;
   }
 
   const activeLoan = book.Loans?.find(loan => !loan.returnDate);

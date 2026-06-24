@@ -1,24 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const bookController = require('../controllers/BookController');
-const verifyToken = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 
-// Importações do Multer
+// Configuração do Multer para upload de imagens
 const multer = require('multer');
 const multerConfig = require('../config/multer');
 const upload = multer(multerConfig);
 
-router.use(verifyToken);
+// Proteção global para todas as rotas deste arquivo
+router.use(authMiddleware);
 
-// Adicionamos o 'upload.single' para capturar o arquivo chamado 'coverImage'
-router.post('/', upload.single('coverImage'), bookController.createBook);
-router.put('/:id', upload.single('coverImage'), bookController.updateBook);
+/**
+ * Rotas principais de Livros
+ */
+router.route('/')
+  .get(bookController.getAllBooks)
+  .post(upload.single('coverImage'), bookController.createBook);
 
-router.get('/', bookController.getAllBooks);
+router.route('/:id')
+  .get(bookController.getBookById)
+  .put(upload.single('coverImage'), bookController.updateBook)
+  .delete(bookController.deleteBook);
+
+/**
+ * Rotas auxiliares para metadados de livros
+ */
 router.get('/authors', bookController.getAllAuthors);
 router.get('/translators', bookController.getAllTranslators);
-router.get('/:id', bookController.getBookById);
-
-router.delete('/:id', bookController.deleteBook);
 
 module.exports = router;

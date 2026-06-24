@@ -1,22 +1,25 @@
 const { User, LibraryAccess, Book, Author, Loan } = require('../models');
 
-// 1. Conceder acesso (Dono convida Visitante pelo e-mail)
+/**
+ * Concede acesso à biblioteca do usuário logado para outro usuário via e-mail.
+ */
 exports.shareLibrary = async (req, res) => {
   try {
     const { guestEmail } = req.body;
-    const currentOwnerId = req.userId; // ID de quem está logado (Dono)
+    const currentOwnerId = req.userId;
 
     const owner = await User.findByPk(currentOwnerId);
+    if (!owner) return res.status(404).json({ error: 'Usuário proprietário não encontrado.' });
+
     if (owner.email === guestEmail) {
-      return res.status(400).json({ error: 'Você não pode compartilhar a biblioteca com você mesmo.' });
+      return res.status(400).json({ error: 'Você não pode compartilhar a biblioteca consigo mesmo.' });
     }
 
     const guest = await User.findOne({ where: { email: guestEmail } });
     if (!guest) {
-      return res.status(404).json({ error: 'Usuário não encontrado com este e-mail no vioLib.' });
+      return res.status(404).json({ error: 'Usuário não encontrado com este e-mail.' });
     }
 
-    // Ajustado para 'ownerId' e 'guestId' minúsculos
     const existingAccess = await LibraryAccess.findOne({ 
       where: { ownerId: currentOwnerId, guestId: guest.id } 
     });
@@ -25,20 +28,21 @@ exports.shareLibrary = async (req, res) => {
       return res.status(400).json({ error: 'Você já compartilhou sua biblioteca com esta pessoa.' });
     }
 
-    // Cria o registro respeitando os campos minúsculos do seu modelo
     await LibraryAccess.create({ ownerId: currentOwnerId, guestId: guest.id });
     res.status(201).json({ message: `Biblioteca compartilhada com ${guest.name} com sucesso!` });
   } catch (error) {
     console.error('❌ ERRO AO COMPARTILHAR BIBLIOTECA:', error);
-    res.status(500).json({ error: 'Erro interno ao compartilhar.' });
+    res.status(500).json({ error: 'Erro interno ao realizar o compartilhamento.' });
   }
 };
 
-// 2. Listar de quem o usuário logado tem permissão para ver (Visitante vê Donos)
+/**
+ * Lista as bibliotecas que foram compartilhadas com o usuário logado (ele como convidado).
+ */
 exports.getSharedWithMe = async (req, res) => {
   try {
     const accesses = await LibraryAccess.findAll({
-      where: { guestId: req.userId }, // Ajustado para minúsculo
+      where: { guestId: req.userId },
       include: [{ model: User, as: 'Owner', attributes: ['id', 'name', 'email'] }]
     });
     res.json(accesses);
@@ -48,14 +52,15 @@ exports.getSharedWithMe = async (req, res) => {
   }
 };
 
-// 3. Ver os livros de uma biblioteca compartilhada (Somente Leitura)
+/**
+ * Retorna os livros de uma biblioteca específica que o usuário possui acesso.
+ */
 exports.getSharedBooks = async (req, res) => {
   try {
     const { ownerId } = req.params;
 
-    // Trava de Segurança usando os campos minúsculos
     const hasAccess = await LibraryAccess.findOne({ 
-      where: { ownerId: ownerId, guestId: req.userId } 
+      where: { ownerId, guestId: req.userId } 
     });
     
     if (!hasAccess) {
@@ -74,24 +79,25 @@ exports.getSharedBooks = async (req, res) => {
   }
 };
 
-// Retorna a lista de pessoas que TÊM ACESSO à SUA biblioteca
+/**
+ * Lista todas as pessoas que receberam acesso à biblioteca do usuário logado.
+ */
 exports.getMyShares = async (req, res) => {
   try {
-    const { Access, User } = require('../models');
     const shares = await LibraryAccess.findAll({
       where: { ownerId: req.userId },
-      // Assumindo que a sua relação do convidado se chama 'Guest' ou similar. 
-      // Ajuste 'Guest' para o alias correto do seu model, se necessário.
       include: [{ model: User, as: 'Guest', attributes: ['id', 'name', 'email'] }] 
     });
     res.json(shares);
   } catch (error) {
     console.error("🕵️ ERRO NO ACCESS CONTROLLER:", error);
-    res.status(500).json({ error: 'Erro ao buscar compartilhamentos.' });
+    res.status(500).json({ error: 'Erro ao buscar compartilhamentos realizados.' });
   }
 };
 
-// Exclui o acesso de um convidado
+/**
+ * Revoga o acesso de um convidado específico à biblioteca do usuário logado.
+ */
 exports.revokeAccess = async (req, res) => {
   try {
     const { guestId } = req.params;
@@ -99,7 +105,7 @@ exports.revokeAccess = async (req, res) => {
     const deletedCount = await LibraryAccess.destroy({ 
       where: { 
         ownerId: req.userId, 
-        guestId: guestId 
+        guestId 
       } 
     });
 

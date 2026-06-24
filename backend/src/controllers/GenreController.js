@@ -1,68 +1,85 @@
 const { Genre } = require('../models');
 
-exports.getAll = async (req, res) => {
+/**
+ * Lista todos os gêneros do usuário logado, ordenados alfabeticamente.
+ */
+exports.list = async (req, res) => {
   try {
     const genres = await Genre.findAll({ 
       where: { UserId: req.userId },
-      order: [['name', 'ASC']] // Adicionado a ordenação aqui também
+      order: [['name', 'ASC']]
     });
     res.json(genres);
   } catch (error) {
-    console.error("🕵️ ERRO NO GENRE CONTROLLER:", error);
+    console.error("🕵️ ERRO NO GENRE CONTROLLER (LIST):", error);
     res.status(500).json({ error: 'Erro ao buscar gêneros.' });
   }
 };
 
-exports.delete = async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    // O .destroy() agora é um Soft Delete automático!
-    const deletedCount = await Genre.destroy({ 
-      where: { id, UserId: req.userId } // Garante que ele só desativa os próprios gêneros
-    });
-
-    if (deletedCount === 0) {
-      return res.status(404).json({ error: 'Gênero não encontrado ou já desativado.' });
-    }
-
-    res.json({ message: 'Gênero desativado com sucesso.' });
-  } catch (error) {
-    console.error("🕵️ ERRO NO GENRE CONTROLLER:", error);
-    res.status(500).json({ error: 'Erro ao desativar gênero.' });
-  }
-};
-
-
-exports.create = async (req, res) => {
+/**
+ * Cria um novo gênero para o usuário logado, evitando duplicatas.
+ */
+exports.store = async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'O nome é obrigatório.' });
     
-    // Cria o registro associando ao usuário logado
-    const novoItem = await Genre.create({ name, UserId: req.userId });
-    res.status(201).json(novoItem);
+    const [genre, created] = await Genre.findOrCreate({
+      where: { name, UserId: req.userId }
+    });
+
+    if (!created) {
+      return res.status(400).json({ error: 'Este gênero já está cadastrado.' });
+    }
+
+    res.status(201).json(genre);
   } catch (error) {
-    console.error("🕵️ ERRO NO GENRE CONTROLLER:", error);
-    res.status(500).json({ error: 'Erro ao criar registro.' });
+    console.error("🕵️ ERRO NO GENRE CONTROLLER (STORE):", error);
+    res.status(500).json({ error: 'Erro ao criar gênero.' });
   }
 };
 
+/**
+ * Atualiza o nome de um gênero existente pertencente ao usuário logado.
+ */
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
 
-    // Busca o item garantindo que ele pertence a este usuário
-    const item = await Genre.findOne({ where: { id, UserId: req.userId } });
-    if (!item) return res.status(404).json({ error: 'Registro não encontrado ou sem permissão.' });
+    const genre = await Genre.findOne({ where: { id, UserId: req.userId } });
+    if (!genre) {
+      return res.status(404).json({ error: 'Gênero não encontrado ou sem permissão.' });
+    }
 
-    item.name = name;
-    await item.save();
+    genre.name = name;
+    await genre.save();
     
-    res.json(item);
+    res.json(genre);
   } catch (error) {
-    console.error("🕵️ ERRO NO GENRE CONTROLLER:", error);
-    res.status(500).json({ error: 'Erro ao editar registro.' });
+    console.error("🕵️ ERRO NO GENRE CONTROLLER (UPDATE):", error);
+    res.status(500).json({ error: 'Erro ao editar gênero.' });
+  }
+};
+
+/**
+ * Remove (Soft Delete) um gênero do usuário logado.
+ */
+exports.destroy = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const deletedCount = await Genre.destroy({ 
+      where: { id, UserId: req.userId }
+    });
+
+    if (deletedCount === 0) {
+      return res.status(404).json({ error: 'Gênero não encontrado ou já removido.' });
+    }
+
+    res.json({ message: 'Gênero removido com sucesso.' });
+  } catch (error) {
+    console.error("🕵️ ERRO NO GENRE CONTROLLER (DESTROY):", error);
+    res.status(500).json({ error: 'Erro ao remover gênero.' });
   }
 };

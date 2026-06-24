@@ -1,12 +1,14 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { Op } = require('sequelize'); // Necessário para checar a validade do token de tempo
-const { User, Genre, Subgenre } = require('../models');
+const { Op } = require('sequelize');
+const { User, Genre, Subgenre, sequelize } = require('../models');
 const mailService = require('../services/mailService');
 
-// Lista padrão fornecida por você
-const defaultGenres = [
+/**
+ * Constantes de domínio para configuração inicial de usuários.
+ */
+const DEFAULT_GENRES = [
   { name: 'Biografia', subgenres: [] },
   { name: 'Fantasia', subgenres: ['Fantasia Medieval', 'Fantasia Urbana', 'Fantasia Sombria'] },
   { name: 'Suspense', subgenres: ['Policial', 'Thriller Psicológico', 'Noir'] },
@@ -17,143 +19,135 @@ const defaultGenres = [
   { name: 'Não Ficção', subgenres: ['Biografia', 'Crime Real', 'Autoajuda', 'História'] }
 ];
 
+/**
+ * Registra um novo usuário no sistema e inicializa suas categorias padrão.
+ */
 exports.register = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
     const { name, email, password, language } = req.body;
-    
-    // 1. CHECAGEM DE DUPLICIDADE
-    const existingUser = await User.findOne({ where: { email } });
+
+    const existingUser = await User.findOne({ where: { email }, transaction });
     if (existingUser) {
+      await transaction.rollback();
       return res.status(400).json({ error: 'Este e-mail já está em uso.' });
     }
 
-    // 2. Criptografa a senha antes de salvar
     const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // 3. Geração do token de validação de e-mail
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
-    // 4. Cria o usuário no banco (isVerified entra como falso por padrão)
-    const user = await User.create({ 
-      name, 
-      email, 
-      password: hashedPassword, 
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
       language,
       verificationToken,
       isVerified: false
-    });
-    
-    // 5. Injeta a lista de gêneros e subgêneros exclusiva do usuário
-    for (const item of defaultGenres) {
-      const genre = await Genre.create({ name: item.name, UserId: user.id });
-      for (const sub of item.subgenres) {
-        await Subgenre.create({ name: sub, GenreId: genre.id });
-      }
-    }
+    }, { transaction });
 
-    // 6. Envio de E-mail de Confirmação
+    // Inicialização paralela de categorias para performance
+    await Promise.all(DEFAULT_GENRES.map(async (item) => {
+      const genre = await Genre.create({ name: item.name, UserId: user.id }, { transaction });
+      if (item.subgenres.length > 0) {
+        await Promise.all(item.subgenres.map(sub => 
+          Subgenre.create({ name: sub, GenreId: genre.id }, { transaction })
+        ));
+      }
+    }));
+
+    await transaction.commit();
     await mailService.sendVerificationEmail(user.email, verificationToken);
-    
-    res.status(201).json({ message: 'Conta criada com sucesso! Verifique sua caixa de entrada para ativar o acesso.' });
+
+    res.status(201).json({ message: 'Conta criada com sucesso! Verifique seu e-mail para ativar.' });
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHCONTROLLER CONTROLLER:", error);
-    res.status(400).json({ error: error.message });
+    await transaction.rollback();
+    console.error("🕵️ ERRO NO AUTHCONTROLLER (REGISTER):", error);
+    res.status(400).json({ error: 'Erro ao processar registro: ' + error.message });
   }
 };
 
+/**
+ * Autentica o usuário e gera um JWT.
+ */
 exports.login = async (req, res) => {
   try {
-    // Passo 1: Recebemos o 'rememberMe' vindo do formulário do Front-end
     const { email, password, rememberMe } = req.body;
-    
-    // Busca o usuário pelo e-mail
     const user = await User.findOne({ where: { email } });
-    
-    // Compara a senha digitada com a criptografada no banco
+
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: 'E-mail ou senha inválidos' });
+      return res.status(401).json({ error: 'E-mail ou senha inválidos.' });
     }
 
-    // TRAVA DE SEGURANÇA: Bloqueia login se e-mail não for verificado
     if (!user.isVerified) {
-      return res.status(403).json({ error: 'Por favor, confirme seu e-mail antes de fazer login.' });
+      return res.status(403).json({ error: 'Por favor, confirme seu e-mail antes de acessar.' });
     }
 
-    // Passo 2: Definimos a expiração do token dinamicamente
-    // Se 'rememberMe' for true, token dura 30 dias. Se for false, dura apenas 1 dia.
     const expiresIn = rememberMe ? '30d' : '1d';
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn });
 
-    // Passo 3: Gera o token de acesso aplicando a variável expiresIn
-    const token = jwt.sign(
-      { userId: user.id }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: expiresIn } // <- Aqui aplicamos o tempo configurado
-    );
-    
     res.json({ user: { id: user.id, name: user.name, email: user.email }, token });
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHCONTROLLER CONTROLLER:", error);
-    res.status(500).json({ error: error.message });
+    console.error("🕵️ ERRO NO AUTHCONTROLLER (LOGIN):", error);
+    res.status(500).json({ error: 'Erro interno ao realizar login.' });
   }
 };
 
-// ==========================================
-// FUNÇÕES DE SEGURANÇA (Verificação e Senha)
-// ==========================================
-
+/**
+ * Ativa a conta de usuário via token de e-mail.
+ */
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
-    
     const user = await User.findOne({ where: { verificationToken: token } });
+
     if (!user) {
-      return res.status(400).json({ error: 'Link de verificação inválido ou expirado.' });
+      return res.status(400).json({ error: 'Token de verificação inválido ou expirado.' });
     }
 
-    // Ativa o usuário e limpa o token
     user.isVerified = true;
     user.verificationToken = null;
     await user.save();
 
-    res.json({ message: 'E-mail verificado com sucesso! Você já pode fazer login.' });
+    res.json({ message: 'E-mail verificado com sucesso!' });
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHCONTROLLER CONTROLLER:", error);
-    res.status(500).json({ error: 'Erro ao verificar e-mail.' });
+    console.error("🕵️ ERRO NO AUTHCONTROLLER (VERIFY):", error);
+    res.status(500).json({ error: 'Erro interno ao verificar e-mail.' });
   }
 };
 
+/**
+ * Envia link para redefinição de senha.
+ */
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ where: { email } });
-    
-    // Por segurança, sempre retornamos a mesma mensagem mesmo se o e-mail não existir
-    if (!user) {
-      return res.json({ message: 'Se o e-mail estiver cadastrado, você receberá um link de recuperação em breve.' });
+
+    if (user) {
+      const token = crypto.randomBytes(32).toString('hex');
+      user.resetPasswordToken = token;
+      user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hora
+      await user.save();
+      await mailService.sendResetPasswordEmail(user.email, token);
     }
 
-    const token = crypto.randomBytes(32).toString('hex');
-    user.resetPasswordToken = token;
-    // O token expira em 1 hora (3600000 ms)
-    user.resetPasswordExpires = new Date(Date.now() + 3600000); 
-    await user.save();
-
-    await mailService.sendResetPasswordEmail(user.email, token);
     res.json({ message: 'Se o e-mail estiver cadastrado, você receberá um link de recuperação em breve.' });
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHCONTROLLER CONTROLLER:", error);
-    res.status(500).json({ error: 'Erro ao processar a recuperação de senha.' });
+    console.error("🕵️ ERRO NO AUTHCONTROLLER (FORGOT):", error);
+    res.status(500).json({ error: 'Erro ao processar recuperação de senha.' });
   }
 };
 
+/**
+ * Redefine a senha do usuário utilizando token válido.
+ */
 exports.resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
-    
     const user = await User.findOne({
       where: {
         resetPasswordToken: token,
-        resetPasswordExpires: { [Op.gt]: new Date() } // Maior que a data atual
+        resetPasswordExpires: { [Op.gt]: new Date() }
       }
     });
 
@@ -166,9 +160,9 @@ exports.resetPassword = async (req, res) => {
     user.resetPasswordExpires = null;
     await user.save();
 
-    res.json({ message: 'A sua senha foi redefinida com sucesso!' });
+    res.json({ message: 'Senha redefinida com sucesso!' });
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHCONTROLLER CONTROLLER:", error);
+    console.error("🕵️ ERRO NO AUTHCONTROLLER (RESET):", error);
     res.status(500).json({ error: 'Erro ao redefinir a senha.' });
   }
 };

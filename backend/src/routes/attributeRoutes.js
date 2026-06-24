@@ -1,32 +1,54 @@
 const express = require('express');
 const router = express.Router();
-const attributeController = require('../controllers/AttributeController');
 const authMiddleware = require('../middlewares/authMiddleware');
+
+// Controladores
+const attributeController = require('../controllers/AttributeController');
 const AuthorController = require('../controllers/AuthorController');
 const TranslatorController = require('../controllers/TranslatorController');
 const GenreController = require('../controllers/GenreController');
 const SubgenreController = require('../controllers/SubgenreController');
 
+// Middleware de autenticação global para este router
 router.use(authMiddleware);
+
+// Rota principal de atributos unificados
 router.get('/', attributeController.getAllAttributes);
-router.get('/authors', authMiddleware, AuthorController.getAll);
-router.get('/translators', authMiddleware, TranslatorController.getAll);
-router.get('/genres', authMiddleware, GenreController.getAll);
 
-router.post('/authors', authMiddleware, AuthorController.create);
-router.post('/translators', authMiddleware, TranslatorController.create);
-router.post('/genres', authMiddleware, GenreController.create);
-router.post('/subgenres', authMiddleware, SubgenreController.create);
+// Rota de Autores
+router.route('/authors')
+  .get(AuthorController.list)
+  .post(AuthorController.store);
 
-router.put('/authors/:id', authMiddleware, AuthorController.update);
-router.put('/translators/:id', authMiddleware, TranslatorController.update);
-router.put('/genres/:id', authMiddleware, GenreController.update);
-router.put('/subgenres/:id', authMiddleware, SubgenreController.update);
+router.route('/authors/:id')
+  .put(AuthorController.update)
+  .delete(AuthorController.destroy);
 
-router.get('/subgenres', authMiddleware, SubgenreController.getAll);
-router.delete('/subgenres/:id', authMiddleware, SubgenreController.delete);
-router.delete('/authors/:id', authMiddleware, AuthorController.delete);
-router.delete('/translators/:id', authMiddleware, TranslatorController.delete);
-router.delete('/genres/:id', authMiddleware, GenreController.delete);
+// Rota de Tradutores
+router.route('/translators')
+  .get(TranslatorController.list)
+  .post(TranslatorController.store);
+
+router.route('/translators/:id')
+  .put(TranslatorController.update)
+  .delete(TranslatorController.destroy);
+
+// Rota de Gêneros
+router.route('/genres')
+  .get(GenreController.list)
+  .post(GenreController.store);
+
+router.route('/genres/:id')
+  .put(GenreController.update)
+  .delete(GenreController.destroy);
+
+// Rota de Subgêneros
+router.route('/subgenres')
+  .get(SubgenreController.list)
+  .post(SubgenreController.store);
+
+router.route('/subgenres/:id')
+  .put(SubgenreController.update)
+  .delete(SubgenreController.destroy);
 
 module.exports = router;

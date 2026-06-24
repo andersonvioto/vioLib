@@ -1,33 +1,36 @@
 const jwt = require('jsonwebtoken');
+const { promisify } = require('util');
 
-module.exports = (req, res, next) => {
+/**
+ * Middleware de autenticação JWT.
+ * Valida o token fornecido no header Authorization e injeta o userId no objeto req.
+ * * @param {Object} req - Objeto de requisição do Express.
+ * @param {Object} res - Objeto de resposta do Express.
+ * @param {Function} next - Função para passar ao próximo middleware.
+ */
+module.exports = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
     return res.status(401).json({ error: 'Acesso negado. Token não fornecido.' });
   }
 
-  // O padrão esperado é "Bearer <token_aqui>"
-  const parts = authHeader.split(' ');
-  if (parts.length !== 2) {
+  // Verifica o formato "Bearer <token>"
+  const [scheme, token] = authHeader.split(' ');
+
+  if (!/^Bearer$/i.test(scheme) || !token) {
     return res.status(401).json({ error: 'Formato de token inválido.' });
   }
 
-  const [scheme, token] = parts;
-  if (!/^Bearer$/i.test(scheme)) {
-    return res.status(401).json({ error: 'Token mal formatado.' });
+  try {
+    // Verifica o token usando promisify para uma sintaxe mais limpa
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    // Injeta o ID do usuário na requisição para uso nos próximos controladores
+    req.userId = decoded.userId;
+
+    return next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Token inválido ou expirado.' });
   }
-
-  // Verifica se o token é verdadeiro e não expirou
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ error: 'Token inválido ou expirado.' });
-    }
-
-    // Injeta o ID do usuário na requisição.
-    // Assim, sabemos exatamente QUEM está tentando salvar um livro.
-    req.userId = decoded.userId; 
-    
-    return next(); // Libera o acesso para a rota que o usuário queria acessar
-  });
 };

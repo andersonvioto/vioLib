@@ -1,10 +1,27 @@
-const { Op } = require('sequelize'); // <-- Adicione isso na primeira linha!
-const { Book, Author, Translator, Genre, Subgenre, Tag, Loan } = require('../models');
+const { Op } = require('sequelize');
+const { Book, Author, Translator, Genre, Subgenre, Tag, Loan, LibraryAccess } = require('../models');
 
+/**
+ * Helper para processar associações N:N (Autores, Tags, etc.)
+ */
+const processRelations = async (book, items, Model, userId, associationMethod) => {
+  if (items && items.length > 0) {
+    const instances = await Promise.all(items.map(async (itemName) => {
+      const [instance] = await Model.findOrCreate({ where: { name: itemName, UserId: userId } });
+      return instance;
+    }));
+    await book[associationMethod](instances);
+  } else {
+    await book[associationMethod]([]);
+  }
+};
+
+/**
+ * Cria um novo livro e suas associações iniciais.
+ */
 exports.createBook = async (req, res) => {
   try {
-    const userId = req.userId; 
-    // ADICIONADO o isbn aqui
+    const userId = req.userId;
     const { isbn, title, edition, releaseYear, publisher, publicationLocation, acquisitionDate, notes } = req.body;
 
     const authors = req.body.authors ? JSON.parse(req.body.authors) : [];
@@ -13,11 +30,8 @@ exports.createBook = async (req, res) => {
     const subgenres = req.body.subgenres ? JSON.parse(req.body.subgenres) : [];
     const tags = req.body.tags ? JSON.parse(req.body.tags) : [];
 
-    // CLOUDINARY: A URL pública da imagem fica guardada em req.file.path
-    const coverImage = req.file ? req.file.path : null;
-
-    const safeData = {
-      isbn: isbn || null, // ADICIONADO o isbn aqui
+    const book = await Book.create({
+      isbn: isbn || null,
       title,
       edition: edition || null,
       releaseYear: releaseYear ? parseInt(releaseYear, 10) : null,
@@ -25,28 +39,16 @@ exports.createBook = async (req, res) => {
       publisher: publisher || null,
       acquisitionDate: acquisitionDate || null,
       notes: notes || null,
-      coverImage, // Agora isto guarda "https://res.cloudinary.com/..."
+      coverImage: req.file ? req.file.path : null,
       UserId: userId
-    };
+    });
 
-    const book = await Book.create(safeData);
+    await processRelations(book, authors, Author, userId, 'addAuthors');
+    await processRelations(book, translators, Translator, userId, 'addTranslators');
+    await processRelations(book, genres, Genre, userId, 'addGenres');
+    await processRelations(book, tags, Tag, userId, 'addTags');
 
-    const processRelations = async (items, Model, associationMethod) => {
-      if (items && items.length > 0) {
-        const instances = await Promise.all(items.map(async (itemName) => {
-          const [instance] = await Model.findOrCreate({ where: { name: itemName, UserId: userId } });
-          return instance;
-        }));
-        await book[associationMethod](instances);
-      }
-    };
-
-    await processRelations(authors, Author, 'addAuthors');
-    await processRelations(translators, Translator, 'addTranslators');
-    await processRelations(genres, Genre, 'addGenres');
-    await processRelations(tags, Tag, 'addTags');
-
-    if (subgenres && subgenres.length > 0) {
+    if (subgenres?.length > 0) {
       await book.addSubgenres(subgenres.map(id => parseInt(id, 10)));
     }
 
@@ -57,152 +59,102 @@ exports.createBook = async (req, res) => {
   }
 };
 
+/**
+ * Busca livros com suporte a filtros, ordenação e paginação.
+ */
 exports.getAllBooks = async (req, res) => {
   try {
-    const {
-      page = 1,
-      limit = 20,
-      search = '',
-      sortBy = 'title', 
-      order = 'ASC',    
-      genre = '',
-      subgenre = '', // NOVO: Captura o subgênero da URL
-      tag = '',
-      borrowed = 'false'
-    } = req.query;
-
+    const { page = 1, limit = 20, search = '', sortBy = 'title', order = 'ASC', genre = '', subgenre = '', tag = '', borrowed = 'false' } = req.query;
+    
     const offset = (page - 1) * limit;
     const bookWhere = { UserId: req.userId };
 
-    if (search) {
-      bookWhere.title = { [Op.like]: `%${search}%` };
-    }
+    if (search) bookWhere.title = { [Op.like]: `%${search}%` };
 
-    let orderClause = [];
-    if (sortBy === 'author') orderClause = [[Author, 'name', order], ['title', 'ASC']];
-    else if (sortBy === 'releaseYear') orderClause = [['releaseYear', order], ['title', 'ASC']];
-    else orderClause = [['title', order]];
+    const orderClause = sortBy === 'author' 
+      ? [[Author, 'name', order], ['title', 'ASC']] 
+      : sortBy === 'releaseYear' 
+      ? [['releaseYear', order], ['title', 'ASC']] 
+      : [['title', order]];
 
     const { count, rows } = await Book.findAndCountAll({
       where: bookWhere,
       include: [
-        { model: Author },
-        { model: Translator },
-        {
-          model: Subgenre,
-          where: subgenre ? { name: subgenre } : undefined, // NOVO: Filtro de Subgênero
-          required: !!subgenre
-        },
-        {
-          model: Genre,
-          where: genre ? { name: genre } : undefined,
-          required: !!genre 
-        },
-        {
-          model: Tag,
-          where: tag ? { name: tag } : undefined,
-          required: !!tag
-        },
-        {
-          model: Loan,
-          where: borrowed === 'true' ? { returnDate: null } : undefined,
-          required: borrowed === 'true'
-        }
+        { model: Author }, { model: Translator },
+        { model: Subgenre, where: subgenre ? { name: subgenre } : undefined, required: !!subgenre },
+        { model: Genre, where: genre ? { name: genre } : undefined, required: !!genre },
+        { model: Tag, where: tag ? { name: tag } : undefined, required: !!tag },
+        { model: Loan, where: borrowed === 'true' ? { returnDate: null } : undefined, required: borrowed === 'true' }
       ],
       order: orderClause,
       limit: parseInt(limit, 10),
       offset: parseInt(offset, 10),
-      distinct: true 
+      distinct: true
     });
 
-    res.json({
-      books: rows,
-      totalItems: count,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page, 10)
-    });
-
+    res.json({ books: rows, totalItems: count, totalPages: Math.ceil(count / limit), currentPage: parseInt(page, 10) });
   } catch (error) {
     console.error('❌ ERRO NO MOTOR DE BUSCA:', error);
     res.status(500).json({ error: 'Erro ao processar a busca avançada.' });
   }
 };
 
+/**
+ * Busca detalhes de um livro por ID, validando permissão do usuário.
+ */
 exports.getBookById = async (req, res) => {
   try {
-    // 1. Busca o livro independentemente de quem é o dono
-    const book = await Book.findByPk(req.params.id, {
-      include: [Author, Translator, Genre, Subgenre, Tag, Loan] 
+    const bookId = parseInt(req.params.id, 10);
+    if (isNaN(bookId)) {
+        return res.status(400).json({ error: 'ID inválido.' });
+    }
+
+    const book = await Book.findByPk(bookId, { 
+      include: [Author, Translator, Genre, Subgenre, Tag, Loan]
     });
 
-    if (!book) {
-      return res.status(404).json({ error: 'Livro não encontrado.' });
+    if (!book) return res.status(404).json({ error: 'Livro não encontrado.' });
+
+    let isOwner = book.UserId === req.userId;
+    if (!isOwner) {
+      const hasAccess = await LibraryAccess.findOne({ where: { ownerId: book.UserId, guestId: req.userId } });
+      if (!hasAccess) return res.status(403).json({ error: 'Você não tem permissão para ver este livro.' });
     }
 
-    let isOwner = false;
-
-    // 2. Verifica quem está acessando
-    if (book.UserId === req.userId) {
-      isOwner = true; // É o dono da biblioteca
-    } else {
-      // Se não for o dono, verifica se ele tem permissão de visitante
-      const { LibraryAccess } = require('../models');
-      const hasAccess = await LibraryAccess.findOne({ 
-        where: { ownerId: book.UserId, guestId: req.userId } 
-      });
-      
-      if (!hasAccess) {
-        return res.status(403).json({ error: 'Você não tem permissão para ver este livro.' });
-      }
-    }
-
-    // 3. Retorna o livro e uma "flag" (isOwner) avisando o React se deve liberar os botões
     res.json({ ...book.toJSON(), isOwner });
   } catch (error) {
-    console.error('❌ ERRO AO BUSCAR DETALHES DO LIVRO:', error);
+    console.error('❌ ERRO AO BUSCAR DETALHES:', error);
     res.status(500).json({ error: 'Erro interno ao buscar o livro.' });
   }
 };
 
+/**
+ * Exclui um livro pertencente ao usuário logado.
+ */
 exports.deleteBook = async (req, res) => {
   try {
-    // Busca o livro garantindo que ele pertence a quem está logado
-    const book = await Book.findOne({ where: { id: req.params.id, UserId: req.userId } });
-
-    if (!book) {
-      return res.status(404).json({ error: 'Livro não encontrado ou sem permissão.' });
-    }
-
-    // Apaga o livro do banco de dados
-    await book.destroy();
-
+    const deleted = await Book.destroy({ where: { id: req.params.id, UserId: req.userId } });
+    if (!deleted) return res.status(404).json({ error: 'Livro não encontrado ou sem permissão.' });
     res.json({ message: 'Livro excluído com sucesso.' });
   } catch (error) {
-    console.error('❌ ERRO AO EXCLUIR LIVRO:', error);
     res.status(500).json({ error: 'Erro interno ao excluir o livro.' });
   }
 };
 
+/**
+ * Atualiza um livro existente e suas relações.
+ */
 exports.updateBook = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.userId;
-    const { isbn, title, edition, releaseYear, publicationLocation, publisher, acquisitionDate, notes } = req.body;
+    const { isbn, title, edition, releaseYear, publisher, publicationLocation, acquisitionDate, notes } = req.body;
 
     const book = await Book.findOne({ where: { id, UserId: userId } });
     if (!book) return res.status(404).json({ error: 'Livro não encontrado.' });
 
-    const authors = req.body.authors ? JSON.parse(req.body.authors) : [];
-    const translators = req.body.translators ? JSON.parse(req.body.translators) : [];
-    const genres = req.body.genres ? JSON.parse(req.body.genres) : [];
-    const subgenres = req.body.subgenres ? JSON.parse(req.body.subgenres) : [];
-    const tags = req.body.tags ? JSON.parse(req.body.tags) : [];
-
-    // CLOUDINARY: Se vier ficheiro novo, usa o req.file.path. Se não, mantém a capa antiga
-    const coverImage = req.file ? req.file.path : (req.body.coverImage || book.coverImage);
-
-    const safeData = {
-      isbn: isbn || null, // ADICIONADO o isbn aqui
+    await book.update({
+      isbn: isbn || null,
       title,
       edition: edition || null,
       releaseYear: releaseYear ? parseInt(releaseYear, 10) : null,
@@ -210,32 +162,16 @@ exports.updateBook = async (req, res) => {
       publisher: publisher || null,
       acquisitionDate: acquisitionDate || null,
       notes: notes || null,
-      coverImage,
-    };
-    await book.update(safeData);
+      coverImage: req.file ? req.file.path : (req.body.coverImage || book.coverImage)
+    });
 
-    const processRelations = async (items, Model, associationMethod) => {
-      if (items && items.length > 0) {
-        const instances = await Promise.all(items.map(async (itemName) => {
-          const [instance] = await Model.findOrCreate({ where: { name: itemName, UserId: userId } });
-          return instance;
-        }));
-        await book[associationMethod](instances);
-      } else {
-        await book[associationMethod]([]);
-      }
-    };
+    await processRelations(book, JSON.parse(req.body.authors || '[]'), Author, userId, 'setAuthors');
+    await processRelations(book, JSON.parse(req.body.translators || '[]'), Translator, userId, 'setTranslators');
+    await processRelations(book, JSON.parse(req.body.genres || '[]'), Genre, userId, 'setGenres');
+    await processRelations(book, JSON.parse(req.body.tags || '[]'), Tag, userId, 'setTags');
 
-    await processRelations(authors, Author, 'setAuthors');
-    await processRelations(translators, Translator, 'setTranslators');
-    await processRelations(genres, Genre, 'setGenres');
-    await processRelations(tags, Tag, 'setTags');
-
-    if (subgenres && subgenres.length > 0) {
-      await book.setSubgenres(subgenres.map(subId => parseInt(subId, 10)));
-    } else {
-      await book.setSubgenres([]);
-    }
+    const subgenres = JSON.parse(req.body.subgenres || '[]');
+    await book.setSubgenres(subgenres.map(id => parseInt(id, 10)));
 
     res.json({ message: 'Livro atualizado com sucesso!', book });
   } catch (error) {
@@ -244,24 +180,20 @@ exports.updateBook = async (req, res) => {
   }
 };
 
-// Busca todos os autores únicos do usuário logado
 exports.getAllAuthors = async (req, res) => {
   try {
     const authors = await Author.findAll({ where: { UserId: req.userId }, order: [['name', 'ASC']] });
     res.json(authors);
   } catch (error) {
-    console.error("🕵️ ERRO NO BOOK CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao buscar autores.' });
   }
 };
 
-// Busca todos os tradutores únicos do usuário logado
 exports.getAllTranslators = async (req, res) => {
   try {
     const translators = await Translator.findAll({ where: { UserId: req.userId }, order: [['name', 'ASC']] });
     res.json(translators);
   } catch (error) {
-    console.error("🕵️ ERRO NO BOOK CONTROLLER:", error);
     res.status(500).json({ error: 'Erro ao buscar tradutores.' });
   }
 };

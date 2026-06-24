@@ -3,8 +3,19 @@ const router = express.Router();
 const loanController = require('../controllers/LoanController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
+/**
+ * Middleware global de autenticação para todas as rotas de empréstimo.
+ */
 router.use(authMiddleware);
-router.post('/', loanController.createLoan);
-router.put('/:id/return', loanController.returnLoan);
+
+/**
+ * Registra um novo empréstimo de um livro.
+ */
+router.post('/', loanController.store);
+
+/**
+ * Registra a devolução (atualização) de um empréstimo existente.
+ */
+router.put('/:id/return', loanController.update);
 
 module.exports = router;

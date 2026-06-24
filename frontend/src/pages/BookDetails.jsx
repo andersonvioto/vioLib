@@ -10,8 +10,6 @@ const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/200
 
 /**
  * Resolve a URL final da imagem de capa, tratando links externos e locais.
- * @param {string} filename - Nome do arquivo ou URL da imagem.
- * @returns {string} URL completa da imagem.
  */
 const getCoverUrl = (filename) => {
   if (!filename) return DEFAULT_COVER;
@@ -22,22 +20,26 @@ const getCoverUrl = (filename) => {
   return `${fileBaseUrl}/${filename}`;
 };
 
+/**
+ * Converte string 'YYYY-MM-DD' para 'DD/MM/YYYY' isolando o fuso horário local.
+ */
+const formatDateSafe = (dateString) => {
+  if (!dateString) return '';
+  // Divide a string e a inverte. Resolve 100% dos bugs de fuso horário do navegador.
+  return dateString.split('-').reverse().join('/');
+};
+
 const BookDetails = () => {
   const { id } = useParams(); 
   const navigate = useNavigate();
   
-  // Estados da aplicação
   const [book, setBook] = useState(null);
   const [borrowerName, setBorrowerName] = useState('');
   const [loanDate, setLoanDate] = useState('');
   
-  // Estados de controle dos menus de UI
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showCitationMenu, setShowCitationMenu] = useState(false);
 
-  /**
-   * Busca os dados detalhados da obra na API.
-   */
   const fetchBookDetails = async () => {
     try {
       const response = await api.get(`/books/${id}`);
@@ -53,9 +55,6 @@ const BookDetails = () => {
     fetchBookDetails();
   }, [id, navigate]);
 
-  /**
-   * Remove o livro da base de dados após confirmação.
-   */
   const handleDelete = async () => {
     if (window.confirm(`Tem certeza que deseja excluir "${book.title}" da sua biblioteca?`)) {
       try {
@@ -67,9 +66,6 @@ const BookDetails = () => {
     }
   };
 
-  /**
-   * Registra um novo empréstimo para a obra.
-   */
   const handleLoanSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -82,32 +78,27 @@ const BookDetails = () => {
     }
   };
 
-  /**
-   * Finaliza um empréstimo ativo definindo a data de devolução como hoje.
-   */
   const handleReturn = async (loanId) => {
     try {
-      const today = new Date().toISOString().split('T')[0];
-      await api.put(`/loans/${loanId}/return`, { returnDate: today });
+      // Adquirimos a data local correta sem sofrer influência de UTC
+      const d = new Date();
+      const localToday = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      
+      await api.put(`/loans/${loanId}/return`, { returnDate: localToday });
       fetchBookDetails(); 
     } catch (error) {
       alert('Erro ao registrar devolução.');
     }
   };
 
-  /**
-   * Formata a string de citação com base nas normas internacionais.
-   * @param {'ABNT' | 'APA' | 'Vancouver' | 'Harvard'} format
-   */
   const getCitationText = (format) => {
-    // 1. Função auxiliar para inverter o nome (Transforma "Machado de Assis" em "ASSIS, Machado de")
     const formatAuthorABNT = (fullName) => {
       if (!fullName) return 'AUTOR DESCONHECIDO';
       const parts = fullName.trim().split(' ');
       if (parts.length <= 1) return fullName.toUpperCase();
       
-      const lastName = parts[parts.length - 1]; // Pega o último nome
-      const firstNames = parts.slice(0, -1).join(' '); // Pega todo o resto
+      const lastName = parts[parts.length - 1];
+      const firstNames = parts.slice(0, -1).join(' ');
       return `${lastName.toUpperCase()}, ${firstNames}`;
     };
 
@@ -116,39 +107,29 @@ const BookDetails = () => {
     const year = book.releaseYear || '[s.d.]';
     const city = book.publicationLocation || '[S.l.]';
     const pub = book.publisher || '[s.n.]';
-    const ed = book.edition ? `${book.edition}. ` : ''; // Ajustado para seguir o formato Xed.
+    const ed = book.edition ? `${book.edition}. ` : '';
 
     switch(format) {
       case 'ABNT': 
-        // Formato: SOBRENOME, Nome. Título. Edição. Local: Editora, Ano.
         return `${formatAuthorABNT(authorFull)}. ${title}. ${ed}${city}: ${pub}, ${year}.`;
-      
       case 'APA': 
-        // Formato: Sobrenome, N. (Ano). Título. Editora.
         return `${formatAuthorABNT(authorFull)} (${year}). ${title}. ${pub}.`;
-      
       case 'Vancouver': 
         return `${authorFull.toUpperCase()}. ${title}. ${ed}${city}: ${pub}; ${year}.`;
-      
       case 'Harvard': 
         return `${authorFull.toUpperCase()}, ${year}. ${title}. ${city}: ${pub}.`;
-      
       default: return '';
     }
   };
 
-  /**
-   * Copia o texto formatado da citação e fecha o menu de controle.
-   */
   const handleCopyCitation = (format) => {
     const text = getCitationText(format);
     navigator.clipboard.writeText(text);
     alert(`Citação no formato ${format} copiada com sucesso!`);
     setShowCitationMenu(false); 
-    setIsMenuOpen(false); // Fecha também o menu mobile principal
+    setIsMenuOpen(false);
   };
 
-  // Trava de carregamento inicial
   if (!book) return <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>Carregando detalhes da obra...</div>;
 
   const activeLoan = book.Loans?.find(loan => !loan.returnDate);
@@ -156,7 +137,6 @@ const BookDetails = () => {
   return (
     <div className="details-container">
       
-      {/* --- CABEÇALHO DE CONTROLES --- */}
       <div className="details-header">
         <button onClick={() => navigate('/biblioteca')} className="btn-action btn-back-clean">
           <span className="material-symbols-rounded">arrow_back</span>
@@ -165,7 +145,6 @@ const BookDetails = () => {
         
         <div className="owner-actions-container">
           
-          {/* Gatilho de Opções (Mobile de 3 Pontinhos) */}
           {book.isOwner && (
             <button 
               className="mobile-menu-toggle" 
@@ -178,10 +157,8 @@ const BookDetails = () => {
             </button>
           )}
 
-          {/* Grupo de Ações do Usuário (Hospeda o Dropdown de Citação) */}
           <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
             
-            {/* NOVO ACESSÓRIO: GERADOR DE CITAÇÃO INTEGRADO AO MENU */}
             <div className="citation-container-dropdown">
               <button 
                 type="button" 
@@ -213,7 +190,6 @@ const BookDetails = () => {
               )}
             </div>
 
-            {/* Outros controles de propriedade do livro */}
             {book.isOwner && (
               <>
                 <button 
@@ -237,7 +213,6 @@ const BookDetails = () => {
         </div>
       </div>
       
-      {/* --- LAYOUT EDITORIAL --- */}
       <div className="editorial-layout">
         
         <div className="cover-wrapper">
@@ -262,7 +237,10 @@ const BookDetails = () => {
               {activeLoan ? (
                 <div className="active-loan-info">
                   <p>📖 Atualmente emprestado para: <strong style={{ color: 'var(--accent-gold)' }}>{activeLoan.borrowerName}</strong></p>
-                  <p>Data do empréstimo: {new Date(activeLoan.loanDate).toLocaleDateString('pt-BR')}</p>
+                  
+                  {/* CORREÇÃO DO FRONTEND APLICADA AQUI */}
+                  <p>Data do empréstimo: {formatDateSafe(activeLoan.loanDate)}</p>
+                  
                   <button onClick={() => handleReturn(activeLoan.id)} className="btn-action" style={{ marginTop: '15px', borderColor: 'var(--accent-gold)', color: 'var(--accent-gold)' }}>
                     <span className="material-symbols-rounded">assignment_return</span>
                     Marcar como Devolvido
@@ -288,7 +266,6 @@ const BookDetails = () => {
             </div>
           )}
 
-          {/* Grade de Informações Gerais */}
           <div className="meta-grid">
             <div className="meta-item">
               <span className="meta-label">Gênero</span>

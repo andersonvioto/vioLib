@@ -100,22 +100,39 @@ const BookDetails = () => {
    * @param {'ABNT' | 'APA' | 'Vancouver' | 'Harvard'} format
    */
   const getCitationText = (format) => {
-    const author = book.Authors?.length > 0 ? book.Authors[0].name.toUpperCase() : 'AUTOR DESCONHECIDO';
+    // 1. Função auxiliar para inverter o nome (Transforma "Machado de Assis" em "ASSIS, Machado de")
+    const formatAuthorABNT = (fullName) => {
+      if (!fullName) return 'AUTOR DESCONHECIDO';
+      const parts = fullName.trim().split(' ');
+      if (parts.length <= 1) return fullName.toUpperCase();
+      
+      const lastName = parts[parts.length - 1]; // Pega o último nome
+      const firstNames = parts.slice(0, -1).join(' '); // Pega todo o resto
+      return `${lastName.toUpperCase()}, ${firstNames}`;
+    };
+
+    const authorFull = book.Authors?.length > 0 ? book.Authors[0].name : '';
     const title = book.title;
     const year = book.releaseYear || '[s.d.]';
     const city = book.publicationLocation || '[S.l.]';
     const pub = book.publisher || '[s.n.]';
-    const ed = book.edition ? `${book.edition} ed. ` : '';
+    const ed = book.edition ? `${book.edition}. ` : ''; // Ajustado para seguir o formato Xed.
 
     switch(format) {
       case 'ABNT': 
-        return `${author}. ${title}. ${ed}${city}: ${pub}, ${year}.`;
+        // Formato: SOBRENOME, Nome. Título. Edição. Local: Editora, Ano.
+        return `${formatAuthorABNT(authorFull)}. ${title}. ${ed}${city}: ${pub}, ${year}.`;
+      
       case 'APA': 
-        return `${author}. (${year}). ${title}. ${pub}.`;
+        // Formato: Sobrenome, N. (Ano). Título. Editora.
+        return `${formatAuthorABNT(authorFull)} (${year}). ${title}. ${pub}.`;
+      
       case 'Vancouver': 
-        return `${author}. ${title}. ${ed}${city}: ${pub}; ${year}.`;
+        return `${authorFull.toUpperCase()}. ${title}. ${ed}${city}: ${pub}; ${year}.`;
+      
       case 'Harvard': 
-        return `${author}, ${year}. ${title}. ${city}: ${pub}.`;
+        return `${authorFull.toUpperCase()}, ${year}. ${title}. ${city}: ${pub}.`;
+      
       default: return '';
     }
   };

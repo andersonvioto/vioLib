@@ -187,8 +187,7 @@ exports.updateBook = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.userId;
-    // ADICIONADO o isbn aqui
-    const { isbn, title, edition, releaseYear, publisher, acquisitionDate, notes } = req.body;
+    const { isbn, title, edition, releaseYear, publicationLocation, publisher, acquisitionDate, notes } = req.body;
 
     const book = await Book.findOne({ where: { id, UserId: userId } });
     if (!book) return res.status(404).json({ error: 'Livro não encontrado.' });
@@ -207,6 +206,7 @@ exports.updateBook = async (req, res) => {
       title,
       edition: edition || null,
       releaseYear: releaseYear ? parseInt(releaseYear, 10) : null,
+      publicationLocation: publicationLocation || null,
       publisher: publisher || null,
       acquisitionDate: acquisitionDate || null,
       notes: notes || null,

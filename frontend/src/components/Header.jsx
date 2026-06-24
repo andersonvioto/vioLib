@@ -16,15 +16,42 @@ const Header = () => {
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleShare = async () => {
-    const guestEmail = window.prompt("Digite o e-mail do amigo que poderá ver sua biblioteca:");
-    if (!guestEmail) return;
+  // --- ESTADOS DO MODAL DE COMPARTILHAMENTO ---
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [guestEmail, setGuestEmail] = useState('');
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareMsg, setShareMsg] = useState({ type: '', text: '' });
+
+  // --- HANDLER: ABRIR MODAL ---
+  const openShareModal = () => {
+    setShareMsg({ type: '', text: '' });
+    setGuestEmail('');
+    setShowShareModal(true);
+    setIsMenuOpen(false); // Fecha o menu mobile se estiver aberto
+  };
+
+  // --- HANDLER: ENVIAR CONVITE ---
+  const handleShareSubmit = async (e) => {
+    e.preventDefault();
+    if (!guestEmail.trim()) return;
+
+    setIsSharing(true);
+    setShareMsg({ type: '', text: '' });
     
     try {
       const response = await api.post('/access/share', { guestEmail });
-      alert(response.data.message);
+      setShareMsg({ type: 'success', text: response.data.message });
+      setGuestEmail(''); // Limpa o campo após o sucesso
+      
+      // Fecha o modal automaticamente após 2 segundos em caso de sucesso
+      setTimeout(() => setShowShareModal(false), 2000);
     } catch (error) {
-      alert('Erro: ' + (error.response?.data?.error || 'Não foi possível compartilhar.'));
+      setShareMsg({ 
+        type: 'error', 
+        text: error.response?.data?.error || 'Não foi possível compartilhar a biblioteca.' 
+      });
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -39,80 +66,165 @@ const Header = () => {
   };
 
   return (
-    <header className="dash-header">
-      <div className="brand-container" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        <img src={miniLogo} alt="vioLib" className="brand-logo" />
-        
-        {/* Seletor de Bibliotecas Compartilhadas */}
-        <div className="library-switcher-wrapper">
-          <select 
-            className="form-select" 
-            style={{ 
-              backgroundColor: 'var(--bg-input)', 
-              color: 'var(--accent-gold)', 
-              fontWeight: 'bold', 
-              border: '1px solid var(--accent-gold)', 
-              borderRadius: '8px',
-              padding: '10px 16px', // Aumentado para dar mais volume
-              fontSize: '1rem',     // Fonte maior para leitura confortável
-              minWidth: '220px',    // Impede que o seletor fique espremido
-              cursor: 'pointer'
-            }}
-            value={currentLibrary ? currentLibrary.ownerId : "mine"}
-            onChange={handleLibraryChange}
-          >
-            <option value="mine">Minha Biblioteca</option>
-            
-            {sharedLibraries.length > 0 && (
-              <optgroup label="Compartilhadas Comigo">
-                {sharedLibraries.map(lib => {
-                  // Fallback dinâmico: tenta extrair o nome independente do formato do backend (flat ou aninhado)
-                  const ownerName = lib.ownerName || lib.Owner?.name || lib.User?.name || 'Convidado';
-                  
-                  return (
-                    <option key={lib.ownerId} value={lib.ownerId}>
-                      Biblioteca de {ownerName}
-                    </option>
-                  );
-                })}
-              </optgroup>
-            )}
-          </select>
-        </div>
-      </div>
-      
-      <div className="user-actions-container">
-        <button className="mobile-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-          <span className="material-symbols-rounded">{isMenuOpen ? 'close' : 'more_vert'}</span>
-        </button>
-
-        <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
+    <>
+      <header className="dash-header">
+        <div className="brand-container" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <img src={miniLogo} alt="vioLib" className="brand-logo" />
           
-          {/* Ações Visíveis Apenas na Própria Biblioteca */}
-          {!currentLibrary && (
-            <>
-              <button onClick={() => { navigate('/configuracoes'); setIsMenuOpen(false); }} className="btn-action">
-                <span className="material-symbols-rounded">settings</span> 
-                <span className="action-label">Ajustes</span>
-              </button>
-              <button onClick={() => { handleShare(); setIsMenuOpen(false); }} className="btn-action">
-                <span className="material-symbols-rounded">group_add</span> 
-                <span className="action-label">Convidar</span>
-              </button>
-              <button onClick={() => { navigate('/novo-livro'); setIsMenuOpen(false); }} className="btn-action btn-primary">
-                <span className="material-symbols-rounded">library_add</span> 
-                <span className="action-label">Novo</span>
-              </button>
-            </>
-          )}
-
-          <button onClick={() => { logout(); setIsMenuOpen(false); }} className="btn-action btn-logout">
-            <span className="material-symbols-rounded">logout</span> 
-            <span className="action-label">Sair</span>
-          </button>
+          {/* Seletor de Bibliotecas Compartilhadas */}
+          <div className="library-switcher-wrapper">
+            <select 
+              className="form-select" 
+              style={{ 
+                backgroundColor: 'var(--bg-input)', 
+                color: 'var(--accent-gold)', 
+                fontWeight: 'bold', 
+                border: '1px solid var(--accent-gold)', 
+                borderRadius: '8px',
+                padding: '10px 16px',
+                fontSize: '1rem',
+                minWidth: '220px',
+                cursor: 'pointer'
+              }}
+              value={currentLibrary ? currentLibrary.ownerId : "mine"}
+              onChange={handleLibraryChange}
+            >
+              <option value="mine">Minha Biblioteca</option>
+              
+              {sharedLibraries.length > 0 && (
+                <optgroup label="Compartilhadas Comigo">
+                  {sharedLibraries.map(lib => {
+                    // Fallback dinâmico: tenta extrair o nome independente do formato do backend
+                    const ownerName = lib.ownerName || lib.Owner?.name || lib.User?.name || 'Convidado';
+                    
+                    return (
+                      <option key={lib.ownerId} value={lib.ownerId}>
+                        Biblioteca de {ownerName}
+                      </option>
+                    );
+                  })}
+                </optgroup>
+              )}
+            </select>
+          </div>
         </div>
-      </div>
-    </header>
+        
+        <div className="user-actions-container">
+          <button className="mobile-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <span className="material-symbols-rounded">{isMenuOpen ? 'close' : 'more_vert'}</span>
+          </button>
+
+          <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
+            
+            {/* Ações Visíveis Apenas na Própria Biblioteca */}
+            {!currentLibrary && (
+              <>
+                <button onClick={() => { navigate('/configuracoes'); setIsMenuOpen(false); }} className="btn-action">
+                  <span className="material-symbols-rounded">settings</span> 
+                  <span className="action-label">Ajustes</span>
+                </button>
+                
+                <button onClick={openShareModal} className="btn-action">
+                  <span className="material-symbols-rounded">group_add</span> 
+                  <span className="action-label">Convidar</span>
+                </button>
+                
+                <button onClick={() => { navigate('/novo-livro'); setIsMenuOpen(false); }} className="btn-action btn-primary">
+                  <span className="material-symbols-rounded">library_add</span> 
+                  <span className="action-label">Novo</span>
+                </button>
+              </>
+            )}
+
+            <button onClick={() => { logout(); setIsMenuOpen(false); }} className="btn-action btn-logout">
+              <span className="material-symbols-rounded">logout</span> 
+              <span className="action-label">Sair</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* --- MODAL DE CONVITE (OVERLAY) --- */}
+      {showShareModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(3px)',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          zIndex: 9999
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-card, #2c2c2c)',
+            padding: '30px',
+            borderRadius: '12px',
+            border: '1px solid var(--accent-gold)',
+            width: '90%', maxWidth: '420px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+          }}>
+            <h2 style={{ color: 'var(--accent-gold)', marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="material-symbols-rounded">group_add</span>
+              Compartilhar Biblioteca
+            </h2>
+            <p style={{ color: 'var(--text-secondary, #aaa)', fontSize: '0.95rem', marginBottom: '20px' }}>
+              Digite o e-mail do usuário que receberá acesso de leitura à sua biblioteca.
+            </p>
+
+            {/* Mensagens de Feedback Inline */}
+            {shareMsg.text && (
+              <div style={{
+                padding: '10px', borderRadius: '6px', marginBottom: '20px', fontSize: '0.9rem',
+                backgroundColor: shareMsg.type === 'error' ? 'rgba(255, 77, 77, 0.1)' : 'rgba(77, 255, 77, 0.1)',
+                color: shareMsg.type === 'error' ? '#ff4d4d' : '#4dff4d',
+                border: `1px solid ${shareMsg.type === 'error' ? '#ff4d4d' : '#4dff4d'}`
+              }}>
+                {shareMsg.text}
+              </div>
+            )}
+
+            <form onSubmit={handleShareSubmit}>
+              <input 
+                autoFocus
+                type="email" 
+                required
+                placeholder="exemplo@email.com"
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                style={{
+                  width: '100%', padding: '12px 15px', borderRadius: '6px',
+                  backgroundColor: 'var(--bg-input, #1a1a1a)', color: '#fff',
+                  border: '1px solid var(--border-color, #444)', fontSize: '1rem',
+                  marginBottom: '20px', boxSizing: 'border-box'
+                }}
+              />
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setShowShareModal(false)}
+                  style={{
+                    padding: '10px 20px', borderRadius: '6px', cursor: 'pointer',
+                    backgroundColor: 'transparent', color: '#aaa', border: '1px solid #aaa',
+                    fontWeight: 'bold', transition: '0.2s'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSharing}
+                  style={{
+                    padding: '10px 20px', borderRadius: '6px', cursor: isSharing ? 'not-allowed' : 'pointer',
+                    backgroundColor: 'var(--accent-gold)', color: '#000', border: 'none',
+                    fontWeight: 'bold', opacity: isSharing ? 0.7 : 1, transition: '0.2s'
+                  }}
+                >
+                  {isSharing ? 'Enviando...' : 'Enviar Convite'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

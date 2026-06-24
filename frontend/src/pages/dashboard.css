@@ -249,7 +249,6 @@
    ========================================================================== */
 .shelf-wrapper {
   position: relative;
-  /* Removido o flex e align-items para usarmos posicionamento absoluto preciso */
   margin-bottom: 20px;
 }
 
@@ -265,7 +264,7 @@
   z-index: 10;
   width: 30px;
   height: 44px; /* Mais alto, estilo controle de carrossel */
-  border-radius: 6px; /* Remove o 50% (círculo) e usa cantos modernos */
+  border-radius: 6px; 
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
@@ -280,7 +279,6 @@
 .shelf-nav-btn:hover {
   color: var(--accent-gold);
   border-color: var(--accent-gold);
-  /* O hover mantém o translateY(-50%) para o botão não "pular" no eixo Y */
   transform: translateY(-50%) scale(1.05); 
 }
 
@@ -537,28 +535,58 @@
 
 /* TABLETS E TELAS MÉDIAS (até 900px) */
 @media (max-width: 900px) {
-  .dashboard-container { padding: 20px; }
-  .book-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 20px; }
-  .book-cover { height: 240px; }
-  .filter-drawer-container { left: 20px; right: 20px; top: 115px; }
-  .filter-drawer-grid { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-container { 
+    padding: 20px; 
+  }
+  
+  .book-grid { 
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); 
+    gap: 20px; 
+  }
+  
+  .book-cover { 
+    height: 240px; 
+  }
+  
+  .filter-drawer-container { 
+    left: 20px; 
+    right: 20px; 
+    top: 115px; 
+  }
+  
+  .filter-drawer-grid { 
+    grid-template-columns: repeat(2, 1fr); 
+  }
   
   /* Oculta as setas de navegação lateral, priorizando o toque no ecrã (swipe) */
-  .shelf-nav-btn { display: none; }
-  .virtual-shelves-container { padding-left: 0; padding-right: 0; }
+  .shelf-nav-btn { 
+    display: none; 
+  }
+  
+  .virtual-shelves-container { 
+    padding-left: 0; 
+    padding-right: 0; 
+  }
 }
 
 /* SMARTPHONES (até 600px) - Arquitetura Bottom Sheet e Dropdown */
 @media (max-width: 600px) {
-  .dashboard-container { padding: 15px; }
+  .dashboard-container { 
+    padding: 15px; 
+  }
 
   .dash-header {
     margin: -15px -15px 20px -15px;
     padding: 15px 20px 15px 15px;
   }
 
-  .brand-logo { height: 35px; }
-  .brand-title { font-size: 1.8em; }
+  .brand-logo { 
+    height: 35px; 
+  }
+  
+  .brand-title { 
+    font-size: 1.8em; 
+  }
 
   .mobile-menu-toggle {
     display: flex;
@@ -571,7 +599,9 @@
     padding: 5px;
   }
 
-  .mobile-menu-toggle .material-symbols-rounded { font-size: 2.2em !important; }
+  .mobile-menu-toggle .material-symbols-rounded { 
+    font-size: 2.2em !important; 
+  }
 
   /* Converte o menu de ações do header em um Dropdown suspenso */
   .header-actions {
@@ -594,14 +624,47 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .header-actions.open { opacity: 1; visibility: visible; transform: translateY(0); }
-  .header-actions .btn-action { width: 100%; justify-content: flex-start; padding: 12px 15px; background: transparent; border: none !important; box-shadow: none !important; }
-  .header-actions .btn-action:hover { background-color: rgba(255, 255, 255, 0.05) !important; transform: none; }
+  .header-actions.open { 
+    opacity: 1; 
+    visibility: visible; 
+    transform: translateY(0); 
+  }
+  
+  .header-actions .btn-action { 
+    width: 100%; 
+    justify-content: flex-start; 
+    padding: 12px 15px; 
+    background: transparent; 
+    border: none !important; 
+    box-shadow: none !important; 
+  }
+  
+  .header-actions .btn-action:hover { 
+    background-color: rgba(255, 255, 255, 0.05) !important; 
+    transform: none; 
+  }
 
-  .book-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
-  .book-cover { height: 190px; }
-  .book-title { font-size: 0.95em; }
-  .book-author { font-size: 0.8em; }
+  /* === MUDANÇA: Ajuste de Contraste para o Botão Primário no Mobile === */
+  .header-actions .btn-primary {
+    color: var(--accent-gold) !important;
+  }
+
+  .book-grid { 
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+    gap: 12px; 
+  }
+  
+  .book-cover { 
+    height: 190px; 
+  }
+  
+  .book-title { 
+    font-size: 0.95em; 
+  }
+  
+  .book-author { 
+    font-size: 0.8em; 
+  }
 
   /* Empilha a barra de busca e o botão de filtros */
   .search-filter-bar {
@@ -609,8 +672,16 @@
     align-items: stretch;
     gap: 10px;
   }
-  .search-wrapper { width: 100%; }
-  .btn-filter-trigger { width: 100%; justify-content: center; padding: 14px; }
+  
+  .search-wrapper { 
+    width: 100%; 
+  }
+  
+  .btn-filter-trigger { 
+    width: 100%; 
+    justify-content: center; 
+    padding: 14px; 
+  }
 
   /* MÁGICA MOBILE: Transforma a Gaveta de Filtros Flutuante em uma Bottom Sheet Premium */
   .filter-drawer-backdrop {

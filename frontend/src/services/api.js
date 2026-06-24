@@ -1,12 +1,13 @@
 import axios from 'axios';
 
-// Configura a URL base do nosso back-end
 const api = axios.create({
-  //baseURL: 'http://localhost:3000/api', 
   baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api'
 });
 
-// Interceptador: injeta o token de segurança em TODAS as requisições automaticamente
+/**
+ * Interceptador de Requisição:
+ * Injeta automaticamente o token de autorização, se existir, em todas as chamadas à API.
+ */
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -14,5 +15,21 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+/**
+ * Interceptador de Resposta:
+ * Monitora retornos da API. Se receber 401 (Não Autorizado), limpa os dados locais e força logout.
+ */
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('rememberMe');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

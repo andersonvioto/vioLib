@@ -16,11 +16,7 @@ const Auth = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [rememberMe, setRememberMe] = useState(false);
-
-  // Estado para controlar o carregamento e bloqueio da tela
   const [isLoading, setIsLoading] = useState(false);
-
-  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,19 +29,18 @@ const Auth = () => {
     setMessage({ type: '', text: '' });
     setShowPassword(false);
     setShowConfirmPassword(false);
-    setRememberMe(false); // <-- Limpa o checkbox ao trocar de aba
+    setRememberMe(false);
     setIsLoading(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLoading) return; // Prevenção extra contra duplo clique
+    if (isLoading) return;
 
     setMessage({ type: '', text: '' });
-    setIsLoading(true); // Bloqueia a tela e exibe o spinner
+    setIsLoading(true);
 
     try {
-      // REGISTRO
       if (view === 'register') {
         if (formData.password !== formData.confirmPassword) {
           setIsLoading(false);
@@ -64,12 +59,10 @@ const Auth = () => {
         
         setMessage({ type: 'success', text: response.data.message });
         setTimeout(() => {
-          setIsLoading(false); // Libera a tela após o delay
+          setIsLoading(false);
           switchView('login');
         }, 4000);
       } 
-      
-      // LOGIN
       else if (view === 'login') {
         const response = await api.post('/auth/login', {
           email: formData.email,
@@ -78,23 +71,27 @@ const Auth = () => {
         });
         
         localStorage.setItem('token', response.data.token);
-        // Não precisamos setar isLoading(false) aqui porque a página será redirecionada
+        
+        // Grava a preferência de sessão para o AuthContext ler depois
+        if (rememberMe) {
+          localStorage.setItem('rememberMe', 'true');
+        } else {
+          localStorage.removeItem('rememberMe');
+        }
+
         navigate('/biblioteca');
       } 
-      
-      // ESQUECI A SENHA
       else if (view === 'forgot') {
         const response = await api.post('/auth/forgot-password', { email: formData.email });
         setMessage({ type: 'success', text: response.data.message });
         setIsLoading(false);
       }
-
     } catch (error) {
       setMessage({ 
         type: 'error', 
         text: error.response?.data?.error || 'Ocorreu um erro inesperado. Tente novamente.' 
       });
-      setIsLoading(false); // Libera a tela para o usuário tentar novamente
+      setIsLoading(false);
     }
   };
 

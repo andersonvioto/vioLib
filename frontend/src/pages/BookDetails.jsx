@@ -3,17 +3,20 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import './book-details.css';
 
-// 1. CAPA GENÉRICA (SVG) - Caso o livro não tenha imagem de capa
+/**
+ * Fallback em formato SVG utilizado quando o livro não possui uma imagem de capa definida.
+ */
 const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"><rect width="200" height="300" fill="%232c2c2c" stroke="%23D4AF37" stroke-width="2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="28" fill="%23D4AF37">vioLib</text><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23888888">Sem Capa</text></svg>`;
 
-// 2. FUNÇÃO AUXILIAR PRONTA PARA PRODUÇÃO
+/**
+ * Resolve a URL final da imagem de capa, tratando links externos e locais.
+ * @param {string} filename - Nome do arquivo ou URL da imagem.
+ * @returns {string} URL completa da imagem.
+ */
 const getCoverUrl = (filename) => {
   if (!filename) return DEFAULT_COVER;
-  
-  // SE JÁ FOR UM LINK DA NUVEM (CLOUDINARY), RETORNA ELE DIRETO!
   if (filename.startsWith('http')) return filename; 
   
-  // Se for uma imagem antiga que ainda está no  disco local, faz o tratamento antigo:
   const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api';
   const fileBaseUrl = apiUrl.replace('/api', '/files');
   return `${fileBaseUrl}/${filename}`;
@@ -22,15 +25,19 @@ const getCoverUrl = (filename) => {
 const BookDetails = () => {
   const { id } = useParams(); 
   const navigate = useNavigate();
-  const [book, setBook] = useState(null);
   
+  // Estados da aplicação
+  const [book, setBook] = useState(null);
   const [borrowerName, setBorrowerName] = useState('');
   const [loanDate, setLoanDate] = useState('');
-
-  // NOVO: Estado para controlar o menu de opções no mobile
+  
+  // Estados de controle dos menus de UI
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showCitationMenu, setShowCitationMenu] = useState(false);
 
-  // Busca os detalhes da obra na API
+  /**
+   * Busca os dados detalhados da obra na API.
+   */
   const fetchBookDetails = async () => {
     try {
       const response = await api.get(`/books/${id}`);
@@ -46,7 +53,9 @@ const BookDetails = () => {
     fetchBookDetails();
   }, [id, navigate]);
 
-  // Função para excluir a obra
+  /**
+   * Remove o livro da base de dados após confirmação.
+   */
   const handleDelete = async () => {
     if (window.confirm(`Tem certeza que deseja excluir "${book.title}" da sua biblioteca?`)) {
       try {
@@ -58,7 +67,9 @@ const BookDetails = () => {
     }
   };
 
-  // Função para registrar um empréstimo
+  /**
+   * Registra um novo empréstimo para a obra.
+   */
   const handleLoanSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -71,7 +82,9 @@ const BookDetails = () => {
     }
   };
 
-  // Função para registrar a devolução
+  /**
+   * Finaliza um empréstimo ativo definindo a data de devolução como hoje.
+   */
   const handleReturn = async (loanId) => {
     try {
       const today = new Date().toISOString().split('T')[0];
@@ -82,6 +95,43 @@ const BookDetails = () => {
     }
   };
 
+  /**
+   * Formata a string de citação com base nas normas internacionais.
+   * @param {'ABNT' | 'APA' | 'Vancouver' | 'Harvard'} format
+   */
+  const getCitationText = (format) => {
+    const author = book.Authors?.length > 0 ? book.Authors[0].name.toUpperCase() : 'AUTOR DESCONHECIDO';
+    const title = book.title;
+    const year = book.releaseYear || '[s.d.]';
+    const city = book.publicationLocation || '[S.l.]';
+    const pub = book.publisher || '[s.n.]';
+    const ed = book.edition ? `${book.edition} ed. ` : '';
+
+    switch(format) {
+      case 'ABNT': 
+        return `${author}. ${title}. ${ed}${city}: ${pub}, ${year}.`;
+      case 'APA': 
+        return `${author}. (${year}). ${title}. ${pub}.`;
+      case 'Vancouver': 
+        return `${author}. ${title}. ${ed}${city}: ${pub}; ${year}.`;
+      case 'Harvard': 
+        return `${author}, ${year}. ${title}. ${city}: ${pub}.`;
+      default: return '';
+    }
+  };
+
+  /**
+   * Copia o texto formatado da citação e fecha o menu de controle.
+   */
+  const handleCopyCitation = (format) => {
+    const text = getCitationText(format);
+    navigator.clipboard.writeText(text);
+    alert(`Citação no formato ${format} copiada com sucesso!`);
+    setShowCitationMenu(false); 
+    setIsMenuOpen(false); // Fecha também o menu mobile principal
+  };
+
+  // Trava de carregamento inicial
   if (!book) return <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>Carregando detalhes da obra...</div>;
 
   const activeLoan = book.Loans?.find(loan => !loan.returnDate);
@@ -89,18 +139,17 @@ const BookDetails = () => {
   return (
     <div className="details-container">
       
-      {/* CABEÇALHO COM AÇÕES */}
+      {/* --- CABEÇALHO DE CONTROLES --- */}
       <div className="details-header">
-        <button onClick={() => navigate(-1)} className="btn-action btn-back-clean">
+        <button onClick={() => navigate('/biblioteca')} className="btn-action btn-back-clean">
           <span className="material-symbols-rounded">arrow_back</span>
           Voltar
         </button>
         
-        {/* SÓ MOSTRA OS BOTÕES DE EDIÇÃO/EXCLUSÃO SE FOR O DONO */}
-        {book.isOwner && (
-          <div className="owner-actions-container">
-            
-            {/* Botão de 3 pontinhos para disparar o menu no Mobile */}
+        <div className="owner-actions-container">
+          
+          {/* Gatilho de Opções (Mobile de 3 Pontinhos) */}
+          {book.isOwner && (
             <button 
               className="mobile-menu-toggle" 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -110,40 +159,75 @@ const BookDetails = () => {
                 {isMenuOpen ? 'close' : 'more_vert'}
               </span>
             </button>
+          )}
 
-            {/* Menu de Ações (Fixo no Desktop, Dropdown no Mobile) */}
-            <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
+          {/* Grupo de Ações do Usuário (Hospeda o Dropdown de Citação) */}
+          <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
+            
+            {/* NOVO ACESSÓRIO: GERADOR DE CITAÇÃO INTEGRADO AO MENU */}
+            <div className="citation-container-dropdown">
               <button 
-                onClick={() => navigate(`/editar-livro/${id}`)} 
-                className="btn-action edit-btn"
+                type="button" 
+                className="btn-action citation-trigger-btn" 
+                onClick={() => setShowCitationMenu(!showCitationMenu)}
               >
-                <span className="material-symbols-rounded">edit</span>
-                Editar Obra
+                <span className="material-symbols-rounded">format_quote</span>
+                <span className="action-label">Gerar Citação</span>
+                <span className="material-symbols-rounded arrow-icon">
+                  {showCitationMenu ? 'expand_less' : 'expand_more'}
+                </span>
               </button>
-              
-              <button 
-                onClick={handleDelete} 
-                className="btn-action delete-btn"
-              >
-                <span className="material-symbols-rounded">delete</span>
-                Excluir
-              </button>
+
+              {showCitationMenu && (
+                <div className="citation-dropdown-menu">
+                  <button onClick={() => handleCopyCitation('ABNT')} className="citation-menu-item">
+                    <span className="badge-format">ABNT</span> Copiar referência
+                  </button>
+                  <button onClick={() => handleCopyCitation('APA')} className="citation-menu-item">
+                    <span className="badge-format">APA</span> Copiar referência
+                  </button>
+                  <button onClick={() => handleCopyCitation('Vancouver')} className="citation-menu-item">
+                    <span className="badge-format">Vancouver</span> Copiar referência
+                  </button>
+                  <button onClick={() => handleCopyCitation('Harvard')} className="citation-menu-item">
+                    <span className="badge-format">Harvard</span> Copiar referência
+                  </button>
+                </div>
+              )}
             </div>
+
+            {/* Outros controles de propriedade do livro */}
+            {book.isOwner && (
+              <>
+                <button 
+                  onClick={() => navigate(`/editar-livro/${id}`)} 
+                  className="btn-action edit-btn"
+                >
+                  <span className="material-symbols-rounded">edit</span>
+                  Editar Obra
+                </button>
+                
+                <button 
+                  onClick={handleDelete} 
+                  className="btn-action delete-btn"
+                >
+                  <span className="material-symbols-rounded">delete</span>
+                  Excluir
+                </button>
+              </>
+            )}
           </div>
-        )}
+        </div>
       </div>
       
-      {/* LAYOUT EDITORIAL (CAPA + INFORMAÇÕES) */}
+      {/* --- LAYOUT EDITORIAL --- */}
       <div className="editorial-layout">
         
-        {/* COLUNA ESQUERDA: CAPA */}
         <div className="cover-wrapper">
           <img src={getCoverUrl(book.coverImage)} alt={book.title} className="details-cover" />
         </div>
 
-        {/* COLUNA DIREITA: INFORMAÇÕES */}
         <div className="details-content">
-          
           <div>
             <h1 className="book-main-title">{book.title}</h1>
             <p className="book-main-authors">
@@ -151,7 +235,6 @@ const BookDetails = () => {
             </p>
           </div>
 
-          {/* SÓ MOSTRA O PAINEL DE EMPRÉSTIMOS SE FOR O DONO */}
           {book.isOwner && (
             <div className="loan-module">
               <h3 className="loan-title">
@@ -188,7 +271,7 @@ const BookDetails = () => {
             </div>
           )}
 
-          {/* METADADOS EDITORIAIS */}
+          {/* Grade de Informações Gerais */}
           <div className="meta-grid">
             <div className="meta-item">
               <span className="meta-label">Gênero</span>
@@ -197,6 +280,14 @@ const BookDetails = () => {
             <div className="meta-item">
               <span className="meta-label">Subgêneros</span>
               <span className="meta-value">{book.Subgenres?.map(s => s.name).join(', ') || '—'}</span>
+            </div>
+            <div className="meta-item">
+              <span className="meta-label">ISBN</span>
+              <span className="meta-value">{book.isbn || '—'}</span>
+            </div>
+            <div className="meta-item">
+              <span className="meta-label">Local</span>
+              <span className="meta-value">{book.publicationLocation || '—'}</span>
             </div>
             <div className="meta-item">
               <span className="meta-label">Ano</span>
@@ -222,7 +313,6 @@ const BookDetails = () => {
             </div>
           </div>
 
-          {/* NOTAS PESSOAIS */}
           {book.notes && (
             <div className="notes-module">
               <h3 className="loan-title" style={{ fontSize: '1em', color: 'var(--text-primary)' }}>

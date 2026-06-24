@@ -1,24 +1,30 @@
-/* Container Base */
+/* ==========================================================================
+   DASHBOARD CSS - vioLib
+   Arquivo principal de estilos do painel de controle e listagem de livros.
+   Arquitetura: Mobile-First adaptativo com foco em performance e UX.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. CONTAINER BASE E APP BAR FIXO
+   ========================================================================== */
 .dashboard-container {
   padding: 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
+/* App Bar fixa no topo. Usa margens negativas para criar o efeito "bleed"
+   que cobre o padding do container ao fazer scroll. */
 .dash-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Trava para evitar quebra de layout em telas estreitas */
   gap: 15px;
-
-  /* EFEITO CABEÇALHO FIXO (APP BAR) */
   position: sticky;
   top: 0;
   z-index: 1000;
   background-color: var(--bg-main);
-  
-  /* Truque para o fundo cobrir o padding ao rolar */
   margin: -40px -40px 30px -40px;
   padding: 40px 40px 20px 40px;
   border-bottom: 1px solid var(--border-color);
@@ -40,7 +46,6 @@
   height: 45px;
   width: auto;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-  transition: var(--transition-smooth);
 }
 
 .brand-title {
@@ -49,10 +54,9 @@
   color: var(--accent-gold);
   margin: 0;
   letter-spacing: 1px;
-  transition: var(--transition-smooth);
 }
 
-/* Oculta o Hamburger no Computador */
+/* Oculto no Desktop, ativado via media query no Mobile */
 .mobile-menu-toggle {
   display: none;
 }
@@ -63,7 +67,9 @@
   flex-wrap: wrap;
 }
 
-/* --- BOTÕES PREMIUM --- */
+/* ==========================================================================
+   2. COMPONENTES GLOBAIS DE INTERFACE (BOTÕES)
+   ========================================================================== */
 .btn-action {
   display: flex;
   align-items: center;
@@ -95,7 +101,6 @@
 .btn-primary:hover {
   background: var(--accent-gold-hover);
   box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
-  transform: translateY(-2px);
 }
 
 .btn-logout {
@@ -107,67 +112,19 @@
   background: rgba(255, 77, 77, 0.1);
 }
 
-/* --- CARTÕES DE ESTATÍSTICAS --- */
-.stats-container {
+/* ==========================================================================
+   3. BARRA DE PESQUISA E GAVETA DE FILTROS AVANÇADOS
+   ========================================================================== */
+.search-filter-bar {
   display: flex;
   gap: 15px;
-  margin-bottom: 30px;
-  flex-wrap: wrap;
-}
-
-.stat-widget {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  padding: 8px 16px;
-  border-radius: 50px; 
-  display: flex;
+  margin-bottom: 35px;
   align-items: center;
-  gap: 8px;
-  transition: var(--transition-smooth);
-}
-
-.stat-widget:hover {
-  border-color: var(--accent-gold);
-  background: rgba(212, 175, 55, 0.05);
-}
-
-.stat-icon {
-  font-size: 1.2em !important;
-  color: var(--accent-gold);
-}
-
-.stat-info {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-}
-
-.stat-number {
-  font-size: 1.1em;
-  font-family: var(--font-sans);
-  font-weight: bold;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.stat-label {
-  color: var(--text-secondary);
-  font-size: 0.85em;
-  margin: 0;
-}
-
-/* --- BARRA DE PESQUISA E FILTROS --- */
-.filter-section {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
-  align-items: center;
+  position: relative;
 }
 
 .search-wrapper {
   flex: 1;
-  min-width: 280px;
   position: relative;
   display: flex;
   align-items: center;
@@ -188,8 +145,8 @@
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 1em;
-  transition: var(--transition-smooth);
   outline: none;
+  transition: var(--transition-smooth);
 }
 
 .search-input:focus {
@@ -197,7 +154,222 @@
   box-shadow: 0 0 0 3px var(--accent-gold-glow);
 }
 
-/* --- SEPARADORES E GRADE DE LIVROS --- */
+.btn-filter-trigger.active {
+  background-color: var(--accent-gold);
+  color: #000;
+}
+
+/* Card flutuante da Gaveta de Filtros (Comportamento Desktop) */
+.filter-drawer-container {
+  position: absolute;
+  top: 135px; /* Posição calculada sob a barra de pesquisa */
+  left: 40px;
+  right: 40px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 25px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+  z-index: 990;
+  animation: filterFadeDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filter-drawer-header h3 {
+  margin: 0;
+  color: var(--accent-gold);
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.close-drawer-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.close-drawer-btn:hover { color: var(--text-primary); }
+
+.filter-drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Divisão em 4 colunas no Desktop */
+  gap: 20px;
+}
+
+.filter-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-field-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.toggles-row {
+  display: flex;
+  flex-direction: row !important;
+  gap: 30px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+}
+
+.checkbox-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.95em;
+}
+
+.checkbox-toggle-label input {
+  accent-color: var(--accent-gold);
+  width: 16px;
+  height: 16px;
+}
+
+@keyframes filterFadeDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   4. PRATELEIRAS VIRTUAIS (Navegação Horizontal por Gêneros e Subgêneros)
+   ========================================================================== */
+.shelf-wrapper {
+  position: relative;
+  /* Removido o flex e align-items para usarmos posicionamento absoluto preciso */
+  margin-bottom: 20px;
+}
+
+.shelf-wrapper.subgenre-wrapper {
+  margin-top: -20px; /* Puxa os subgêneros para mais perto da prateleira pai */
+}
+
+/* Botões de navegação lateral (Setas) */
+.shelf-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%); /* Garante o alinhamento vertical matematicamente perfeito */
+  z-index: 10;
+  width: 30px;
+  height: 44px; /* Mais alto, estilo controle de carrossel */
+  border-radius: 6px; /* Remove o 50% (círculo) e usa cantos modernos */
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  transition: var(--transition-smooth);
+}
+
+.shelf-nav-btn:hover {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+  /* O hover mantém o translateY(-50%) para o botão não "pular" no eixo Y */
+  transform: translateY(-50%) scale(1.05); 
+}
+
+.shelf-nav-btn.left { left: -10px; }
+.shelf-nav-btn.right { right: -10px; }
+
+/* Setas menores para a prateleira de subgêneros */
+.shelf-nav-btn.sub-nav {
+  height: 36px;
+  width: 26px;
+  background: var(--bg-main);
+}
+
+/* Contêiner da lista horizontal rolante */
+.virtual-shelves-container {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 10px 25px; 
+  margin: 0; 
+  width: 100%;
+  scrollbar-width: none; 
+  -webkit-overflow-scrolling: touch; 
+  cursor: grab; 
+  scroll-behavior: smooth; 
+}
+
+.virtual-shelves-container.grabbing {
+  cursor: grabbing; 
+  scroll-behavior: auto; /* Desativa a animação durante o arrasto manual */
+}
+
+.virtual-shelves-container::-webkit-scrollbar {
+  display: none; 
+}
+
+.virtual-shelves-container.subgenre-shelves {
+  padding-top: 5px; /* Ajuste milimétrico para os subgêneros */
+}
+
+/* Estilo das "Pills" (Pílulas de Categoria) */
+.shelf-pill {
+  padding: 10px 22px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 30px; 
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.95em;
+  font-weight: 500;
+  white-space: nowrap; 
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  cursor: inherit; 
+}
+
+.shelf-pill:hover {
+  border-color: var(--accent-gold);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.shelf-pill.active {
+  background: var(--accent-gold);
+  color: #000;
+  border-color: var(--accent-gold);
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.sub-pill {
+  padding: 6px 16px;
+  font-size: 0.85em;
+  border-radius: 20px;
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.05); 
+  box-shadow: none;
+}
+
+.sub-pill.active {
+  background: rgba(212, 175, 55, 0.2);
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   5. SEÇÃO PRINCIPAL DA BIBLIOTECA (Grid e Cartões de Livro)
+   ========================================================================== */
 .library-section {
   margin-bottom: 50px;
 }
@@ -216,14 +388,33 @@
   color: var(--accent-gold);
   margin: 0;
   font-weight: 600;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
-.section-header.shared {
-  border-bottom-color: var(--border-color);
+.title-count {
+  font-size: 0.6em;
+  color: var(--text-muted);
+  font-weight: normal;
 }
-.section-header.shared .section-title,
-.section-header.shared .material-symbols-rounded {
+
+.book-group-wrapper {
+  margin-bottom: 35px;
+  background-color: rgba(255, 255, 255, 0.02);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 1px dashed rgba(212, 175, 55, 0.15);
+}
+
+.book-group-title {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.1em;
   color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .book-grid {
@@ -255,11 +446,6 @@
   height: 280px;
   object-fit: cover;
   border-bottom: 1px solid var(--border-color);
-  transition: var(--transition-smooth);
-}
-
-.book-card:hover .book-cover {
-  filter: brightness(1.1);
 }
 
 .book-info {
@@ -287,91 +473,93 @@
   margin: 0;
 }
 
-.badge-borrowed {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: var(--accent-gold);
-  color: #000;
-  font-size: 0.75em;
-  font-weight: bold;
-  padding: 6px 12px;
-  border-radius: 20px;
+/* Indicadores de Tags no Cartão */
+.card-tags-container {
   display: flex;
-  align-items: center;
   gap: 5px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
-.badge-borrowed .material-symbols-rounded {
-  font-size: 1.3em !important;
+.card-tag-chip {
+  font-size: 0.7em;
+  background: var(--bg-input);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.card-tag-more {
+  font-size: 0.7em;
+  color: var(--accent-gold);
+  font-weight: bold;
+}
+
+/* Distintivo de Empréstimo */
+.badge-borrowed {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--accent-gold);
+  color: #000;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.badge-borrowed .material-symbols-rounded { 
+  font-size: 1.3em !important; 
+}
+
+/* Controle de Paginação (Load More) */
+.pagination-trigger-zone {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.btn-load-more {
+  padding: 14px 40px;
+  margin: 0 auto;
+}
+
+.empty-message {
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 /* ==========================================================================
-   RESPONSIVIDADE: TABLETS E CELULARES
+   6. RESPONSIVIDADE E ADAPTAÇÃO MOBILE (Media Queries)
    ========================================================================== */
 
-/* TABLET RETRATO E CELULAR GRANDE (até 900px) */
+/* TABLETS E TELAS MÉDIAS (até 900px) */
 @media (max-width: 900px) {
-  .dashboard-container {
-    padding: 20px;
-  }
+  .dashboard-container { padding: 20px; }
+  .book-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 20px; }
+  .book-cover { height: 240px; }
+  .filter-drawer-container { left: 20px; right: 20px; top: 115px; }
+  .filter-drawer-grid { grid-template-columns: repeat(2, 1fr); }
   
-  .book-grid {
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 20px;
-  }
-  
-  .book-cover {
-    height: 240px;
-  }
-
-  /* Transforma a lista de estatísticas em um carrossel deslizante (Swipe) */
-  .stats-container {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 10px;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-  
-  .stats-container::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .stat-widget {
-    flex: 0 0 auto;
-    scroll-snap-align: start;
-  }
+  /* Oculta as setas de navegação lateral, priorizando o toque no ecrã (swipe) */
+  .shelf-nav-btn { display: none; }
+  .virtual-shelves-container { padding-left: 0; padding-right: 0; }
 }
 
-/* CELULAR (até 600px) - MÁGICA DO MENU DROPDOWN */
+/* SMARTPHONES (até 600px) - Arquitetura Bottom Sheet e Dropdown */
 @media (max-width: 600px) {
-  .dashboard-container {
-    padding: 15px;
-  }
+  .dashboard-container { padding: 15px; }
 
   .dash-header {
-    /* MÁGICA: Impede a quebra de linha! A logo e o botão ficarão sempre lado a lado */
-    flex-wrap: nowrap;
-    justify-content: space-between;
-
     margin: -15px -15px 20px -15px;
     padding: 15px 20px 15px 15px;
-    border-bottom: 1px solid var(--border-color);
   }
 
-  /* Redução elegante do logo para evitar espremer o botão em telas muito estreitas */
-  .brand-logo {
-    height: 35px;
-  }
+  .brand-logo { height: 35px; }
+  .brand-title { font-size: 1.8em; }
 
-  .brand-title {
-    font-size: 1.8em;
-  }
-
-  /* Botão Hamburguer Torna-se Visível */
   .mobile-menu-toggle {
     display: flex;
     align-items: center;
@@ -383,12 +571,9 @@
     padding: 5px;
   }
 
-  .mobile-menu-toggle .material-symbols-rounded {
-    font-size: 2.2em !important;
-    margin: 0;
-  }
+  .mobile-menu-toggle .material-symbols-rounded { font-size: 2.2em !important; }
 
-  /* Transforma a barra de ações num Menu Dropdown Elegante */
+  /* Converte o menu de ações do header em um Dropdown suspenso */
   .header-actions {
     position: absolute;
     top: calc(100% + 5px);
@@ -403,64 +588,76 @@
     gap: 5px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     z-index: 1000;
-    
-    /* Animação Inicial Oculta */
     opacity: 0;
     visibility: hidden;
     transform: translateY(-15px);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Revela o Menu Suspenso */
-  .header-actions.open {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
+  .header-actions.open { opacity: 1; visibility: visible; transform: translateY(0); }
+  .header-actions .btn-action { width: 100%; justify-content: flex-start; padding: 12px 15px; background: transparent; border: none !important; box-shadow: none !important; }
+  .header-actions .btn-action:hover { background-color: rgba(255, 255, 255, 0.05) !important; transform: none; }
 
-  /* Ajusta os botões dentro do menu */
-  .header-actions .btn-action {
-    width: 100%;
-    justify-content: flex-start;
-    padding: 12px 15px;
-    background: transparent;
-    border: none !important; 
-    box-shadow: none !important;
-  }
+  .book-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+  .book-cover { height: 190px; }
+  .book-title { font-size: 0.95em; }
+  .book-author { font-size: 0.8em; }
 
-  .header-actions .btn-action:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-    transform: none; 
-  }
-
-  .header-actions .btn-primary {
-    color:var(--accent-gold);
-  }
-
-  /* Ajustes do Grid para Celular (Garantindo 2 capas visíveis) */
-  .book-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 12px;
-  }
-  
-  .book-cover {
-    height: 190px;
-  }
-
-  .book-title {
-    font-size: 0.95em;
-  }
-  
-  .book-author {
-    font-size: 0.8em;
-  }
-  
-  .filter-section {
+  /* Empilha a barra de busca e o botão de filtros */
+  .search-filter-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
   }
-  
-  .search-wrapper {
-    min-width: 100%;
+  .search-wrapper { width: 100%; }
+  .btn-filter-trigger { width: 100%; justify-content: center; padding: 14px; }
+
+  /* MÁGICA MOBILE: Transforma a Gaveta de Filtros Flutuante em uma Bottom Sheet Premium */
+  .filter-drawer-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1200;
+  }
+
+  .filter-drawer-container {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0; /* Ancoragem na base do ecrã */
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0; /* Arredondamento apenas superior */
+    border: none;
+    border-top: 1px solid var(--border-color);
+    padding: 20px;
+    z-index: 1210;
+    animation: bottomSheetSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .filter-drawer-grid {
+    grid-template-columns: 1fr; /* Força 1 coluna no telemóvel */
+    gap: 15px;
+  }
+
+  .toggles-row {
+    flex-direction: column !important;
+    gap: 15px;
+  }
+
+  .form-select {
+    padding: 14px 15px;
+    font-size: 16px; /* Previne o zoom forçado em inputs no Safari/iOS */
+  }
+
+  @keyframes bottomSheetSlideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
   }
 }

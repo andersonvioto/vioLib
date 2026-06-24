@@ -1,10 +1,11 @@
+const { Op } = require('sequelize'); // <-- Adicione isso na primeira linha!
 const { Book, Author, Translator, Genre, Subgenre, Tag, Loan } = require('../models');
 
 exports.createBook = async (req, res) => {
   try {
     const userId = req.userId; 
     // ADICIONADO o isbn aqui
-    const { isbn, title, edition, releaseYear, publisher, acquisitionDate, notes } = req.body;
+    const { isbn, title, edition, releaseYear, publisher, publicationLocation, acquisitionDate, notes } = req.body;
 
     const authors = req.body.authors ? JSON.parse(req.body.authors) : [];
     const translators = req.body.translators ? JSON.parse(req.body.translators) : [];
@@ -20,6 +21,7 @@ exports.createBook = async (req, res) => {
       title,
       edition: edition || null,
       releaseYear: releaseYear ? parseInt(releaseYear, 10) : null,
+      publicationLocation: publicationLocation || null,
       publisher: publisher || null,
       acquisitionDate: acquisitionDate || null,
       notes: notes || null,
@@ -57,13 +59,72 @@ exports.createBook = async (req, res) => {
 
 exports.getAllBooks = async (req, res) => {
   try {
-    const books = await Book.findAll({
-      where: { UserId: req.userId },
-      include: [Author, Translator, Genre, Subgenre, Tag, Loan] // Traz todos os dados vinculados
+    const {
+      page = 1,
+      limit = 20,
+      search = '',
+      sortBy = 'title', 
+      order = 'ASC',    
+      genre = '',
+      subgenre = '', // NOVO: Captura o subgênero da URL
+      tag = '',
+      borrowed = 'false'
+    } = req.query;
+
+    const offset = (page - 1) * limit;
+    const bookWhere = { UserId: req.userId };
+
+    if (search) {
+      bookWhere.title = { [Op.like]: `%${search}%` };
+    }
+
+    let orderClause = [];
+    if (sortBy === 'author') orderClause = [[Author, 'name', order], ['title', 'ASC']];
+    else if (sortBy === 'releaseYear') orderClause = [['releaseYear', order], ['title', 'ASC']];
+    else orderClause = [['title', order]];
+
+    const { count, rows } = await Book.findAndCountAll({
+      where: bookWhere,
+      include: [
+        { model: Author },
+        { model: Translator },
+        {
+          model: Subgenre,
+          where: subgenre ? { name: subgenre } : undefined, // NOVO: Filtro de Subgênero
+          required: !!subgenre
+        },
+        {
+          model: Genre,
+          where: genre ? { name: genre } : undefined,
+          required: !!genre 
+        },
+        {
+          model: Tag,
+          where: tag ? { name: tag } : undefined,
+          required: !!tag
+        },
+        {
+          model: Loan,
+          where: borrowed === 'true' ? { returnDate: null } : undefined,
+          required: borrowed === 'true'
+        }
+      ],
+      order: orderClause,
+      limit: parseInt(limit, 10),
+      offset: parseInt(offset, 10),
+      distinct: true 
     });
-    res.json(books);
+
+    res.json({
+      books: rows,
+      totalItems: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: parseInt(page, 10)
+    });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('❌ ERRO NO MOTOR DE BUSCA:', error);
+    res.status(500).json({ error: 'Erro ao processar a busca avançada.' });
   }
 };
 

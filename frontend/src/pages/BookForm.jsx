@@ -77,7 +77,7 @@ const BookForm = () => {
   
   // Adicionado o campo ISBN no formData
   const [formData, setFormData] = useState({
-    isbn: '', title: '', edition: '', releaseYear: '', publisher: '', acquisitionDate: '',
+    isbn: '', title: '', edition: '', releaseYear: '', publisher: '', publicationLocation: '', acquisitionDate: '',
     notes: '', coverImage: '', authors: [], translators: [], tags: '',
     selectedGenre: '', selectedSubgenres: []
   });
@@ -116,6 +116,7 @@ const BookForm = () => {
             title: b.title || '',
             edition: b.edition || '',
             releaseYear: b.releaseYear || '',
+            publicationLocation: b.publicationLocation || '',
             publisher: b.publisher || '',
             acquisitionDate: b.acquisitionDate ? b.acquisitionDate.split('T')[0] : '',
             notes: b.notes || '',
@@ -179,7 +180,8 @@ const BookForm = () => {
             title: data.title || '',
             publisher: data.publisher || '',
             releaseYear: data.year ? String(data.year) : '',
-            authors: data.authors ? data.authors.map(a => ({ value: a, label: a })) : []
+            // Guardamos o array de strings puro para processar na inteligência abaixo
+            authors: data.authors || [] 
           };
         }
       } catch (error) {
@@ -197,19 +199,58 @@ const BookForm = () => {
             title: info.title || '',
             publisher: info.publisher || '',
             releaseYear: info.publishedDate ? info.publishedDate.substring(0, 4) : '',
-            authors: info.authors ? info.authors.map(a => ({ value: a, label: a })) : []
+            authors: info.authors || [] 
           };
         }
       }
 
-      // Se encontrou dados em alguma das APIs, preenche o formulário
+      // Se encontrou dados em alguma das APIs, processamos as strings
       if (fetchedData) {
+        
+        // Helper: Remove acentos e deixa minúsculo para comparar sem erros
+        const removeAccents = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+        // O Algoritmo de Tratamento de Autores
+        const processedAuthors = fetchedData.authors.map(authorName => {
+          let finalName = authorName.trim();
+          
+          // 1. Normalização ABNT (Inversão de vírgula: "ASSIS, Machado de" -> "Machado de Assis")
+          if (finalName.includes(',')) {
+            const parts = finalName.split(',');
+            if (parts.length === 2) {
+              const lastName = parts[0].trim();
+              const firstName = parts[1].trim();
+              
+              // Se o sobrenome vier GRITANDO em maiúsculas, aplicamos Title Case
+              const formattedLastName = lastName === lastName.toUpperCase() 
+                ? lastName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
+                : lastName;
+                
+              finalName = `${firstName} ${formattedLastName}`;
+            }
+          }
+
+          // 2. Deduplicação Dinâmica
+          const sanitizedNewName = removeAccents(finalName);
+          const existingAuthor = availableAuthors.find(existing => 
+            removeAccents(existing.value) === sanitizedNewName
+          );
+
+          // Se achou no seu banco, seleciona a versão idêntica à do banco. Senão, cadastra o novo.
+          if (existingAuthor) {
+            return existingAuthor;
+          } else {
+            return { value: finalName, label: finalName }; // Tag verdinha pronta pra criar
+          }
+        });
+
+        // Atualiza a tela preenchendo os dados
         setFormData(prev => ({
           ...prev,
           title: fetchedData.title || prev.title,
           publisher: fetchedData.publisher || prev.publisher,
           releaseYear: fetchedData.releaseYear || prev.releaseYear,
-          authors: fetchedData.authors.length > 0 ? fetchedData.authors : prev.authors
+          authors: processedAuthors.length > 0 ? processedAuthors : prev.authors
         }));
       } else {
         alert('Livro não encontrado nas bases de dados. Você pode preencher manualmente.');
@@ -230,6 +271,7 @@ const BookForm = () => {
     payloadForm.append('title', formData.title);
     payloadForm.append('edition', formData.edition);
     payloadForm.append('releaseYear', formData.releaseYear);
+    payloadForm.append('publicationLocation', formData.publicationLocation);
     payloadForm.append('publisher', formData.publisher);
     payloadForm.append('acquisitionDate', formData.acquisitionDate);
     payloadForm.append('notes', formData.notes);
@@ -309,6 +351,12 @@ const BookForm = () => {
                   name="isbn" 
                   value={formData.isbn} 
                   onChange={handleChange} 
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault(); // Impede o envio do formulário
+                      handleIsbnSearch(); // Dispara a nossa função mágica da API
+                    }
+                  }}
                   className="form-input" 
                   placeholder="Ex: 9788535914849 (Preenche os dados automaticamente)" 
                 />
@@ -399,6 +447,10 @@ const BookForm = () => {
             <span className="material-symbols-rounded">domain</span> Detalhes Editoriais
           </h2>
           <div className="form-grid">
+            <div className="form-group">
+              <label className="form-label"><span className="material-symbols-rounded">location_on</span> Local de Publicação</label>
+              <input type="text" name="publicationLocation" value={formData.publicationLocation} onChange={handleChange} className="form-input" placeholder="Ex: São Paulo, SP" />
+            </div>
             <div className="form-group">
               <label className="form-label"><span className="material-symbols-rounded">business</span> Editora</label>
               <input type="text" name="publisher" value={formData.publisher} onChange={handleChange} className="form-input" />

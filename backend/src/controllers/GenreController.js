@@ -2,7 +2,10 @@ const { Genre } = require('../models');
 
 exports.getAll = async (req, res) => {
   try {
-    const genres = await Genre.findAll({ where: { UserId: req.userId } });
+    const genres = await Genre.findAll({ 
+      where: { UserId: req.userId },
+      order: [['name', 'ASC']] // Adicionado a ordenação aqui também
+    });
     res.json(genres);
   } catch (error) {
     console.error("🕵️ ERRO NO GENRE CONTROLLER:", error);

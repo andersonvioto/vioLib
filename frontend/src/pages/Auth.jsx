@@ -160,6 +160,7 @@ const Auth = () => {
                 className="btn-toggle-password"
                 title={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 disabled={isLoading}
+                tabIndex="-1"
               >
                 <span className="material-symbols-rounded">
                   {showPassword ? "visibility_off" : "visibility"}
@@ -188,6 +189,7 @@ const Auth = () => {
                 className="btn-toggle-password"
                 title={showConfirmPassword ? "Ocultar senha" : "Mostrar senha"}
                 disabled={isLoading}
+                tabIndex="-1"
               >
                 <span className="material-symbols-rounded">
                   {showConfirmPassword ? "visibility_off" : "visibility"}

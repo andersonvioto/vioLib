@@ -8,7 +8,8 @@ exports.getAll = async (req, res) => {
         model: Genre,
         where: { UserId: req.userId }, // O filtro mágico acontece na tabela do pai!
         attributes: [] // Opcional: esconde os dados do gênero para não poluir o JSON
-      }]
+      }],
+      order: [['name', 'ASC']] // ADICIONADO: Garante a ordenação alfabética dos subgêneros!
     });
     
     res.json(subgenres);
@@ -17,6 +18,7 @@ exports.getAll = async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar subgêneros.' });
   }
 };
+
 
 exports.delete = async (req, res) => {
   try {

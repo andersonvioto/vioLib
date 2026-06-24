@@ -142,8 +142,23 @@ const Dashboard = () => {
     if (page > 1) fetchBooks(false);
   }, [page]);
 
-  const handleShare = async () => { /* Mantém igual */ };
-  const handleLogout = () => { /* Mantém igual */ };
+  const handleShare = async () => {
+    const guestEmail = window.prompt("Digite o e-mail do amigo que poderá ver sua biblioteca:");
+    if (!guestEmail) return;
+    try {
+      const response = await api.post('/access/share', { guestEmail });
+      alert(response.data.message);
+    } catch (error) {
+      alert('Erro: ' + (error.response?.data?.error || 'Não foi possível compartilhar.'));
+    }
+  };
+
+  const handleLogout = () => {
+    if (window.confirm("Deseja realmente sair da sua conta?")) {
+      localStorage.removeItem('token'); 
+      navigate('/login'); 
+    }
+  };
 
   const BookGrid = ({ books }) => (
     // ... MANTÉM IGUAL O COMPONENTE BookGrid

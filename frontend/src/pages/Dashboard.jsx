@@ -6,7 +6,7 @@ import api from '../services/api';
 import { LibraryContext } from '../contexts/LibraryContext';
 
 // Componentes
-import Header from '../components/Header';
+import Header from '../components/Header'; 
 import FilterDrawer from '../components/FilterDrawer';
 import Shelf from '../components/Shelf';
 import BookCard from '../components/BookCard';
@@ -68,13 +68,17 @@ const Dashboard = () => {
   // ==========================================
   // LÓGICA DE BUSCA DA API (MOTOR CENTRAL)
   // ==========================================
-  const fetchBooks = useCallback(async (resetPage = false) => {
+  
+  /**
+   * fetchBooks agora exige explicitamente qual página buscar.
+   * Removemos a dependência 'page' do useCallback para evitar
+   * gatilhos cíclicos que apagavam o estado (Race Condition).
+   */
+  const fetchBooks = useCallback(async (targetPage, isReset = false) => {
     setIsLoading(true);
     try {
-      const currentPage = resetPage ? 1 : page;
-      
       const params = new URLSearchParams({
-        page: currentPage,
+        page: targetPage,
         limit: 20,
         search: searchTerm,
         sortBy: sortBy,
@@ -91,7 +95,6 @@ const Dashboard = () => {
 
       const response = await api.get(endpoint);
       
-      // NORMALIZAÇÃO DE DADOS: Garante a compatibilidade independente da rota
       let fetchedBooks = [];
       let totalItems = 0;
       let totalPages = 1;
@@ -102,20 +105,20 @@ const Dashboard = () => {
         totalItems = response.data.totalItems || 0;
         totalPages = response.data.totalPages || 1;
       } else if (Array.isArray(response.data)) {
-        // Formato da rota de acesso (/access/ID/books), se retornar um array puro
+        // Formato da rota de acesso (/access/ID/books)
         fetchedBooks = response.data;
         totalItems = response.data.length;
         totalPages = 1;
       }
 
-      if (resetPage) {
+      if (isReset) {
         setMyBooks(fetchedBooks);
       } else {
         setMyBooks(prev => [...prev, ...fetchedBooks]);
       }
       
       setTotalBooks(totalItems);
-      setHasMore(currentPage < totalPages);
+      setHasMore(targetPage < totalPages);
       
     } catch (error) {
       if (error.response?.status === 401) {
@@ -125,20 +128,31 @@ const Dashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, searchTerm, sortBy, sortOrder, selectedGenre, selectedSubgenre, selectedTag, showOnlyBorrowed, currentLibrary, navigate]);
+  }, [searchTerm, sortBy, sortOrder, selectedGenre, selectedSubgenre, selectedTag, showOnlyBorrowed, currentLibrary, navigate]);
 
-  // Dispara uma nova busca limpa (Página 1) quando qualquer filtro ou biblioteca mudar
+  // Dispara uma nova busca limpa (Página 1) quando qualquer filtro mudar.
   useEffect(() => {
     setPage(1);
-    fetchBooks(true);
-  }, [searchTerm, sortBy, sortOrder, selectedGenre, selectedSubgenre, selectedTag, showOnlyBorrowed, currentLibrary, fetchBooks]);
+    fetchBooks(1, true); // Chama explicitamente a página 1 e avisa que é um reset
+  }, [fetchBooks]); 
+  // Nota: Deixamos apenas fetchBooks nas dependências. 
+  // Como as variáveis de filtro estão dentro do useCallback do fetchBooks, 
+  // o React atualizará a função (e engatilhará este useEffect) no momento exato e seguro.
 
-  // Busca a próxima página ao rolar/clicar no botão "Carregar mais"
-  useEffect(() => {
-    if (page > 1) fetchBooks(false);
-  }, [page, fetchBooks]);
+  // ==========================================
+  // HANDLERS
+  // ==========================================
+  
+  /**
+   * Controlador imperativo do botão "Carregar mais".
+   * Isola a atualização de estado para não esbarrar em ciclos de vida cruzados.
+   */
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchBooks(nextPage, false); // Avisa que NÃO é reset, os dados devem ser apensados
+  };
 
-  // Variável auxiliar para descobrir os subgêneros do gênero ativo
   const activeGenreObj = availableGenres.find(g => g.name === selectedGenre);
 
   // ==========================================
@@ -242,7 +256,7 @@ const Dashboard = () => {
         {hasMore && (
           <div className="pagination-trigger-zone">
             <button 
-              onClick={() => setPage(p => p + 1)} 
+              onClick={handleLoadMore} 
               disabled={isLoading} 
               className="btn-action btn-primary btn-load-more"
             >

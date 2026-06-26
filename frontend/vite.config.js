@@ -2,18 +2,22 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      // Garante que o usuário receba a versão mais recente ao recarregar
       registerType: 'autoUpdate', 
       
-      // Arquivos básicos que sempre devem estar em cache
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       
-      // O Manifesto que dita como o celular lerá o seu app
+      // Configuração avançada do Service Worker (Workbox)
+      workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
+        navigateFallback: '/index.html',
+      },
+
       manifest: {
         id: '/', 
         name: 'vioLib - Gestão de Biblioteca',
@@ -23,19 +27,17 @@ export default defineConfig({
         background_color: '#1a1a1a', 
         display: 'standalone', 
         orientation: 'portrait', 
-        dir: 'ltr', // Direção do texto (Left-to-Right)
+        dir: 'ltr',
         
-        // Categorias para ajudar nas lojas de aplicativos (SEO)
         categories: ['books', 'education', 'productivity'],
 
-        // Atalhos ao segurar o ícone do aplicativo no celular
         shortcuts: [
           {
             name: 'Adicionar Livro',
             short_name: 'Novo Livro',
             description: 'Cadastrar uma nova obra na biblioteca',
-            url: '/novo-livro', // A rota do React para onde o usuário será levado
-            icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }] // Reutilizamos o ícone
+            url: '/novo-livro', 
+            icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }] 
           },
           {
             name: 'Minha Biblioteca',

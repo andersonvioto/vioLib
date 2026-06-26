@@ -1,0 +1,119 @@
+/* ==========================================================================
+   PAGE CSS - PrivacyPolicy
+   Estilos da página pública de Política de Privacidade.
+   ========================================================================== */
+
+.policy-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1a1a1a 0%, var(--bg-main) 100%);
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.policy-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-top: 4px solid var(--accent-gold);
+  border-radius: var(--radius-md);
+  width: 100%;
+  max-width: 800px; /* Mais largo para facilitar a leitura do documento */
+  padding: 50px 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+
+.policy-header {
+  text-align: center;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 20px;
+}
+
+.policy-logo {
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+  margin: 0 auto 20px auto;
+  display: block;
+}
+
+.policy-title {
+  color: var(--accent-gold);
+  font-family: serif;
+  font-size: 2.2rem;
+  margin: 0 0 10px 0;
+}
+
+.policy-date {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.policy-content {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+  text-align: left;
+}
+
+.policy-content h2 {
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  margin-top: 35px;
+  margin-bottom: 15px;
+  font-family: var(--font-sans);
+}
+
+.policy-content p {
+  margin-bottom: 15px;
+}
+
+.policy-content ul {
+  margin-bottom: 20px;
+  padding-left: 20px;
+}
+
+.policy-content li {
+  margin-bottom: 8px;
+}
+
+.policy-footer {
+  margin-top: 50px;
+  text-align: center;
+}
+
+.btn-back-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 30px;
+  background-color: transparent;
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+.btn-back-home:hover {
+  background-color: var(--accent-gold);
+  color: #000000;
+  box-shadow: 0 4px 15px rgba(214, 175, 55, 0.2);
+}
+
+/* Responsividade para telemóveis */
+@media (max-width: 600px) {
+  .policy-card {
+    padding: 30px 20px;
+  }
+  
+  .policy-title {
+    font-size: 1.8rem;
+  }
+}

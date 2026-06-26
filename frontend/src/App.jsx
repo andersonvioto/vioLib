@@ -10,7 +10,8 @@ import BookDetails from './pages/BookDetails';
 import SharedLibraries from './pages/SharedLibraries';
 import SharedLibraryView from './pages/SharedLibraryView';
 import Settings from './pages/Settings'; 
-import DeleteAccountInfo from './pages/DeleteAccountInfo'; // <-- Importação da Página de Exclusão
+import DeleteAccountInfo from './pages/DeleteAccountInfo';
+import PrivacyPolicy from './pages/PrivacyPolicy'; // <-- Nova Importação
 
 // ==========================================
 // GUARDAS DE ROTA (ROUTE GUARDS)
@@ -49,8 +50,9 @@ function App() {
               </PublicRoute>
             } />
             
-            {/* Rota Exigida pela Google Play Store para Exclusão de Conta */}
+            {/* Rotas Exigidas pela Google Play Store */}
             <Route path="/excluir-conta" element={<DeleteAccountInfo />} />
+            <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
             
             <Route path="/verificar-email/:token" element={<VerifyEmail />} />
             <Route path="/redefinir-senha/:token" element={<ResetPassword />} />

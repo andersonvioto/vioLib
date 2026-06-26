@@ -247,7 +247,7 @@
 }
 
 @keyframes authSpin {
-  to { transform: rotate(360deg); }
+  to { transform: rotate(-360deg); }
 }
 
 /* --- OPÇÕES DE SESSÃO E RODAPÉ --- */

@@ -16,6 +16,7 @@ export default defineConfig({
       
       // O coração do PWA: O Manifesto que dita como o celular lerá o seu app
       manifest: {
+        id: '/', // Identificador único absoluto do seu app (Resolve o alerta do PWABuilder)
         name: 'vioLib - Gestão de Biblioteca',
         short_name: 'vioLib',
         description: 'Seu sistema pessoal de gestão de biblioteca',
@@ -39,7 +40,23 @@ export default defineConfig({
             src: '/pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable' // Garante que o ícone se adapte aos formatos de ícone do Android
+            purpose: 'any maskable' // Garante que o ícone se adapte aos formatos do Android
+          }
+        ],
+
+        // Telas de demonstração para a janela de instalação (Rich Install UI)
+        screenshots: [
+          {
+            src: '/screenshot-narrow.png',
+            sizes: '720x1280',
+            type: 'image/png',
+            form_factor: 'narrow' // Indica que é a captura de tela do celular (vertical)
+          },
+          {
+            src: '/screenshot-wide.png',
+            sizes: '1280x720',
+            type: 'image/png',
+            form_factor: 'wide' // Indica que é a captura de tela do computador (horizontal)
           }
         ]
       }

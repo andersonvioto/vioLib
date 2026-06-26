@@ -15,10 +15,14 @@ export const formatDateSafe = (dateString) => {
 
 /**
  * Formata a string de citação com base nas normas internacionais.
- * @param {Object} book - O objeto do livro contendo autores, título, etc.
- * @param {'ABNT' | 'APA' | 'Vancouver' | 'Harvard'} format - O formato desejado.
+ * Retorna um objeto com a versão Plain Text (para bloco de notas) e a versão HTML (para o Word/Docs com negrito e itálico).
+ * * @param {Object} book - O objeto do livro contendo autores, título, etc.
+ * @param {'ABNT' | 'APA' | 'Vancouver' | 'Harvard' | 'MLA' | 'Chicago'} format - O formato desejado.
+ * @returns {{ plain: string, html: string }}
  */
 export const getCitationText = (book, format) => {
+  
+  // Tratamento específico ABNT (SOBRENOME, Nome)
   const formatAuthorABNT = (fullName) => {
     if (!fullName) return 'AUTOR DESCONHECIDO';
     const parts = fullName.trim().split(' ');
@@ -29,22 +33,73 @@ export const getCitationText = (book, format) => {
     return `${lastName.toUpperCase()}, ${firstNames}`;
   };
 
+  // Tratamento Específico APA, Harvard, Chicago (Sobrenome, N. do Meio.)
+  const formatAuthorAPA = (fullName) => {
+    if (!fullName) return 'Autor Desconhecido';
+    const parts = fullName.trim().split(' ');
+    if (parts.length <= 1) return fullName;
+    
+    const lastName = parts[parts.length - 1];
+    const initials = parts.slice(0, -1).map(name => `${name.charAt(0)}.`);
+    return `${lastName}, ${initials.join(' ')}`;
+  };
+
+  // Tratamento Específico MLA e Vancouver (Sobrenome, Nome Inteiro ou Iniciais coladas)
+  const formatAuthorMLA = (fullName) => {
+    if (!fullName) return 'Autor Desconhecido';
+    const parts = fullName.trim().split(' ');
+    if (parts.length <= 1) return fullName;
+    const lastName = parts.pop();
+    return `${lastName}, ${parts.join(' ')}`;
+  };
+
   const authorFull = book.Authors?.length > 0 ? book.Authors[0].name : '';
-  const title = book.title;
+  const title = book.title || 'Título Desconhecido';
   const year = book.releaseYear || '[s.d.]';
   const city = book.publicationLocation || '[S.l.]';
   const pub = book.publisher || '[s.n.]';
-  const ed = book.edition ? `${book.edition}. ` : '';
+  const ed = book.edition ? `${book.edition}. ed. ` : ''; // Ajuste ABNT de edição
 
   switch(format) {
     case 'ABNT': 
-      return `${formatAuthorABNT(authorFull)}. ${title}. ${ed}${city}: ${pub}, ${year}.`;
+      return {
+        plain: `${formatAuthorABNT(authorFull)}. ${title}. ${ed}${city}: ${pub}, ${year}.`,
+        html: `${formatAuthorABNT(authorFull)}. <b>${title}</b>. ${ed}${city}: ${pub}, ${year}.`
+      };
+    
     case 'APA': 
-      return `${formatAuthorABNT(authorFull)} (${year}). ${title}. ${pub}.`;
+      return {
+        plain: `${formatAuthorAPA(authorFull)}. (${year}). ${title}. ${pub}.`,
+        html: `${formatAuthorAPA(authorFull)}. (${year}). <i>${title}</i>. ${pub}.`
+      };
+    
     case 'Vancouver': 
-      return `${authorFull.toUpperCase()}. ${title}. ${ed}${city}: ${pub}; ${year}.`;
+      // Vancouver costuma grudar as iniciais: SOBRENOME AS
+      const vancouverAuthor = authorFull ? formatAuthorAPA(authorFull).replace(/\./g, '').replace(/,/g, '') : 'Autor Desconhecido';
+      return {
+        plain: `${vancouverAuthor}. ${title}. ${ed}${city}: ${pub}; ${year}.`,
+        html: `${vancouverAuthor}. ${title}. ${ed}${city}: ${pub}; ${year}.` // Vancouver não usa marcações fortes
+      };
+    
     case 'Harvard': 
-      return `${authorFull.toUpperCase()}, ${year}. ${title}. ${city}: ${pub}.`;
-    default: return '';
+      return {
+        plain: `${formatAuthorAPA(authorFull)}, ${year}. ${title}. ${ed}${city}: ${pub}.`,
+        html: `${formatAuthorAPA(authorFull)}, ${year}. <i>${title}</i>. ${ed}${city}: ${pub}.`
+      };
+
+    case 'MLA': 
+      return {
+        plain: `${formatAuthorMLA(authorFull)}. ${title}. ${ed}${pub}, ${year}.`,
+        html: `${formatAuthorMLA(authorFull)}. <i>${title}</i>. ${ed}${pub}, ${year}.`
+      };
+    
+    case 'Chicago': 
+      return {
+        plain: `${formatAuthorMLA(authorFull)}. ${title}. ${city}: ${pub}, ${year}.`,
+        html: `${formatAuthorMLA(authorFull)}. <i>${title}</i>. ${city}: ${pub}, ${year}.`
+      };
+
+    default: 
+      return { plain: '', html: '' };
   }
 };

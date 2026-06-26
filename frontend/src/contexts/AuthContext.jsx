@@ -5,8 +5,8 @@ export const AuthContext = createContext();
 
 /**
  * Provedor de Autenticação.
- * Garante a hidratação da sessão ao carregar a página e gerencia
- * o logout automático por inatividade caso o usuário não tenha
+ * Garante a hidratação da sessão ao carregar a página, gerencia o login/logout
+ * e controla o logout automático por inatividade caso o usuário não tenha
  * marcado a opção "Permanecer conectado".
  */
 export const AuthProvider = ({ children }) => {
@@ -14,8 +14,22 @@ export const AuthProvider = ({ children }) => {
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   /**
+   * Centraliza a lógica de inicialização de sessão.
+   */
+  const login = useCallback((token, userData, rememberMe) => {
+    localStorage.setItem('token', token);
+    
+    if (rememberMe) {
+      localStorage.setItem('rememberMe', 'true');
+    } else {
+      localStorage.removeItem('rememberMe');
+    }
+    
+    setUser(userData);
+  }, []);
+
+  /**
    * Centraliza a lógica de desconexão.
-   * Utiliza useCallback para estabilizar a referência da função na memória.
    */
   const logout = useCallback(() => {
     localStorage.removeItem('token');
@@ -110,7 +124,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

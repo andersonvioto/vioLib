@@ -2,16 +2,17 @@ import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
-// Opcional: Descomente a linha abaixo caso queira integrar o contexto global no futuro
-// import { AuthContext } from '../contexts/AuthContext'; 
+import { AuthContext } from '../contexts/AuthContext'; 
 
-import './Auth.css'; // Importação única do CSS modularizado
+import './Auth.css'; 
 import logoImg from '../assets/violib-logo-full.png';
 
 const Auth = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  // const { login } = useContext(AuthContext); // Exemplo de uso para arquitetura futura
+  
+  // Acesso exclusivo via Contexto Global
+  const { login } = useContext(AuthContext); 
   
   const [view, setView] = useState('login');
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
@@ -73,17 +74,9 @@ const Auth = () => {
           rememberMe: rememberMe
         });
         
-        // Padrão atual: Gestão manual do LocalStorage
-        localStorage.setItem('token', response.data.token);
-        if (rememberMe) {
-          localStorage.setItem('rememberMe', 'true');
-        } else {
-          localStorage.removeItem('rememberMe');
-        }
-
-        // Padrão Ideal Futuro:
-        // login(response.data.token, rememberMe);
-
+        // Padrão Clean Code: O Contexto cuida de toda a hidráulica do sistema.
+        login(response.data.token, response.data.user, rememberMe);
+        
         navigate('/biblioteca');
       } 
       else if (view === 'forgot') {
@@ -105,7 +98,6 @@ const Auth = () => {
       <div className="auth-card">
         <img src={logoImg} alt="vioLib - Sua biblioteca virtual organizada" className="auth-logo-img" />
 
-        {/* Módulo de Feedback Visual Unificado */}
         {message.text && (
           <div className={`auth-alert ${message.type === 'error' ? 'alert-error' : 'alert-success'}`} >
             {message.text}
@@ -114,7 +106,6 @@ const Auth = () => {
 
         <form onSubmit={handleSubmit} className="auth-form">
           
-          {/* Nome - Exclusivo para Registo */}
           {view === 'register' && (
             <div className="input-group">
               <input 
@@ -131,7 +122,6 @@ const Auth = () => {
             </div>
           )}
 
-          {/* Email - Comum a todas as views */}
           <div className="input-group">
             <input 
               type="email" 
@@ -146,7 +136,6 @@ const Auth = () => {
             <span className="material-symbols-rounded input-icon">mail</span>
           </div>
 
-          {/* Senha - Login e Registo */}
           {(view === 'login' || view === 'register') && (
             <div className="input-group">
               <input 
@@ -176,7 +165,6 @@ const Auth = () => {
             </div>
           )}
 
-          {/* Confirmação de Senha - Exclusivo para Registo */}
           {view === 'register' && (
             <div className="input-group">
               <input 
@@ -206,7 +194,6 @@ const Auth = () => {
             </div>
           )}
           
-          {/* Manter Conectado - Exclusivo para Login */}
           {view === 'login' && (
             <div className="remember-me-container">
               <label className="remember-me-label">

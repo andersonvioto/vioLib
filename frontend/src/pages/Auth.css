@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COMPONENT CSS - Auth & Security
+   COMPONENT CSS - Auth & Security (Versão Corrigida - Anti-Sobreposição)
    Estilos mestre para telas de Login, Registo, Recuperação e Verificação.
    ========================================================================== */
 
@@ -11,6 +11,7 @@
   justify-content: center;
   background: radial-gradient(circle at center, #1a1a1a 0%, var(--bg-main) 100%);
   padding: 20px;
+  box-sizing: border-box;
 }
 
 .auth-card {
@@ -23,6 +24,7 @@
   padding: 40px 30px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   text-align: center;
+  box-sizing: border-box;
 }
 
 .auth-logo-img {
@@ -34,7 +36,7 @@
   border-radius: var(--radius-sm);
 }
 
-/* Modificadores para telas exclusivas de aviso (sem formulários pesados) */
+/* Modificadores para telas exclusivas de aviso (sem formulários complexos) */
 .security-card-centered {
   text-align: center;
 }
@@ -51,7 +53,7 @@
   font-family: serif;
 }
 
-/* --- ALERTAS DE FEEDBACK (Unificados) --- */
+/* --- ALERTAS DE FEEDBACK --- */
 .auth-alert {
   padding: 12px 15px;
   border-radius: var(--radius-sm);
@@ -60,6 +62,7 @@
   font-weight: 500;
   text-align: left;
   animation: authFadeDown 0.3s ease-out;
+  box-sizing: border-box;
 }
 
 .alert-error {
@@ -99,61 +102,76 @@
   margin-bottom: 10px;
 }
 
-/* --- FORMULÁRIO E INPUTS --- */
+/* --- FORMULÁRIO E SOLUÇÃO DO FLUXO DE INPUTS (FLEXBOX REAL) --- */
 .auth-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
+/* A caixa externa assume o papel visual do input (Bordas, Fundo e Foco) */
 .input-group {
-  position: relative;
   display: flex;
   align-items: center;
-}
-
-.input-icon {
-  position: absolute;
-  left: 12px;
-  color: var(--text-muted);
-  transition: var(--transition-smooth);
-  pointer-events: none;
-}
-
-.auth-input {
   width: 100%;
-  padding: 14px 40px 14px 42px; 
   background-color: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.95em;
-  outline: none;
   transition: var(--transition-smooth);
+  padding: 0 14px; /* Espaçamento fixo nas extremidades internas da caixa */
+  box-sizing: border-box;
 }
 
-.auth-input:focus {
+/* Efeito dourado premium aplicado ao grupo quando o input interno é focado */
+.input-group:focus-within {
   border-color: var(--accent-gold);
   background-color: #333333;
   box-shadow: 0 0 0 3px var(--accent-gold-glow);
 }
 
-.auth-input:focus ~ .input-icon {
+/* Ícone da Esquerda (Prefixo) */
+.input-icon {
+  color: var(--text-muted);
+  transition: var(--transition-smooth);
+  pointer-events: none;
+  order: -1; /* Mágica do CSS: força o ícone a aparecer ANTES do input no layout visual */
+  margin-right: 12px; /* Garante um espaço físico real que o texto nunca conseguirá invadir */
+  display: flex;
+  align-items: center;
+  flex-shrink: 0; /* Impede o ícone de amassar em telas pequenas */
+}
+
+.input-group:focus-within .input-icon {
   color: var(--accent-gold);
 }
 
+/* O Campo de Texto real: Fica limpo, invisível e herda o espaço central da linha */
+.auth-input {
+  flex: 1; /* Ocupa dinamicamente todo o espaço restante do centro */
+  padding: 14px 0; /* Padding apenas vertical. As laterais dependem dos margins dos ícones */
+  background: transparent !important; /* Remove fundos nativos do browser */
+  border: none !important; /* Remove bordas nativas */
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95em;
+  outline: none;
+  box-sizing: border-box;
+}
+
 .auth-input:disabled {
-  opacity: 0.6;
   cursor: not-allowed;
-  background-color: #222222; 
   color: #777777;
 }
 
-/* --- BOTÕES E AÇÕES --- */
+/* Garantia de opacidade do grupo inteiro quando desativado */
+.input-group:has(.auth-input:disabled) {
+  opacity: 0.6;
+  background-color: #222222;
+  cursor: not-allowed;
+}
+
+/* Botão de Revelar Senha (Sufixo) */
 .btn-toggle-password {
-  position: absolute;
-  right: 12px;
   background: none;
   border: none;
   color: var(--text-muted);
@@ -163,6 +181,8 @@
   display: flex;
   align-items: center;
   transition: var(--transition-smooth);
+  margin-left: 12px; /* Garante espaço físico real entre o fim do texto e o olho */
+  flex-shrink: 0;
 }
 
 .btn-toggle-password:hover {
@@ -170,10 +190,10 @@
 }
 
 .btn-toggle-password:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
 }
 
+/* --- BOTÕES DE SUBMIT --- */
 .btn-auth-submit {
   width: 100%;
   padding: 14px;
@@ -191,6 +211,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .btn-auth-submit:hover:not(:disabled) {

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import CreatableSelect from 'react-select/creatable'; 
-import './BookForm.css'; // Atualizado para a nova nomenclatura
+import './BookForm.css'; 
 
 const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"><rect width="200" height="300" fill="%232c2c2c" stroke="%23D4AF37" stroke-width="2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="28" fill="%23D4AF37">vioLib</text><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23888888">Sem Capa</text></svg>`;
 
@@ -89,7 +89,7 @@ const BookForm = () => {
   // Estados de Interface e Feedback
   const [isLoadingIsbn, setIsLoadingIsbn] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [feedback, setFeedback] = useState({ type: '', message: '' }); // Substitui os alerts()
+  const [feedback, setFeedback] = useState({ type: '', message: '' }); 
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -153,8 +153,30 @@ const BookForm = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setCoverFile(file);
-    setPreviewUrl(file ? URL.createObjectURL(file) : null);
+    
+    if (file) {
+      // VALIDAÇÃO DE SEGURANÇA: Limite de 2MB (2 * 1024 * 1024 bytes)
+      const MAX_FILE_SIZE = 2097152; 
+      
+      if (file.size > MAX_FILE_SIZE) {
+        setFeedback({ 
+          type: 'error', 
+          message: 'A imagem é muito pesada. O tamanho máximo permitido para a capa é de 2MB.' 
+        });
+        
+        // Limpa o input do ficheiro para forçar o utilizador a escolher outro
+        e.target.value = null; 
+        return; 
+      }
+      
+      // Se passar a validação, limpa mensagens de erro antigas e carrega a imagem
+      setFeedback({ type: '', message: '' });
+      setCoverFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setCoverFile(null);
+      setPreviewUrl(null);
+    }
   };
 
   // ==========================================
@@ -163,7 +185,7 @@ const BookForm = () => {
   const handleIsbnSearch = async () => {
     if (!formData.isbn) return;
     setIsLoadingIsbn(true);
-    setFeedback({ type: '', message: '' }); // Limpa feedbacks anteriores
+    setFeedback({ type: '', message: '' }); 
     
     const cleanIsbn = formData.isbn.replace(/\D/g, '');
     let fetchedData = null;
@@ -287,7 +309,7 @@ const BookForm = () => {
       }
     } catch (error) {
       setFeedback({ type: 'error', message: `Erro ao salvar: ${error.response?.data?.error || error.message}` });
-      setIsSaving(false); // Retorna o botão ao estado original em caso de erro
+      setIsSaving(false); 
     }
   };
 
@@ -324,7 +346,7 @@ const BookForm = () => {
               <span className="material-symbols-rounded dropzone-icon">cloud_upload</span>
             )}
             <span className="dropzone-text" style={{ color: 'var(--text-secondary)' }}>
-              {previewUrl ? 'Clique para trocar a imagem' : 'Clique ou arraste a capa aqui'}
+              {previewUrl ? 'Clique para trocar a imagem' : 'Clique ou arraste a capa aqui (Máx: 2MB)'}
             </span>
             <input type="file" accept="image/*" onChange={handleFileChange} className="file-input-hidden" />
           </label>

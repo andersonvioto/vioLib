@@ -4,6 +4,7 @@ import ProfileSettings from '../components/settings/ProfileSettings';
 import ShareSettings from '../components/settings/ShareSettings';
 import TaxonomyManager from '../components/settings/TaxonomyManager';
 import GenreManager from '../components/settings/GenreManager';
+import SecuritySettings from '../components/settings/SecuritySettings';
 import './Settings.css';
 
 /**
@@ -15,11 +16,12 @@ const Settings = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
 
-  // Mapa de renderização: Evita a repetição massiva de if/elses no retorno
   const renderContent = () => {
     switch (activeTab) {
       case 'profile':
         return <ProfileSettings />;
+      case 'security':
+        return <SecuritySettings />;
       case 'shares':
         return <ShareSettings />;
       case 'authors':
@@ -43,16 +45,15 @@ const Settings = () => {
       <h1 className="settings-header">Configurações da Conta</h1>
       
       <div className="settings-layout">
-        {/* Navegação Lateral / Swipeable Tabs (Mobile) */}
         <aside className="settings-sidebar">
           <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}>Meu Perfil</button>
+          <button className={activeTab === 'security' ? 'active' : ''} onClick={() => setActiveTab('security')}>Segurança</button>
           <button className={activeTab === 'shares' ? 'active' : ''} onClick={() => setActiveTab('shares')}>Compartilhamento</button>
           <button className={activeTab === 'authors' ? 'active' : ''} onClick={() => setActiveTab('authors')}>Meus Autores</button>
           <button className={activeTab === 'translators' ? 'active' : ''} onClick={() => setActiveTab('translators')}>Meus Tradutores</button>
           <button className={activeTab === 'genres' ? 'active' : ''} onClick={() => setActiveTab('genres')}>Gêneros e Subgêneros</button>
         </aside>
 
-        {/* Área de Injeção do Componente Ativo */}
         <main className="settings-content">
           {renderContent()}
         </main>

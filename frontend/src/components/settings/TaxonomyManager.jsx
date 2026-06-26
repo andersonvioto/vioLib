@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
+import './TaxonomyManager.css';
 
 /**
  * Gerenciador genérico de taxonomias com Edição Inline.
@@ -30,7 +31,6 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
     fetchItems();
   }, [fetchItems]);
 
-  // --- HANDLERS DE ADIÇÃO ---
   const handleSubmitAdd = async (e) => {
     e.preventDefault();
     if (!addName.trim()) return;
@@ -50,7 +50,6 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
     setAddName('');
   };
 
-  // --- HANDLERS DE EDIÇÃO ---
   const startEditing = (id, currentName) => {
     setEditingId(id);
     setEditName(currentName);
@@ -75,7 +74,6 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
     setEditName('');
   };
 
-  // --- HANDLERS DE EXCLUSÃO ---
   const handleDisable = async (id) => {
     if (!window.confirm(`Tem certeza que deseja excluir este item?`)) return;
     try {
@@ -90,16 +88,14 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
     <div className="settings-panel">
       <h2>{title}</h2>
       
-      {/* Esconde o botão adicionar se já estivermos na tela de adição */}
       {!isAdding && (
-        <button onClick={() => setIsAdding(true)} className="btn-add">
+        <button onClick={() => setIsAdding(true)} className="btn-action btn-primary" style={{ marginBottom: '20px' }}>
           <span className="material-symbols-rounded">add</span> Adicionar {itemLabel}
         </button>
       )}
 
       <ul className="attribute-list">
         
-        {/* Formulário Inline de Adição */}
         {isAdding && (
           <li className="attribute-item" style={{ borderLeft: '3px solid var(--accent-gold)' }}>
             <form onSubmit={handleSubmitAdd} style={{ display: 'flex', width: '100%', gap: '10px', alignItems: 'center' }}>
@@ -120,11 +116,9 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
           </li>
         )}
 
-        {/* Lista de Itens */}
         {items.map(item => (
           <li key={item.id} className="attribute-item">
             {editingId === item.id ? (
-              // Modo de Edição
               <form onSubmit={handleSubmitEdit} style={{ display: 'flex', width: '100%', gap: '10px', alignItems: 'center' }}>
                 <input 
                   autoFocus
@@ -140,7 +134,6 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
                 </div>
               </form>
             ) : (
-              // Modo de Visualização
               <>
                 <span>{item.name}</span>
                 <div className="attribute-actions">

@@ -4,7 +4,7 @@ import ProfileSettings from '../components/settings/ProfileSettings';
 import ShareSettings from '../components/settings/ShareSettings';
 import TaxonomyManager from '../components/settings/TaxonomyManager';
 import GenreManager from '../components/settings/GenreManager';
-import './settings.css';
+import './Settings.css';
 
 /**
  * Página principal de Configurações.

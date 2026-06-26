@@ -1,0 +1,83 @@
+/* ==========================================================================
+   COMPONENT CSS - ProfileSettings
+   Formulários de atualização de dados e segurança da conta.
+   ========================================================================== */
+
+.settings-form {
+  max-width: 500px;
+  margin-top: 20px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Estilo base compartilhado entre o input comum e o wrapper da senha */
+.auth-input,
+.settings-input-wrapper {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+/* Input comum (Ex: Nome de Usuário) */
+.auth-input {
+  color: var(--text-primary);
+  padding: 12px 15px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.auth-input:focus {
+  border-color: var(--accent-gold); 
+}
+
+/* Wrapper da Senha: Alinha o input de texto e o ícone do olho lado a lado */
+.settings-input-wrapper {
+  display: flex;
+  align-items: center;
+  padding-right: 15px; 
+}
+
+.settings-input-wrapper:focus-within {
+  border-color: var(--accent-gold);
+}
+
+.settings-input-wrapper input {
+  flex: 1; 
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: 12px 15px;
+  font-size: 1rem;
+  outline: none; 
+}
+
+.settings-input-wrapper .material-symbols-rounded {
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.2rem;
+  user-select: none; 
+  transition: color 0.2s;
+}
+
+.settings-input-wrapper .material-symbols-rounded:hover {
+  color: var(--accent-gold); 
+}
+
+@media (max-width: 900px) {
+  .auth-input,
+  .settings-input-wrapper input {
+    padding: 14px 15px; 
+  }
+}

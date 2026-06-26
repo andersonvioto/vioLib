@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import './TaxonomyManager.css'; // Reutiliza a estrutura de lista padrão
 
 const ShareSettings = () => {
   const [sharedWith, setSharedWith] = useState([]);
@@ -34,8 +35,8 @@ const ShareSettings = () => {
         {sharedWith.map(share => (
           <li key={share.id} className="attribute-item">
             <div>
-              <strong style={{ display: 'block', fontSize: '1.1rem' }}>{share.Guest?.name}</strong>
-              <span style={{ color: '#888', fontSize: '0.9rem' }}>{share.Guest?.email}</span>
+              <strong style={{ display: 'block', fontSize: '1.1rem', color: 'var(--text-primary)' }}>{share.Guest?.name}</strong>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{share.Guest?.email}</span>
             </div>
             <button onClick={() => handleRevokeAccess(share.guestId, share.Guest?.name)} className="btn-disable">
               <span className="material-symbols-rounded" style={{ fontSize: '18px', verticalAlign: 'middle', marginRight: '5px' }}>person_remove</span> Revogar

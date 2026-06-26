@@ -1,19 +1,18 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import './GenreManager.css'; 
 
 const GenreManager = () => {
   const [genres, setGenres] = useState([]);
   const [subgenres, setSubgenres] = useState([]);
 
-  // Estados de Adição
   const [addingGenre, setAddingGenre] = useState(false);
   const [newGenreName, setNewGenreName] = useState('');
   
-  const [addingSubFor, setAddingSubFor] = useState(null); // Armazena o ID do gênero pai
+  const [addingSubFor, setAddingSubFor] = useState(null); 
   const [newSubName, setNewSubName] = useState('');
 
-  // Estados de Edição (Controla qual item está sendo editado)
-  const [editingMeta, setEditingMeta] = useState(null); // ex: { type: 'genres', id: 1 }
+  const [editingMeta, setEditingMeta] = useState(null); 
   const [editName, setEditName] = useState('');
 
   const fetchGenres = async () => {
@@ -33,7 +32,6 @@ const GenreManager = () => {
     fetchGenres();
   }, []);
 
-  // --- HANDLERS DE ADIÇÃO ---
   const handleSubmitNewGenre = async (e) => {
     e.preventDefault();
     if (!newGenreName.trim()) return;
@@ -60,7 +58,6 @@ const GenreManager = () => {
     }
   };
 
-  // --- HANDLERS DE EDIÇÃO ---
   const startEditing = (type, id, currentName) => {
     setEditingMeta({ type, id });
     setEditName(currentName);
@@ -95,12 +92,11 @@ const GenreManager = () => {
       <h2>Gerenciar Gêneros</h2>
       
       {!addingGenre && (
-        <button onClick={() => setAddingGenre(true)} className="btn-add">
+        <button onClick={() => setAddingGenre(true)} className="btn-action btn-primary" style={{ marginBottom: '20px' }}>
           <span className="material-symbols-rounded">add</span> Novo Gênero Principal
         </button>
       )}
 
-      {/* Form Inline para Novo Gênero */}
       {addingGenre && (
         <div className="genre-card" style={{ borderColor: 'var(--accent-gold)' }}>
           <form onSubmit={handleSubmitNewGenre} style={{ display: 'flex', gap: '10px' }}>
@@ -108,7 +104,7 @@ const GenreManager = () => {
               autoFocus type="text" value={newGenreName} onChange={e => setNewGenreName(e.target.value)} 
               className="auth-input" style={{ flex: 1 }} placeholder="Nome do gênero..."
             />
-            <button type="submit" className="btn-add" style={{ margin: 0 }}>Salvar</button>
+            <button type="submit" className="btn-action btn-primary" style={{ margin: 0, padding: '5px 15px' }}>Salvar</button>
             <button type="button" onClick={() => setAddingGenre(false)} className="btn-disable" style={{ margin: 0 }}>Cancelar</button>
           </form>
         </div>
@@ -118,7 +114,6 @@ const GenreManager = () => {
         {genres.map(genre => (
           <div key={genre.id} className="genre-card">
             
-            {/* CABEÇALHO DO GÊNERO */}
             <div className="genre-header">
               {editingMeta?.type === 'genres' && editingMeta?.id === genre.id ? (
                 <form onSubmit={handleSubmitEdit} style={{ display: 'flex', gap: '10px', width: '100%', alignItems: 'center' }}>
@@ -137,7 +132,6 @@ const GenreManager = () => {
               )}
             </div>
             
-            {/* LISTA DE SUBGÊNEROS */}
             <ul className="subgenre-list">
               {subgenres.filter(sub => sub.GenreId === genre.id).map(subgenre => (
                 <li key={subgenre.id} className="attribute-item sub-item">
@@ -159,7 +153,6 @@ const GenreManager = () => {
                 </li>
               ))}
               
-              {/* Form Inline ou Botão para Novo Subgênero */}
               <li style={{ marginTop: '10px' }}>
                 {addingSubFor === genre.id ? (
                   <form onSubmit={(e) => handleSubmitNewSubgenre(e, genre.id)} style={{ display: 'flex', gap: '10px' }}>
@@ -168,7 +161,7 @@ const GenreManager = () => {
                     <button type="button" onClick={() => setAddingSubFor(null)} className="btn-disable-small">Cancelar</button>
                   </form>
                 ) : (
-                  <button onClick={() => setAddingSubFor(genre.id)} className="btn-add" style={{ fontSize: '0.8rem', padding: '5px 10px', marginBottom: '0' }}>
+                  <button onClick={() => setAddingSubFor(genre.id)} className="btn-action btn-primary" style={{ fontSize: '0.8rem', padding: '5px 10px', marginBottom: '0' }}>
                     <span className="material-symbols-rounded" style={{ fontSize: '16px' }}>add</span> Subgênero
                   </button>
                 )}

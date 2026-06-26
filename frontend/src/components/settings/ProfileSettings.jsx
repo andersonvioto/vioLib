@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import './ProfileSettings.css';
 
 const ProfileSettings = () => {
   const [profileData, setProfileData] = useState({ name: '', currentPassword: '', newPassword: '', confirmNewPassword: '' });
@@ -46,7 +47,14 @@ const ProfileSettings = () => {
       <h2>Editar Perfil</h2>
       
       {profileMsg.text && (
-        <div className={`auth-alert ${profileMsg.type === 'error' ? 'alert-error' : 'alert-success'}`} style={{ marginBottom: '20px', padding: '10px', borderRadius: '4px', backgroundColor: profileMsg.type === 'error' ? 'rgba(255,0,0,0.1)' : 'rgba(0,255,0,0.1)', color: profileMsg.type === 'error' ? '#ff4d4d' : '#4dff4d' }}>
+        <div style={{ 
+          marginBottom: '20px', 
+          padding: '10px', 
+          borderRadius: '4px', 
+          backgroundColor: profileMsg.type === 'error' ? 'rgba(255,77,77,0.1)' : 'rgba(77,255,77,0.1)', 
+          color: profileMsg.type === 'error' ? '#ff4d4d' : '#4dff4d',
+          border: `1px solid ${profileMsg.type === 'error' ? '#ff4d4d' : '#4dff4d'}`
+        }}>
           {profileMsg.text}
         </div>
       )}
@@ -63,7 +71,7 @@ const ProfileSettings = () => {
           />
         </div>
         
-        <h3 style={{ marginTop: '20px', marginBottom: '10px', color: '#D4AF37', fontSize: '1.1rem' }}>Segurança</h3>
+        <h3 style={{ marginTop: '20px', marginBottom: '10px', color: 'var(--accent-gold)', fontSize: '1.1rem' }}>Segurança</h3>
         
         <div className="input-group">
           <label>Senha Atual (obrigatória apenas se for trocar de senha)</label>
@@ -113,7 +121,8 @@ const ProfileSettings = () => {
           </div>
         )}
         
-        <button type="submit" className="btn-add" style={{ marginTop: '15px' }}>
+        {/* Reutilizando botão primário do sistema */}
+        <button type="submit" className="btn-action btn-primary" style={{ marginTop: '15px' }}>
           Salvar Alterações
         </button>
       </form>

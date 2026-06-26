@@ -1,0 +1,81 @@
+/* ==========================================================================
+   COMPONENT CSS - TaxonomyManager / Atributos
+   Listagem e edição inline de Autores, Tradutores, Compartilhamentos.
+   ========================================================================== */
+
+.attribute-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.attribute-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  transition: background-color 0.2s;
+}
+
+.attribute-item:hover {
+  background-color: var(--bg-surface);
+}
+
+.empty-msg {
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 20px;
+  text-align: center;
+  background-color: var(--bg-input);
+  border-radius: var(--radius-sm);
+}
+
+/* --- BOTÕES DE AÇÃO DOS ATRIBUTOS --- */
+.attribute-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-edit {
+  background: transparent;
+  color: #4da6ff; 
+  border: 1px solid #4da6ff;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.btn-edit:hover {
+  background-color: #4da6ff;
+  color: #111;
+}
+
+.btn-disable, .btn-disable-small {
+  background-color: transparent;
+  color: var(--text-danger);
+  border: 1px solid var(--text-danger);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-disable {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+}
+
+.btn-disable-small {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.btn-disable:hover, .btn-disable-small:hover {
+  background-color: var(--text-danger);
+  color: #ffffff;
+}

@@ -24,6 +24,12 @@ const Auth = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    
+    // MELHORIA DE UX: Limpa mensagens de erro assim que o usuário volta a digitar,
+    // mas mantém as mensagens de sucesso (ex: "E-mail enviado") visíveis.
+    if (message.type === 'error') {
+      setMessage({ type: '', text: '' });
+    }
   };
 
   const switchView = (newView) => {
@@ -61,11 +67,14 @@ const Auth = () => {
           password: formData.password,
         });
         
+        // CORREÇÃO E MELHORIA DE UX: Em vez de usar setTimeout, transitamos para a 
+        // visão de login instantaneamente e exibimos a mensagem de sucesso lá.
+        setView('login');
+        setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+        setIsLoading(false);
         setMessage({ type: 'success', text: response.data.message });
-        setTimeout(() => {
-          setIsLoading(false);
-          switchView('login');
-        }, 4000);
       } 
       else if (view === 'login') {
         const response = await api.post('/auth/login', {
@@ -76,7 +85,6 @@ const Auth = () => {
         
         // Padrão Clean Code: O Contexto cuida de toda a hidráulica do sistema.
         login(response.data.token, response.data.user, rememberMe);
-        
         navigate('/biblioteca');
       } 
       else if (view === 'forgot') {

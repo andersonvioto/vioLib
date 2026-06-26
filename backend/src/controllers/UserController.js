@@ -68,3 +68,25 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ error: 'Erro ao atualizar perfil.' });
   }
 };
+
+/**
+ * Exclui a conta do usuário logado e todos os dados associados.
+ */
+exports.deleteAccount = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+
+    // A destruição do usuário acionará a exclusão em cascata (ON DELETE CASCADE)
+    // dos livros e categorias atrelados a ele, se assim configurado no BD.
+    await user.destroy();
+
+    res.json({ message: 'Conta e dados associados foram excluídos com sucesso.' });
+  } catch (error) {
+    console.error("🕵️ ERRO NO USER CONTROLLER (DELETE ACCOUNT):", error);
+    res.status(500).json({ error: 'Erro interno ao excluir a conta.' });
+  }
+};

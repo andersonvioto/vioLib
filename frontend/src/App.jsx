@@ -10,6 +10,7 @@ import BookDetails from './pages/BookDetails';
 import SharedLibraries from './pages/SharedLibraries';
 import SharedLibraryView from './pages/SharedLibraryView';
 import Settings from './pages/Settings'; 
+import DeleteAccountInfo from './pages/DeleteAccountInfo'; // <-- Importação da Página de Exclusão
 
 // ==========================================
 // GUARDAS DE ROTA (ROUTE GUARDS)
@@ -41,12 +42,16 @@ function App() {
             {/* Rota Raiz: Tenta mandar para a biblioteca. O PrivateRoute decide se deixa passar ou manda pro login */}
             <Route path="/" element={<Navigate to="/biblioteca" replace />} />
             
-            {/* ROTAS PÚBLICAS (Login e Recuperação) */}
+            {/* ROTAS PÚBLICAS E POLÍTICAS */}
             <Route path="/login" element={
               <PublicRoute>
                 <Auth />
               </PublicRoute>
             } />
+            
+            {/* Rota Exigida pela Google Play Store para Exclusão de Conta */}
+            <Route path="/excluir-conta" element={<DeleteAccountInfo />} />
+            
             <Route path="/verificar-email/:token" element={<VerifyEmail />} />
             <Route path="/redefinir-senha/:token" element={<ResetPassword />} />
             
@@ -92,7 +97,7 @@ function App() {
             
           </Routes>
         </Router>
-    </LibraryProvider>
+      </LibraryProvider>
     </AuthProvider>
   );
 }

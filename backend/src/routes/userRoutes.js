@@ -21,4 +21,10 @@ router.get('/profile', UserController.getProfile);
  */
 router.put('/profile', UserController.updateProfile);
 
+/**
+ * @route   DELETE /profile
+ * @desc    Exclui permanentemente a conta do usuário logado e todos os dados associados.
+ */
+router.delete('/profile', UserController.deleteAccount);
+
 module.exports = router;

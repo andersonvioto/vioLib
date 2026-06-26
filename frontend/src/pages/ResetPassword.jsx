@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import logoImg from '../assets/violib-logo-full.png';
-import './security.css'; 
+import './Auth.css'; // Atualizado para apontar para o CSS Mestre de Autenticação
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -12,15 +12,21 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [isLoading, setIsLoading] = useState(false); // Adicionada trava de carregamento
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return; // Trava contra duplo clique
+
     setMessage({ type: '', text: '' });
+    setIsLoading(true);
 
     if (password !== confirmPassword) {
+      setIsLoading(false);
       return setMessage({ type: 'error', text: 'As senhas não coincidem.' });
     }
     if (password.length < 6) {
+      setIsLoading(false);
       return setMessage({ type: 'error', text: 'A senha deve ter pelo menos 6 caracteres.' });
     }
 
@@ -28,12 +34,14 @@ const ResetPassword = () => {
       const response = await api.post('/auth/reset-password', { token, newPassword: password });
       setMessage({ type: 'success', text: response.data.message });
       
+      // Redireciona suavemente após o sucesso
       setTimeout(() => navigate('/login'), 3000);
     } catch (error) {
       setMessage({ 
         type: 'error', 
         text: error.response?.data?.error || 'Link de recuperação inválido ou expirado.' 
       });
+      setIsLoading(false);
     }
   };
 
@@ -59,6 +67,7 @@ const ResetPassword = () => {
               onChange={e => setPassword(e.target.value)} 
               required 
               className="auth-input"
+              disabled={isLoading}
             />
             <span className="material-symbols-rounded input-icon">lock</span>
           </div>
@@ -71,6 +80,7 @@ const ResetPassword = () => {
               onChange={e => setConfirmPassword(e.target.value)} 
               required 
               className="auth-input"
+              disabled={isLoading}
             />
             <span className="material-symbols-rounded input-icon">lock_reset</span>
             
@@ -78,6 +88,8 @@ const ResetPassword = () => {
               type="button" 
               onClick={() => setShowPassword(!showPassword)} 
               className="btn-toggle-password"
+              disabled={isLoading}
+              tabIndex="-1"
             >
               <span className="material-symbols-rounded">
                 {showPassword ? "visibility_off" : "visibility"}
@@ -85,8 +97,16 @@ const ResetPassword = () => {
             </button>
           </div>
 
-          <button type="submit" className="btn-auth-submit btn-security-action" disabled={message.type === 'success'}>
-            Salvar Senha
+          <button 
+            type="submit" 
+            className="btn-auth-submit btn-security-action" 
+            disabled={isLoading || message.type === 'success'}
+          >
+            {isLoading ? (
+              <span className="auth-spinner"></span>
+            ) : (
+              'Salvar Senha'
+            )}
           </button>
         </form>
       </div>

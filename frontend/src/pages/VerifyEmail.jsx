@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import logoImg from '../assets/violib-logo-full.png';
-import './security.css';
+import './Auth.css'; // Atualizado para apontar para o CSS Mestre de Autenticação
 
 const VerifyEmail = () => {
   const { token } = useParams();
@@ -11,7 +11,7 @@ const VerifyEmail = () => {
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('Verificando o seu e-mail, por favor aguarde...');
   
-  // TRAVA DE SEGURANÇA: Evita que o React StrictMode dispare 2 vezes
+  // TRAVA DE SEGURANÇA: Evita que o React StrictMode dispare 2 vezes em desenvolvimento
   const hasFetched = useRef(false);
 
   useEffect(() => {
@@ -43,7 +43,13 @@ const VerifyEmail = () => {
         
         <h2 className="security-title">Verificação de Conta</h2>
 
-        {status === 'loading' && <p className="status-loading">{message}</p>}
+        {/* Adicionado o spinner visual para melhorar a UX durante a espera */}
+        {status === 'loading' && (
+          <div className="status-loading" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+            <span className="auth-spinner"></span>
+            <p>{message}</p>
+          </div>
+        )}
         
         {status === 'success' && (
           <div className="status-success-block">

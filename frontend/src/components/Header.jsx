@@ -4,6 +4,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { LibraryContext } from '../contexts/LibraryContext';
 import api from '../services/api';
 import miniLogo from '../assets/violib-logo.png';
+import './Header.css';
 
 /**
  * Componente do cabeçalho principal da aplicação.

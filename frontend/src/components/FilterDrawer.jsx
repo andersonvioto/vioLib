@@ -1,3 +1,5 @@
+import './FilterDrawer.css';
+
 /**
  * Componente da gaveta lateral de filtros e ordenação.
  * Permite ao usuário refinar a busca de livros na biblioteca.

@@ -1,11 +1,11 @@
 /* ==========================================================================
    DASHBOARD CSS - vioLib
-   Arquivo principal de estilos do painel de controle e listagem de livros.
-   Arquitetura: Mobile-First adaptativo com foco em performance e UX.
+   Estilos estruturais da página principal (Dashboard).
+   Nota: Componentes (BookCard, Header, Shelf, FilterDrawer) possuem seus próprios CSS.
    ========================================================================== */
 
 /* ==========================================================================
-   1. CONTAINER BASE E APP BAR FIXO
+   1. ESTRUTURA GLOBAL DA PÁGINA E BOTÕES
    ========================================================================== */
 .dashboard-container {
   padding: 40px;
@@ -13,63 +13,7 @@
   margin: 0 auto;
 }
 
-/* App Bar fixa no topo. Usa margens negativas para criar o efeito "bleed"
-   que cobre o padding do container ao fazer scroll. */
-.dash-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: nowrap; /* Trava para evitar quebra de layout em telas estreitas */
-  gap: 15px;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background-color: var(--bg-main);
-  margin: -40px -40px 30px -40px;
-  padding: 40px 40px 20px 40px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.user-actions-container {
-  display: flex;
-  align-items: center;
-  position: relative; 
-}
-
-.brand-container {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.brand-logo {
-  height: 45px;
-  width: auto;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-}
-
-.brand-title {
-  font-family: serif;
-  font-size: 2.2em;
-  color: var(--accent-gold);
-  margin: 0;
-  letter-spacing: 1px;
-}
-
-/* Oculto no Desktop, ativado via media query no Mobile */
-.mobile-menu-toggle {
-  display: none;
-}
-
-.header-actions {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-/* ==========================================================================
-   2. COMPONENTES GLOBAIS DE INTERFACE (BOTÕES)
-   ========================================================================== */
+/* Utilitários de Botões compartilhados no Dashboard (Filtros, Carregar Mais) */
 .btn-action {
   display: flex;
   align-items: center;
@@ -103,17 +47,8 @@
   box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
 }
 
-.btn-logout {
-  color: #ff4d4d;
-  border-color: transparent;
-}
-
-.btn-logout:hover {
-  background: rgba(255, 77, 77, 0.1);
-}
-
 /* ==========================================================================
-   3. BARRA DE PESQUISA E GAVETA DE FILTROS AVANÇADOS
+   2. BARRA DE PESQUISA (SEARCH BAR)
    ========================================================================== */
 .search-filter-bar {
   display: flex;
@@ -159,214 +94,8 @@
   color: #000;
 }
 
-/* Card flutuante da Gaveta de Filtros (Comportamento Desktop) */
-.filter-drawer-container {
-  position: absolute;
-  top: 135px; /* Posição calculada sob a barra de pesquisa */
-  left: 40px;
-  right: 40px;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 25px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
-  z-index: 990;
-  animation: filterFadeDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.filter-drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.filter-drawer-header h3 {
-  margin: 0;
-  color: var(--accent-gold);
-  font-size: 1.1em;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.close-drawer-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.close-drawer-btn:hover { color: var(--text-primary); }
-
-.filter-drawer-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* Divisão em 4 colunas no Desktop */
-  gap: 20px;
-}
-
-.filter-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.filter-field-group.full-width {
-  grid-column: 1 / -1;
-}
-
-.toggles-row {
-  display: flex;
-  flex-direction: row !important;
-  gap: 30px;
-  margin-top: 10px;
-  border-top: 1px solid var(--border-color);
-  padding-top: 15px;
-}
-
-.checkbox-toggle-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  color: var(--text-secondary);
-  font-size: 0.95em;
-}
-
-.checkbox-toggle-label input {
-  accent-color: var(--accent-gold);
-  width: 16px;
-  height: 16px;
-}
-
-@keyframes filterFadeDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 /* ==========================================================================
-   4. PRATELEIRAS VIRTUAIS (Navegação Horizontal por Gêneros e Subgêneros)
-   ========================================================================== */
-.shelf-wrapper {
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.shelf-wrapper.subgenre-wrapper {
-  margin-top: -20px; /* Puxa os subgêneros para mais perto da prateleira pai */
-}
-
-/* Botões de navegação lateral (Setas) */
-.shelf-nav-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%); /* Garante o alinhamento vertical matematicamente perfeito */
-  z-index: 10;
-  width: 30px;
-  height: 44px; /* Mais alto, estilo controle de carrossel */
-  border-radius: 6px; 
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-  transition: var(--transition-smooth);
-}
-
-.shelf-nav-btn:hover {
-  color: var(--accent-gold);
-  border-color: var(--accent-gold);
-  transform: translateY(-50%) scale(1.05); 
-}
-
-.shelf-nav-btn.left { left: -10px; }
-.shelf-nav-btn.right { right: -10px; }
-
-/* Setas menores para a prateleira de subgêneros */
-.shelf-nav-btn.sub-nav {
-  height: 36px;
-  width: 26px;
-  background: var(--bg-main);
-}
-
-/* Contêiner da lista horizontal rolante */
-.virtual-shelves-container {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding: 10px 25px; 
-  margin: 0; 
-  width: 100%;
-  scrollbar-width: none; 
-  -webkit-overflow-scrolling: touch; 
-  cursor: grab; 
-  scroll-behavior: smooth; 
-}
-
-.virtual-shelves-container.grabbing {
-  cursor: grabbing; 
-  scroll-behavior: auto; /* Desativa a animação durante o arrasto manual */
-}
-
-.virtual-shelves-container::-webkit-scrollbar {
-  display: none; 
-}
-
-.virtual-shelves-container.subgenre-shelves {
-  padding-top: 5px; /* Ajuste milimétrico para os subgêneros */
-}
-
-/* Estilo das "Pills" (Pílulas de Categoria) */
-.shelf-pill {
-  padding: 10px 22px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: 30px; 
-  color: var(--text-secondary);
-  font-family: var(--font-sans);
-  font-size: 0.95em;
-  font-weight: 500;
-  white-space: nowrap; 
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  cursor: inherit; 
-}
-
-.shelf-pill:hover {
-  border-color: var(--accent-gold);
-  color: var(--text-primary);
-  transform: translateY(-2px);
-}
-
-.shelf-pill.active {
-  background: var(--accent-gold);
-  color: #000;
-  border-color: var(--accent-gold);
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-}
-
-.sub-pill {
-  padding: 6px 16px;
-  font-size: 0.85em;
-  border-radius: 20px;
-  border-color: transparent;
-  background: rgba(255, 255, 255, 0.05); 
-  box-shadow: none;
-}
-
-.sub-pill.active {
-  background: rgba(212, 175, 55, 0.2);
-  color: var(--accent-gold);
-  border-color: var(--accent-gold);
-  box-shadow: none;
-}
-
-/* ==========================================================================
-   5. SEÇÃO PRINCIPAL DA BIBLIOTECA (Grid e Cartões de Livro)
+   3. SEÇÃO PRINCIPAL DA BIBLIOTECA (Grid)
    ========================================================================== */
 .library-section {
   margin-bottom: 50px;
@@ -397,123 +126,12 @@
   font-weight: normal;
 }
 
-.book-group-wrapper {
-  margin-bottom: 35px;
-  background-color: rgba(255, 255, 255, 0.02);
-  padding: 20px;
-  border-radius: var(--radius-md);
-  border: 1px dashed rgba(212, 175, 55, 0.15);
-}
-
-.book-group-title {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.1em;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .book-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 25px;
 }
 
-.book-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  transition: var(--transition-smooth);
-}
-
-.book-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
-  border-color: var(--accent-gold);
-}
-
-.book-cover {
-  width: 100%;
-  height: 280px;
-  object-fit: cover;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.book-info {
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.book-title {
-  font-size: 1.1em;
-  color: var(--text-primary);
-  margin: 0;
-  font-weight: 600;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.book-author {
-  font-size: 0.9em;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* Indicadores de Tags no Cartão */
-.card-tags-container {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-  margin-top: 4px;
-}
-
-.card-tag-chip {
-  font-size: 0.7em;
-  background: var(--bg-input);
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: var(--text-muted);
-  border: 1px solid rgba(255,255,255,0.03);
-}
-
-.card-tag-more {
-  font-size: 0.7em;
-  color: var(--accent-gold);
-  font-weight: bold;
-}
-
-/* Distintivo de Empréstimo */
-.badge-borrowed {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: var(--accent-gold);
-  color: #000;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-}
-
-.badge-borrowed .material-symbols-rounded { 
-  font-size: 1.3em !important; 
-}
-
-/* Controle de Paginação (Load More) */
 .pagination-trigger-zone {
   text-align: center;
   margin-top: 40px;
@@ -530,10 +148,72 @@
 }
 
 /* ==========================================================================
-   6. RESPONSIVIDADE E ADAPTAÇÃO MOBILE (Media Queries)
+   4. SKELETON SCREEN (CARREGAMENTO ELEGANTE)
+   ========================================================================== */
+.skeleton-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.skeleton-img {
+  width: 100%;
+  height: 280px;
+  background: var(--bg-input); 
+  animation: skeletonPulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-info {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-line {
+  background: var(--bg-input);
+  border-radius: 4px;
+  animation: skeletonPulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-line.title {
+  width: 90%;
+  height: 18px;
+}
+
+.skeleton-line.author {
+  width: 60%;
+  height: 14px;
+}
+
+.skeleton-tags {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.skeleton-tag {
+  height: 20px;
+  width: 40px;
+  background: var(--bg-input);
+  border-radius: 4px;
+  animation: skeletonPulse 1.5s infinite ease-in-out;
+}
+
+@keyframes skeletonPulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.4; }
+}
+
+/* ==========================================================================
+   5. RESPONSIVIDADE E ADAPTAÇÃO MOBILE (Media Queries)
    ========================================================================== */
 
-/* TABLETS E TELAS MÉDIAS (até 900px) */
 @media (max-width: 900px) {
   .dashboard-container { 
     padding: 20px; 
@@ -544,109 +224,14 @@
     gap: 20px; 
   }
   
-  .book-cover { 
+  .skeleton-img { 
     height: 240px; 
-  }
-  
-  .filter-drawer-container { 
-    left: 20px; 
-    right: 20px; 
-    top: 115px; 
-  }
-  
-  .filter-drawer-grid { 
-    grid-template-columns: repeat(2, 1fr); 
-  }
-  
-  /* Oculta as setas de navegação lateral, priorizando o toque no ecrã (swipe) */
-  .shelf-nav-btn { 
-    display: none; 
-  }
-  
-  .virtual-shelves-container { 
-    padding-left: 0; 
-    padding-right: 0; 
   }
 }
 
-/* SMARTPHONES (até 600px) - Arquitetura Bottom Sheet e Dropdown */
 @media (max-width: 600px) {
   .dashboard-container { 
     padding: 15px; 
-  }
-
-  .dash-header {
-    margin: -15px -15px 20px -15px;
-    padding: 15px 20px 15px 15px;
-  }
-
-  .brand-logo { 
-    height: 35px; 
-  }
-  
-  .brand-title { 
-    font-size: 1.8em; 
-  }
-
-  .mobile-menu-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    color: var(--accent-gold);
-    cursor: pointer;
-    padding: 5px;
-  }
-
-  .mobile-menu-toggle .material-symbols-rounded { 
-    font-size: 2.2em !important; 
-  }
-
-  /* Converte o menu de ações do header em um Dropdown suspenso */
-  .header-actions {
-    position: absolute;
-    top: calc(100% + 5px);
-    right: 0;
-    width: 200px;
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-15px);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .header-actions.open { 
-    opacity: 1; 
-    visibility: visible; 
-    transform: translateY(0); 
-  }
-  
-  .header-actions .btn-action { 
-    width: 100%; 
-    justify-content: flex-start; 
-    padding: 12px 15px; 
-    background: transparent; 
-    border: none !important; 
-    box-shadow: none !important; 
-  }
-  
-  .header-actions .btn-action:hover { 
-    background-color: rgba(255, 255, 255, 0.05) !important; 
-    transform: none; 
-  }
-
-  /* === MUDANÇA: Ajuste de Contraste para o Botão Primário no Mobile === */
-  .header-actions .btn-primary {
-    color: var(--accent-gold) !important;
   }
 
   .book-grid { 
@@ -654,19 +239,10 @@
     gap: 12px; 
   }
   
-  .book-cover { 
+  .skeleton-img { 
     height: 190px; 
   }
-  
-  .book-title { 
-    font-size: 0.95em; 
-  }
-  
-  .book-author { 
-    font-size: 0.8em; 
-  }
 
-  /* Empilha a barra de busca e o botão de filtros */
   .search-filter-bar {
     flex-direction: column;
     align-items: stretch;
@@ -681,54 +257,5 @@
     width: 100%; 
     justify-content: center; 
     padding: 14px; 
-  }
-
-  /* MÁGICA MOBILE: Transforma a Gaveta de Filtros Flutuante em uma Bottom Sheet Premium */
-  .filter-drawer-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
-    z-index: 1200;
-  }
-
-  .filter-drawer-container {
-    position: fixed;
-    top: auto;
-    left: 0;
-    right: 0;
-    bottom: 0; /* Ancoragem na base do ecrã */
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    border-radius: 20px 20px 0 0; /* Arredondamento apenas superior */
-    border: none;
-    border-top: 1px solid var(--border-color);
-    padding: 20px;
-    z-index: 1210;
-    animation: bottomSheetSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .filter-drawer-grid {
-    grid-template-columns: 1fr; /* Força 1 coluna no telemóvel */
-    gap: 15px;
-  }
-
-  .toggles-row {
-    flex-direction: column !important;
-    gap: 15px;
-  }
-
-  .form-select {
-    padding: 14px 15px;
-    font-size: 16px; /* Previne o zoom forçado em inputs no Safari/iOS */
-  }
-
-  @keyframes bottomSheetSlideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
   }
 }

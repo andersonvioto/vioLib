@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { getCoverUrl } from '../utils/bookHelpers';
+import './BookCard.css'; // Importação do estilo específico do componente
 
 /**
  * Componente visual de um cartão de livro individual.
- * * @param {Object} props.book - Objeto contendo as informações do livro.
+ * @param {Object} props.book - Objeto contendo as informações do livro.
  * @param {boolean} props.showTags - Booleano indicando se as tags devem aparecer no cartão.
  */
 const BookCard = ({ book, showTags }) => {

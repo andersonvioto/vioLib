@@ -1,4 +1,5 @@
 import { useDragScroll } from '../hooks/useDragScroll';
+import './Shelf.css'; // Importação do estilo isolado do componente
 
 /**
  * Componente de prateleira virtual com rolagem horizontal (drag-to-scroll).

@@ -1,0 +1,157 @@
+/* ==========================================================================
+   COMPONENT CSS - FilterDrawer
+   Estilos da gaveta lateral de filtros (Desktop) e Bottom Sheet (Mobile).
+   ========================================================================== */
+
+.filter-drawer-container {
+  position: absolute;
+  top: 135px; /* Posição calculada sob a barra de pesquisa no Desktop */
+  left: 40px;
+  right: 40px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 25px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+  z-index: 990;
+  animation: filterFadeDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filter-drawer-header h3 {
+  margin: 0;
+  color: var(--accent-gold);
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.close-drawer-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.close-drawer-btn:hover { 
+  color: var(--text-primary); 
+}
+
+.filter-drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Divisão em 4 colunas no Desktop */
+  gap: 20px;
+}
+
+.filter-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-field-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.toggles-row {
+  display: flex;
+  flex-direction: row !important;
+  gap: 30px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+}
+
+.checkbox-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.95em;
+}
+
+.checkbox-toggle-label input {
+  accent-color: var(--accent-gold);
+  width: 16px;
+  height: 16px;
+}
+
+@keyframes filterFadeDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE - FilterDrawer (Mobile Bottom Sheet)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .filter-drawer-container { 
+    left: 20px; 
+    right: 20px; 
+    top: 115px; 
+  }
+  
+  .filter-drawer-grid { 
+    grid-template-columns: repeat(2, 1fr); 
+  }
+}
+
+@media (max-width: 600px) {
+  /* Fundo Escuro para Modal */
+  .filter-drawer-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1200;
+  }
+
+  /* Transforma a gaveta flutuante numa Bottom Sheet fixada na base */
+  .filter-drawer-container {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0; 
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0; /* Arredondamento apenas superior */
+    border: none;
+    border-top: 1px solid var(--border-color);
+    padding: 20px;
+    z-index: 1210;
+    animation: bottomSheetSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .filter-drawer-grid {
+    grid-template-columns: 1fr; /* Força 1 coluna no telemóvel */
+    gap: 15px;
+  }
+
+  .toggles-row {
+    flex-direction: column !important;
+    gap: 15px;
+  }
+
+  .form-select {
+    padding: 14px 15px;
+    font-size: 16px; 
+  }
+
+  @keyframes bottomSheetSlideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+}

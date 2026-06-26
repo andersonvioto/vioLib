@@ -15,6 +15,24 @@ import BookCard from '../components/BookCard';
 import './dashboard.css';
 
 /**
+ * Componente interno do Skeleton Screen.
+ * Imita o formato visual do BookCard enquanto os dados estão sendo buscados.
+ */
+const SkeletonCard = () => (
+  <div className="skeleton-card">
+    <div className="skeleton-img"></div>
+    <div className="skeleton-info">
+      <div className="skeleton-line title"></div>
+      <div className="skeleton-line author"></div>
+      <div className="skeleton-tags">
+        <div className="skeleton-tag"></div>
+        <div className="skeleton-tag" style={{ width: '55px' }}></div>
+      </div>
+    </div>
+  </div>
+);
+
+/**
  * Tela Principal da Biblioteca (Dashboard).
  * Atua como o maestro, coordenando os componentes visuais, o estado e as chamadas de API.
  */
@@ -50,7 +68,6 @@ const Dashboard = () => {
   // EFEITOS INICIAIS E SINCRONIZAÇÃO
   // ==========================================
 
-  // 1. Busca Categorias e Tags ao carregar a tela
   useEffect(() => {
     api.get('/attributes')
        .then(res => {
@@ -60,7 +77,6 @@ const Dashboard = () => {
        .catch(console.error);
   }, []);
 
-  // 2. Limpa o subgênero sempre que o gênero principal for alterado
   useEffect(() => {
     setSelectedSubgenre('');
   }, [selectedGenre]);
@@ -69,13 +85,13 @@ const Dashboard = () => {
   // LÓGICA DE BUSCA DA API (MOTOR CENTRAL)
   // ==========================================
   
-  /**
-   * fetchBooks agora exige explicitamente qual página buscar.
-   * Removemos a dependência 'page' do useCallback para evitar
-   * gatilhos cíclicos que apagavam o estado (Race Condition).
-   */
   const fetchBooks = useCallback(async (targetPage, isReset = false) => {
     setIsLoading(true);
+
+    if (isReset) {
+      setMyBooks([]);
+    }
+
     try {
       const params = new URLSearchParams({
         page: targetPage,
@@ -100,12 +116,10 @@ const Dashboard = () => {
       let totalPages = 1;
 
       if (response.data.books) {
-        // Formato da rota principal (/books)
         fetchedBooks = response.data.books;
         totalItems = response.data.totalItems || 0;
         totalPages = response.data.totalPages || 1;
       } else if (Array.isArray(response.data)) {
-        // Formato da rota de acesso (/access/ID/books)
         fetchedBooks = response.data;
         totalItems = response.data.length;
         totalPages = 1;
@@ -130,27 +144,19 @@ const Dashboard = () => {
     }
   }, [searchTerm, sortBy, sortOrder, selectedGenre, selectedSubgenre, selectedTag, showOnlyBorrowed, currentLibrary, navigate]);
 
-  // Dispara uma nova busca limpa (Página 1) quando qualquer filtro mudar.
   useEffect(() => {
     setPage(1);
-    fetchBooks(1, true); // Chama explicitamente a página 1 e avisa que é um reset
+    fetchBooks(1, true); 
   }, [fetchBooks]); 
-  // Nota: Deixamos apenas fetchBooks nas dependências. 
-  // Como as variáveis de filtro estão dentro do useCallback do fetchBooks, 
-  // o React atualizará a função (e engatilhará este useEffect) no momento exato e seguro.
 
   // ==========================================
   // HANDLERS
   // ==========================================
   
-  /**
-   * Controlador imperativo do botão "Carregar mais".
-   * Isola a atualização de estado para não esbarrar em ciclos de vida cruzados.
-   */
   const handleLoadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchBooks(nextPage, false); // Avisa que NÃO é reset, os dados devem ser apensados
+    fetchBooks(nextPage, false); 
   };
 
   const activeGenreObj = availableGenres.find(g => g.name === selectedGenre);
@@ -234,14 +240,25 @@ const Dashboard = () => {
                 ? selectedGenre 
                 : (currentLibrary ? `Acervo de ${currentLibrary.ownerName}` : 'Minha Biblioteca')
             }
-            <span className="title-count">({totalBooks})</span>
+            <span className="title-count">({isLoading && myBooks.length === 0 ? '...' : totalBooks})</span>
           </h2>
         </div>
         
-        {!Array.isArray(myBooks) || myBooks.length === 0 ? (
+        {/* LÓGICA DE RENDERIZAÇÃO INTELIGENTE (SKELETONS VS DADOS) */}
+        {isLoading && myBooks.length === 0 ? (
+          // CASO 1: Carregamento Inicial -> Mostra apenas Esqueletos
+          <div className="book-grid">
+            {Array.from({ length: 10 }).map((_, idx) => (
+              <SkeletonCard key={`skel-init-${idx}`} />
+            ))}
+          </div>
+        ) : !Array.isArray(myBooks) || myBooks.length === 0 ? (
+          // CASO 2: Busca Concluída e Lista Vazia
           <p className="empty-message">Nenhum livro encontrado nesta prateleira.</p>
         ) : (
+          // CASO 3: Lista Contém Dados
           <div className="book-grid">
+            {/* Renderiza os livros reais */}
             {myBooks.map((book) => (
               <BookCard 
                 key={book.id} 
@@ -249,18 +266,24 @@ const Dashboard = () => {
                 showTags={showTagsOnCards} 
               />
             ))}
+            
+            {/* CASO 4: Carregando Paginação -> Adiciona Esqueletos no fim da lista */}
+            {isLoading && myBooks.length > 0 && (
+              Array.from({ length: 5 }).map((_, idx) => (
+                <SkeletonCard key={`skel-more-${idx}`} />
+              ))
+            )}
           </div>
         )}
 
-        {/* Paginação */}
-        {hasMore && (
+        {/* Paginação: Só exibe o botão se houver mais itens e não estiver carregando no momento */}
+        {hasMore && !isLoading && (
           <div className="pagination-trigger-zone">
             <button 
               onClick={handleLoadMore} 
-              disabled={isLoading} 
               className="btn-action btn-primary btn-load-more"
             >
-              {isLoading ? 'A sincronizar dados...' : 'Carregar mais obras'}
+              Carregar mais obras
             </button>
           </div>
         )}

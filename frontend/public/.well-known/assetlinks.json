@@ -1,8 +1,13 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "app.vercel.vio_lib.twa",
-        "sha256_cert_fingerprints": ["28:B4:6B:57:D8:FF:CA:2B:DC:26:B1:92:B6:49:41:40:02:34:8F:5F:8E:D6:30:24:33:E5:F2:18:37:33:DE:DB"]
-      }
-    }]
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.vercel.vio_lib.twa",
+      "sha256_cert_fingerprints": [
+        "28:B4:6B:57:D8:FF:CA:2B:DC:26:B1:92:B6:49:41:40:02:34:8F:5F:8E:D6:30:24:33:E5:F2:18:37:33:DE:DB",
+        "FE:97:A5:06:66:D5:C8:CE:7A:0D:63:FC:0D:F5:C5:6F:30:A3:AF:A6:FD:A8:41:31:E9:EC:B0:2E:25:49:F9:9F"
+      ]
+    }
+  }
+]

@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }) => {
       <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)' }}>
         <span 
           className="material-symbols-rounded spinner-icon" 
-          style={{ fontSize: '3rem', animation: 'authSpin 1s linear infinite' }}
+          style={{ fontSize: '3rem', animation: 'authSpin 1s linear infinite reverse' }}
         >
           sync
         </span>

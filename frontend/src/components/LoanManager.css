@@ -1,0 +1,40 @@
+/* ==========================================================================
+   COMPONENT CSS - LoanManager
+   Interface de formulário e status de empréstimo ativo.
+   ========================================================================== */
+
+.loan-module {
+  background: linear-gradient(145deg, #1a1a1a, var(--bg-input));
+  padding: 25px;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--accent-gold);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.loan-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent-gold);
+  margin: 0 0 15px 0;
+  font-size: 1.2em;
+}
+
+.active-loan-info {
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+.loan-form {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .loan-form { 
+    flex-direction: column; 
+    align-items: stretch; 
+  }
+}

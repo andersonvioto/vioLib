@@ -1,0 +1,101 @@
+/* ==========================================================================
+   COMPONENT CSS - BookMetadataGrid
+   Grid apresentacional de detalhes, tags e módulo de notas.
+   ========================================================================== */
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px 16px;
+  background: rgba(255, 255, 255, 0.02); 
+  padding: 25px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meta-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.meta-label {
+  color: var(--text-muted);
+  font-size: 0.75em;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.meta-value {
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.meta-empty-state {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+/* --- ESTILO DAS TAGS --- */
+.meta-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.meta-tag-pill {
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--accent-gold);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.meta-tag-pill:hover {
+  background: rgba(212, 175, 55, 0.2);
+  transform: translateY(-2px);
+}
+
+/* --- MÓDULO DE NOTAS --- */
+.notes-module {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 25px;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--accent-gold);
+}
+
+.notes-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1em;
+  color: var(--text-primary);
+  margin: 0 0 15px 0;
+}
+
+.notes-text {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  font-size: 1rem;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 600px) {
+  .meta-grid { 
+    grid-template-columns: 1fr; 
+    gap: 15px; 
+  }
+}

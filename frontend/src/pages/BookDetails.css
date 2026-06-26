@@ -1,0 +1,104 @@
+/* ==========================================================================
+   PAGE CSS - BookDetail
+   Estilos macro da tela de detalhes da obra (Layout Assimétrico Principal).
+   ========================================================================== */
+
+/* --- CONTAINER BASE --- */
+.details-container {
+  padding: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* --- LAYOUT EDITORIAL ASSIMÉTRICO --- */
+.editorial-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 50px;
+  align-items: start;
+}
+
+/* --- COLUNA ESQUERDA: CAPA --- */
+.cover-wrapper {
+  position: sticky;
+  top: 120px;
+}
+
+.details-cover {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+  border: 1px solid var(--border-color);
+}
+
+/* --- COLUNA DIREITA: INFORMAÇÕES GLOBAIS --- */
+.details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.book-main-title {
+  font-family: serif;
+  font-size: 3em;
+  color: var(--accent-gold);
+  margin: 0 0 10px 0;
+  line-height: 1.1;
+}
+
+.book-main-authors {
+  font-size: 1.3em;
+  color: var(--text-secondary);
+  margin: 0;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE: TABLETS E CELULARES
+   ========================================================================== */
+
+/* TABLET RETRATO (até 900px) */
+@media (max-width: 900px) {
+  .details-container {
+    padding: 20px;
+  }
+  
+  .editorial-layout {
+    grid-template-columns: 220px 1fr; 
+    gap: 30px;
+  }
+  
+  .book-main-title {
+    font-size: 2.2em;
+  }
+}
+
+/* CELULAR (até 600px) */
+@media (max-width: 600px) {
+  .details-container {
+    padding: 15px;
+    padding-bottom: 40px;
+  }
+
+  .editorial-layout { 
+    grid-template-columns: 1fr; 
+    gap: 20px; 
+  }
+  
+  .cover-wrapper { 
+    position: static; 
+    max-width: 180px; 
+    margin: 0 auto 15px auto; 
+  }
+  
+  .book-main-title { 
+    font-size: 1.8em; 
+    text-align: center; 
+  }
+  
+  .book-main-authors { 
+    font-size: 1.1em; 
+    text-align: center; 
+  }
+}

@@ -1,4 +1,5 @@
 import { formatDateSafe } from '../utils/bookHelpers';
+import './BookMetadataGrid.css';
 
 /**
  * Componente visual puramente apresentacional (Dumb Component).

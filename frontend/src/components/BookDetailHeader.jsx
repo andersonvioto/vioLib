@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCitationText } from '../utils/bookHelpers';
+import './BookDetailHeader.css';
 
 const BookDetailHeader = ({ book, onDelete }) => {
   const navigate = useNavigate();

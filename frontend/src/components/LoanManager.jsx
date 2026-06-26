@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import api from '../services/api';
 import { formatDateSafe } from '../utils/bookHelpers';
+import './LoanManager.css';
 
 const LoanManager = ({ bookId, activeLoan, onUpdate }) => {
   const [borrowerName, setBorrowerName] = useState('');

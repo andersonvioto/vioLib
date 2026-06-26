@@ -1,3 +1,5 @@
+import './BookDetailSkeleton.css';
+
 /**
  * Componente visual de Skeleton (Carregamento Fantasma).
  * Imita a estrutura exata de BookDetail.jsx para evitar saltos de layout (Cumulative Layout Shift)

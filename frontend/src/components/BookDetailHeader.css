@@ -1,0 +1,215 @@
+/* ==========================================================================
+   COMPONENT CSS - BookDetailHeader
+   Estilos dos botões de ação e do menu dropdown de citações.
+   ========================================================================== */
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  
+  /* EFEITO CABEÇALHO FIXO (APP BAR) */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: var(--bg-main);
+  
+  /* Truque mágico: o fundo expande para cobrir o scroll nas laterais */
+  margin: -40px -40px 40px -40px;
+  padding: 40px 40px 20px 40px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.btn-back-clean {
+  border: none;
+  padding-left: 0;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.btn-back-clean:hover {
+  background: transparent;
+  color: var(--accent-gold);
+  transform: translateX(-3px);
+}
+
+.owner-actions-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.mobile-menu-toggle {
+  display: none;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.edit-btn {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+
+.delete-btn {
+  border-color: var(--text-danger);
+  color: var(--text-danger);
+}
+
+/* --- CONTAINER E MENU DE CITAÇÕES DROPDOWN --- */
+.citation-container-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.citation-trigger-btn .arrow-icon {
+  font-size: 1.1em !important;
+  color: var(--text-muted);
+}
+
+.citation-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  width: 250px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  z-index: 1005;
+  animation: citationFadeDown 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.citation-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none !important;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.9em;
+  cursor: pointer;
+  text-align: left;
+  transition: var(--transition-smooth);
+}
+
+.citation-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.badge-format {
+  font-size: 0.75em;
+  font-weight: bold;
+  color: #000;
+  background-color: var(--accent-gold);
+  padding: 3px 6px;
+  border-radius: 4px;
+  min-width: 65px;
+  text-align: center;
+}
+
+@keyframes citationFadeDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .details-header {
+    flex-direction: row; 
+    justify-content: space-between;
+    align-items: center;
+    margin: -15px -15px 25px -15px;
+    padding: 15px 20px 15px 15px;
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--accent-gold);
+    cursor: pointer;
+    padding: 5px;
+  }
+
+  .mobile-menu-toggle .material-symbols-rounded {
+    font-size: 2.2em !important;
+    margin: 0;
+  }
+
+  .header-actions {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    width: 220px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-15px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .header-actions.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .header-actions .btn-action {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 15px;
+    background: transparent;
+    border: none !important; 
+    box-shadow: none !important;
+  }
+
+  .header-actions .btn-action:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    transform: none; 
+  }
+
+  .citation-container-dropdown {
+    display: block;
+    width: 100%;
+  }
+
+  .citation-dropdown-menu {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-sm);
+    border: none;
+    padding: 5px;
+    margin: 5px 0;
+    animation: none;
+  }
+
+  .citation-menu-item {
+    padding: 8px 10px;
+    font-size: 0.85em;
+  }
+}

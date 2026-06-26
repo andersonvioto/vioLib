@@ -9,7 +9,7 @@ import LoanManager from '../components/LoanManager';
 import BookMetadataGrid from '../components/BookMetadataGrid';
 import BookDetailSkeleton from '../components/BookDetailSkeleton'; // <-- NOVO
 
-import './book-details.css';
+import './BookDetails.css';
 
 /**
  * Tela Principal de Detalhes da Obra.

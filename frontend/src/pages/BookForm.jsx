@@ -3,17 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import CreatableSelect from 'react-select/creatable'; 
-import './book-form.css';
+import './BookForm.css'; // Atualizado para a nova nomenclatura
 
 const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"><rect width="200" height="300" fill="%232c2c2c" stroke="%23D4AF37" stroke-width="2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="28" fill="%23D4AF37">vioLib</text><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23888888">Sem Capa</text></svg>`;
 
 const getCoverUrl = (filename) => {
   if (!filename) return DEFAULT_COVER;
-  
-  // SE JÁ FOR UM LINK DA NUVEM (CLOUDINARY), RETORNA ELE DIRETO!
   if (filename.startsWith('http')) return filename; 
   
-  // Se for uma imagem antiga que ainda está no  disco local, faz o tratamento antigo:
   const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api';
   const fileBaseUrl = apiUrl.replace('/api', '/files');
   return `${fileBaseUrl}/${filename}`;
@@ -75,7 +72,6 @@ const BookForm = () => {
   const { id } = useParams();
   const isEditMode = Boolean(id);
   
-  // Adicionado o campo ISBN no formData
   const [formData, setFormData] = useState({
     isbn: '', title: '', edition: '', releaseYear: '', publisher: '', publicationLocation: '', acquisitionDate: '',
     notes: '', coverImage: '', authors: [], translators: [], tags: '',
@@ -90,8 +86,10 @@ const BookForm = () => {
   const [coverFile, setCoverFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   
-  // Estado para controlar o botão de busca da API
+  // Estados de Interface e Feedback
   const [isLoadingIsbn, setIsLoadingIsbn] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [feedback, setFeedback] = useState({ type: '', message: '' }); // Substitui os alerts()
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -112,7 +110,7 @@ const BookForm = () => {
           const b = bookRes.data;
           
           setFormData({
-            isbn: b.isbn || '', // Carrega o ISBN se existir
+            isbn: b.isbn || '', 
             title: b.title || '',
             edition: b.edition || '',
             releaseYear: b.releaseYear || '',
@@ -131,7 +129,7 @@ const BookForm = () => {
           if (b.coverImage) setPreviewUrl(getCoverUrl(b.coverImage));
         }
       } catch (error) {
-        console.error('Erro ao carregar dados:', error);
+        setFeedback({ type: 'error', message: 'Erro ao carregar dados do servidor. Tente atualizar a página.' });
       }
     };
     fetchInitialData();
@@ -160,18 +158,17 @@ const BookForm = () => {
   };
 
   // ==========================================
-  // BUSCA INTELIGENTE POR ISBN (Brasil API + Google Books Fallback)
+  // BUSCA INTELIGENTE POR ISBN 
   // ==========================================
   const handleIsbnSearch = async () => {
     if (!formData.isbn) return;
     setIsLoadingIsbn(true);
+    setFeedback({ type: '', message: '' }); // Limpa feedbacks anteriores
     
-    // Remove traços e espaços para a busca
     const cleanIsbn = formData.isbn.replace(/\D/g, '');
     let fetchedData = null;
 
     try {
-      // 1ª Tentativa: BRASIL API (Foco em livros em português)
       try {
         const response = await fetch(`https://brasilapi.com.br/api/isbn/v1/${cleanIsbn}`);
         if (response.ok) {
@@ -180,7 +177,6 @@ const BookForm = () => {
             title: data.title || '',
             publisher: data.publisher || '',
             releaseYear: data.year ? String(data.year) : '',
-            // Guardamos o array de strings puro para processar na inteligência abaixo
             authors: data.authors || [] 
           };
         }
@@ -188,7 +184,6 @@ const BookForm = () => {
         console.warn("Brasil API falhou, tentando Google Books...");
       }
 
-      // 2ª Tentativa: GOOGLE BOOKS API (Livros globais, caso o Brasil API não ache)
       if (!fetchedData) {
         const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}`);
         const data = await response.json();
@@ -204,24 +199,18 @@ const BookForm = () => {
         }
       }
 
-      // Se encontrou dados em alguma das APIs, processamos as strings
       if (fetchedData) {
-        
-        // Helper: Remove acentos e deixa minúsculo para comparar sem erros
         const removeAccents = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
-        // O Algoritmo de Tratamento de Autores
         const processedAuthors = fetchedData.authors.map(authorName => {
           let finalName = authorName.trim();
           
-          // 1. Normalização ABNT (Inversão de vírgula: "ASSIS, Machado de" -> "Machado de Assis")
           if (finalName.includes(',')) {
             const parts = finalName.split(',');
             if (parts.length === 2) {
               const lastName = parts[0].trim();
               const firstName = parts[1].trim();
               
-              // Se o sobrenome vier GRITANDO em maiúsculas, aplicamos Title Case
               const formattedLastName = lastName === lastName.toUpperCase() 
                 ? lastName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
                 : lastName;
@@ -230,21 +219,14 @@ const BookForm = () => {
             }
           }
 
-          // 2. Deduplicação Dinâmica
           const sanitizedNewName = removeAccents(finalName);
           const existingAuthor = availableAuthors.find(existing => 
             removeAccents(existing.value) === sanitizedNewName
           );
 
-          // Se achou no seu banco, seleciona a versão idêntica à do banco. Senão, cadastra o novo.
-          if (existingAuthor) {
-            return existingAuthor;
-          } else {
-            return { value: finalName, label: finalName }; // Tag verdinha pronta pra criar
-          }
+          return existingAuthor ? existingAuthor : { value: finalName, label: finalName }; 
         });
 
-        // Atualiza a tela preenchendo os dados
         setFormData(prev => ({
           ...prev,
           title: fetchedData.title || prev.title,
@@ -252,11 +234,13 @@ const BookForm = () => {
           releaseYear: fetchedData.releaseYear || prev.releaseYear,
           authors: processedAuthors.length > 0 ? processedAuthors : prev.authors
         }));
+
+        setFeedback({ type: 'info', message: 'Dados do livro preenchidos com sucesso!' });
       } else {
-        alert('Livro não encontrado nas bases de dados. Você pode preencher manualmente.');
+        setFeedback({ type: 'error', message: 'Livro não encontrado nas bases de dados. Você pode preencher manualmente.' });
       }
     } catch (error) {
-      alert('Erro ao buscar as informações. O servidor pode estar indisponível.');
+      setFeedback({ type: 'error', message: 'Erro ao buscar as informações. Verifique sua conexão com a internet.' });
     } finally {
       setIsLoadingIsbn(false);
     }
@@ -264,9 +248,11 @@ const BookForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
+    setFeedback({ type: '', message: '' });
+
     const payloadForm = new FormData();
     
-    // Adicionado envio do ISBN
     payloadForm.append('isbn', formData.isbn);
     payloadForm.append('title', formData.title);
     payloadForm.append('edition', formData.edition);
@@ -282,7 +268,7 @@ const BookForm = () => {
     const transArr = formData.translators ? formData.translators.map(t => t.value) : [];
     payloadForm.append('translators', JSON.stringify(transArr));
 
-    const tagsArr = formData.tags ? formData.tags.split(',').map(i => i.trim()) : [];
+    const tagsArr = formData.tags ? formData.tags.split(',').map(i => i.trim()).filter(i => i !== '') : [];
     payloadForm.append('tags', JSON.stringify(tagsArr));
 
     const genresArr = formData.selectedGenre ? [formData.selectedGenre] : [];
@@ -300,7 +286,8 @@ const BookForm = () => {
         navigate('/biblioteca');
       }
     } catch (error) {
-      alert(`Erro ao salvar: ` + (error.response?.data?.error || error.message));
+      setFeedback({ type: 'error', message: `Erro ao salvar: ${error.response?.data?.error || error.message}` });
+      setIsSaving(false); // Retorna o botão ao estado original em caso de erro
     }
   };
 
@@ -312,6 +299,16 @@ const BookForm = () => {
         </span>
         <h1 className="form-title">{isEditMode ? 'Editar Livro' : t('add_book')}</h1>
       </header>
+
+      {/* RENDERIZAÇÃO DO BANNER DE FEEDBACK */}
+      {feedback.message && (
+        <div className={`feedback-banner ${feedback.type}`}>
+          <span className="material-symbols-rounded">
+            {feedback.type === 'error' ? 'error' : 'check_circle'}
+          </span>
+          {feedback.message}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         
@@ -340,7 +337,6 @@ const BookForm = () => {
           </h2>
           <div className="form-grid">
             
-            {/* NOVO CAMPO: BUSCA POR ISBN */}
             <div className="form-group full-width">
               <label className="form-label">
                 <span className="material-symbols-rounded">barcode_scanner</span> ISBN (Código de Barras)
@@ -353,8 +349,8 @@ const BookForm = () => {
                   onChange={handleChange} 
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      e.preventDefault(); // Impede o envio do formulário
-                      handleIsbnSearch(); // Dispara a nossa função mágica da API
+                      e.preventDefault(); 
+                      handleIsbnSearch(); 
                     }
                   }}
                   className="form-input" 
@@ -482,12 +478,26 @@ const BookForm = () => {
 
         {/* BOTÕES DE AÇÃO */}
         <div className="form-actions">
-          <button type="button" onClick={() => navigate(-1)} className="btn-action" style={{ border: 'none', color: 'var(--text-secondary)' }}>
+          <button 
+            type="button" 
+            onClick={() => navigate(-1)} 
+            className="btn-action" 
+            style={{ border: 'none', color: 'var(--text-secondary)' }}
+            disabled={isSaving}
+          >
             Cancelar
           </button>
-          <button type="submit" className="btn-action btn-primary">
-            <span className="material-symbols-rounded">save</span>
-            {isEditMode ? 'Atualizar Livro' : 'Salvar Livro'}
+          <button 
+            type="submit" 
+            className="btn-action btn-primary"
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <span className="material-symbols-rounded spinner-icon" style={{ animation: 'authSpin 1s linear infinite' }}>sync</span>
+            ) : (
+              <span className="material-symbols-rounded">save</span>
+            )}
+            {isSaving ? 'Salvando...' : (isEditMode ? 'Atualizar Livro' : 'Salvar Livro')}
           </button>
         </div>
       </form>

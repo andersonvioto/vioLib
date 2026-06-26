@@ -1,3 +1,8 @@
+/* ==========================================================================
+   COMPONENT CSS - BookForm
+   Estilos específicos do formulário de adição e edição de livros.
+   ========================================================================== */
+
 /* --- CONTAINER E CABEÇALHO --- */
 .form-container {
   padding: 40px;
@@ -9,7 +14,7 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
   padding-bottom: 15px;
   border-bottom: 2px solid var(--accent-gold);
 }
@@ -19,6 +24,30 @@
   color: var(--accent-gold);
   margin: 0;
   font-family: var(--font-sans);
+}
+
+/* --- BANNER DE FEEDBACK --- */
+.feedback-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  border-radius: var(--radius-md);
+  margin-bottom: 25px;
+  font-weight: 500;
+  animation: filterFadeDown 0.3s ease-out;
+}
+
+.feedback-banner.error {
+  background-color: rgba(255, 77, 77, 0.1);
+  color: #ff4d4d;
+  border: 1px solid #ff4d4d;
+}
+
+.feedback-banner.info {
+  background-color: rgba(212, 175, 55, 0.1);
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
 }
 
 /* --- CARTÕES DE SEÇÃO --- */
@@ -46,7 +75,7 @@
 /* --- GRID DE CAMPOS --- */
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Duas colunas lado a lado */
+  grid-template-columns: 1fr 1fr; 
   gap: 20px;
 }
 
@@ -56,7 +85,6 @@
   gap: 8px;
 }
 
-/* Modificador para campos que ocupam a linha inteira */
 .form-group.full-width {
   grid-column: 1 / -1; 
 }
@@ -82,11 +110,11 @@
 }
 
 .isbn-wrapper .form-input {
-  flex: 1; /* O input cresce para ocupar o espaço máximo */
+  flex: 1; 
 }
 
 .isbn-wrapper .btn-action {
-  padding: 0 20px; /* Reduz padding lateral para não ficar enorme */
+  padding: 0 20px; 
 }
 
 .isbn-wrapper .btn-action:disabled {
@@ -149,7 +177,6 @@
   margin-bottom: 10px;
 }
 
-/* Imagem de Pré-visualização gerada pelo React */
 .cover-preview {
   height: 200px;
   width: auto;
@@ -158,7 +185,6 @@
   margin-bottom: 15px;
 }
 
-/* Esconde o input nativo feio */
 .file-input-hidden {
   display: none;
 }
@@ -171,28 +197,25 @@
   margin-top: 30px;
 }
 
-/* Responsividade: Tela pequena vira 1 coluna só */
-/* TABLET RETRATO E CELULAR GRANDE (até 900px) */
-@media (max-width: 900px) {
-  .form-container {
-    padding: 20px;
-  }
-  
-  .form-section {
-    padding: 20px; /* Reduz o padding interno dos cartões para poupar espaço */
-  }
-  
-  .form-grid {
-    /* Mantém 2 colunas no tablet, mas com menos espaçamento */
-    gap: 15px; 
-  }
+.form-actions .btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
-/* CELULAR (até 600px) */
+/* ==========================================================================
+   RESPONSIVIDADE (Tablet & Mobile)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .form-container { padding: 20px; }
+  .form-section { padding: 20px; }
+  .form-grid { gap: 15px; }
+}
+
 @media (max-width: 600px) {
   .form-container {
     padding: 10px;
-    padding-bottom: 80px; /* Espaço extra para não conflitar com a navegação nativa do celular */
+    padding-bottom: 80px; 
   }
 
   .form-header {
@@ -201,40 +224,25 @@
     gap: 5px;
   }
 
-  .form-title {
-    font-size: 1.8em;
-  }
+  .form-title { font-size: 1.8em; }
+  .form-grid { grid-template-columns: 1fr; }
 
-  .form-grid {
-    grid-template-columns: 1fr; /* Transforma TUDO numa única coluna */
-  }
-
-  /* Aumenta as áreas de toque (Touch Targets) para 48px de altura */
-  .form-input, 
-  .form-select {
+  .form-input, .form-select {
     padding: 14px 15px;
-    font-size: 16px; /* Evita Zoom no iOS */
+    font-size: 16px; 
   }
 
-  /* Botões de Ação na base do formulário esticam para a largura total */
   .form-actions {
-    flex-direction: column-reverse; /* Coloca o Salvar no topo e o Cancelar embaixo */
+    flex-direction: column-reverse; 
     gap: 10px;
   }
   
   .form-actions .btn-action {
     width: 100%;
     justify-content: center;
-    padding: 15px; /* Botão bem alto para o polegar */
+    padding: 15px; 
   }
 
-  /* O input e botão do ISBN ficam empilhados em telas pequenas */
-  .isbn-wrapper {
-    flex-direction: column;
-  }
-  
-  .isbn-wrapper .btn-action {
-    width: 100%;
-    padding: 15px;
-  }
+  .isbn-wrapper { flex-direction: column; }
+  .isbn-wrapper .btn-action { width: 100%; padding: 15px; }
 }

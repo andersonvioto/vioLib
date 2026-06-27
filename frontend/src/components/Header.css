@@ -13,7 +13,6 @@
   top: 0;
   z-index: 1000;
   background-color: var(--bg-main);
-  /* As margens negativas fazem a barra colar no topo da tela (bleed effect) */
   margin: -40px -40px 30px -40px;
   padding: 40px 40px 20px 40px;
   border-bottom: 1px solid var(--border-color);
@@ -23,18 +22,37 @@
   display: flex;
   align-items: center;
   gap: 15px;
+  /* Garante que o container não force um tamanho maior que o espaço disponível */
+  flex: 1 1 auto; 
+  min-width: 0; 
 }
 
 .brand-logo {
   height: 45px;
   width: auto;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  /* Impede que o logo encolha e fique distorcido */
+  flex-shrink: 0; 
+}
+
+.library-switcher-wrapper {
+  /* Permite que o wrapper do select encolha, mas sem desaparecer */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.library-select {
+  min-width: 150px;
+  /* Garante que o select respeite o tamanho do pai e ative o truncamento (ellipsis) */
+  max-width: 100%;
 }
 
 .user-actions-container {
   display: flex;
   align-items: center;
   position: relative; 
+  /* Garante que o menu nunca seja empurrado para fora da tela */
+  flex-shrink: 0; 
 }
 
 .mobile-menu-toggle {
@@ -118,7 +136,6 @@
     font-size: 2.2em !important; 
   }
 
-  /* Converte o menu de ações do header em um Dropdown suspenso */
   .header-actions {
     position: absolute;
     top: calc(100% + 5px);
@@ -159,7 +176,6 @@
     transform: none; 
   }
 
-  /* Ajuste de contraste para o botão dourado no dropdown mobile */
   .header-actions .btn-primary {
     color: var(--accent-gold) !important;
   }

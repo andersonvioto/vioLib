@@ -28,7 +28,7 @@ const Header = () => {
     setShareMsg({ type: '', text: '' });
     setGuestEmail('');
     setShowShareModal(true);
-    setIsMenuOpen(false); // Fecha o menu mobile se estiver aberto
+    setIsMenuOpen(false); 
   };
 
   // --- HANDLER: ENVIAR CONVITE ---
@@ -42,9 +42,8 @@ const Header = () => {
     try {
       const response = await api.post('/access/share', { guestEmail });
       setShareMsg({ type: 'success', text: response.data.message });
-      setGuestEmail(''); // Limpa o campo após o sucesso
+      setGuestEmail(''); 
       
-      // Fecha o modal automaticamente após 2 segundos em caso de sucesso
       setTimeout(() => setShowShareModal(false), 2000);
     } catch (error) {
       setShareMsg({ 
@@ -72,10 +71,9 @@ const Header = () => {
         <div className="brand-container" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <img src={miniLogo} alt="vioLib" className="brand-logo" />
           
-          {/* Seletor de Bibliotecas Compartilhadas */}
           <div className="library-switcher-wrapper">
             <select 
-              className="form-select" 
+              className="form-select library-select" 
               style={{ 
                 backgroundColor: 'var(--bg-input)', 
                 color: 'var(--accent-gold)', 
@@ -84,8 +82,11 @@ const Header = () => {
                 borderRadius: '8px',
                 padding: '10px 16px',
                 fontSize: '1rem',
-                minWidth: '220px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                // Truncamento Inteligente para evitar quebra de layout mobile
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
               }}
               value={currentLibrary ? currentLibrary.ownerId : "mine"}
               onChange={handleLibraryChange}
@@ -95,7 +96,6 @@ const Header = () => {
               {sharedLibraries.length > 0 && (
                 <optgroup label="Compartilhadas Comigo">
                   {sharedLibraries.map(lib => {
-                    // Fallback dinâmico: tenta extrair o nome independente do formato do backend
                     const ownerName = lib.ownerName || lib.Owner?.name || lib.User?.name || 'Convidado';
                     
                     return (
@@ -117,7 +117,6 @@ const Header = () => {
 
           <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
             
-            {/* Ações Visíveis Apenas na Própria Biblioteca */}
             {!currentLibrary && (
               <>
                 <button onClick={() => { navigate('/configuracoes'); setIsMenuOpen(false); }} className="btn-action">
@@ -170,7 +169,6 @@ const Header = () => {
               Digite o e-mail do usuário que receberá acesso de leitura à sua biblioteca.
             </p>
 
-            {/* Mensagens de Feedback Inline */}
             {shareMsg.text && (
               <div style={{
                 padding: '10px', borderRadius: '6px', marginBottom: '20px', fontSize: '0.9rem',

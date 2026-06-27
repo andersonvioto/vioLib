@@ -13,93 +13,226 @@ export const formatDateSafe = (dateString) => {
   return dateString.split('-').reverse().join('/');
 };
 
+// ============================================================================
+// FORMATADORES DE NOMES DE AUTORES (Por Norma)
+// ============================================================================
+
+const formatAuthorABNT = (fullName) => {
+  const parts = fullName.trim().split(' ');
+  if (parts.length <= 1) return fullName.toUpperCase();
+  const lastName = parts.pop();
+  return `${lastName.toUpperCase()}, ${parts.join(' ')}`;
+};
+
+const formatAuthorAPA = (fullName) => {
+  const parts = fullName.trim().split(' ');
+  if (parts.length <= 1) return fullName;
+  const lastName = parts.pop();
+  const initials = parts.map(name => `${name.charAt(0)}.`);
+  return `${lastName}, ${initials.join(' ')}`;
+};
+
+const formatAuthorMLA = (fullName, isFirst = true) => {
+  const parts = fullName.trim().split(' ');
+  if (parts.length <= 1) return fullName;
+  // MLA mantém o nome dos co-autores na ordem direta
+  if (!isFirst) return fullName; 
+  const lastName = parts.pop();
+  return `${lastName}, ${parts.join(' ')}`;
+};
+
+const formatAuthorVancouver = (fullName) => {
+  const parts = fullName.trim().split(' ');
+  if (parts.length <= 1) return fullName.replace(/\./g, '').replace(/,/g, '');
+  const lastName = parts.pop();
+  const initials = parts.map(name => name.charAt(0)).join('');
+  return `${lastName} ${initials}`;
+};
+
+// ============================================================================
+// MOTOR PRINCIPAL DE CITAÇÃO BIBLIOGRÁFICA
+// ============================================================================
+
 /**
  * Formata a string de citação com base nas normas internacionais.
- * Retorna um objeto com a versão Plain Text (para bloco de notas) e a versão HTML (para o Word/Docs com negrito e itálico).
+ * Retorna um objeto com a versão Plain Text e HTML (negrito/itálico).
  * * @param {Object} book - O objeto do livro contendo autores, título, etc.
  * @param {'ABNT' | 'APA' | 'Vancouver' | 'Harvard' | 'MLA' | 'Chicago'} format - O formato desejado.
  * @returns {{ plain: string, html: string }}
  */
 export const getCitationText = (book, format) => {
+  const rawAuthors = book.Authors || [];
+  const rawTranslators = book.Translators || [];
   
-  // Tratamento específico ABNT (SOBRENOME, Nome)
-  const formatAuthorABNT = (fullName) => {
-    if (!fullName) return 'AUTOR DESCONHECIDO';
-    const parts = fullName.trim().split(' ');
-    if (parts.length <= 1) return fullName.toUpperCase();
-    
-    const lastName = parts[parts.length - 1];
-    const firstNames = parts.slice(0, -1).join(' ');
-    return `${lastName.toUpperCase()}, ${firstNames}`;
-  };
+  const title = book.title ? book.title.trim() : '';
+  const year = book.releaseYear ? String(book.releaseYear).trim() : '';
+  const city = book.publicationLocation ? book.publicationLocation.trim() : '';
+  const pub = book.publisher ? book.publisher.trim() : '';
+  const rawEdition = book.edition ? book.edition.trim() : '';
 
-  // Tratamento Específico APA, Harvard, Chicago (Sobrenome, N. do Meio.)
-  const formatAuthorAPA = (fullName) => {
-    if (!fullName) return 'Autor Desconhecido';
-    const parts = fullName.trim().split(' ');
-    if (parts.length <= 1) return fullName;
-    
-    const lastName = parts[parts.length - 1];
-    const initials = parts.slice(0, -1).map(name => `${name.charAt(0)}.`);
-    return `${lastName}, ${initials.join(' ')}`;
-  };
-
-  // Tratamento Específico MLA e Vancouver (Sobrenome, Nome Inteiro ou Iniciais coladas)
-  const formatAuthorMLA = (fullName) => {
-    if (!fullName) return 'Autor Desconhecido';
-    const parts = fullName.trim().split(' ');
-    if (parts.length <= 1) return fullName;
-    const lastName = parts.pop();
-    return `${lastName}, ${parts.join(' ')}`;
-  };
-
-  const authorFull = book.Authors?.length > 0 ? book.Authors[0].name : '';
-  const title = book.title || 'Título Desconhecido';
-  const year = book.releaseYear || '[s.d.]';
-  const city = book.publicationLocation || '[S.l.]';
-  const pub = book.publisher || '[s.n.]';
-  const ed = book.edition ? `${book.edition}. ed. ` : ''; // Ajuste ABNT de edição
-
-  switch(format) {
-    case 'ABNT': 
-      return {
-        plain: `${formatAuthorABNT(authorFull)}. ${title}. ${ed}${city}: ${pub}, ${year}.`,
-        html: `${formatAuthorABNT(authorFull)}. <b>${title}</b>. ${ed}${city}: ${pub}, ${year}.`
-      };
-    
-    case 'APA': 
-      return {
-        plain: `${formatAuthorAPA(authorFull)}. (${year}). ${title}. ${pub}.`,
-        html: `${formatAuthorAPA(authorFull)}. (${year}). <i>${title}</i>. ${pub}.`
-      };
-    
-    case 'Vancouver': 
-      // Vancouver costuma grudar as iniciais: SOBRENOME AS
-      const vancouverAuthor = authorFull ? formatAuthorAPA(authorFull).replace(/\./g, '').replace(/,/g, '') : 'Autor Desconhecido';
-      return {
-        plain: `${vancouverAuthor}. ${title}. ${ed}${city}: ${pub}; ${year}.`,
-        html: `${vancouverAuthor}. ${title}. ${ed}${city}: ${pub}; ${year}.` // Vancouver não usa marcações fortes
-      };
-    
-    case 'Harvard': 
-      return {
-        plain: `${formatAuthorAPA(authorFull)}, ${year}. ${title}. ${ed}${city}: ${pub}.`,
-        html: `${formatAuthorAPA(authorFull)}, ${year}. <i>${title}</i>. ${ed}${city}: ${pub}.`
-      };
-
-    case 'MLA': 
-      return {
-        plain: `${formatAuthorMLA(authorFull)}. ${title}. ${ed}${pub}, ${year}.`,
-        html: `${formatAuthorMLA(authorFull)}. <i>${title}</i>. ${ed}${pub}, ${year}.`
-      };
-    
-    case 'Chicago': 
-      return {
-        plain: `${formatAuthorMLA(authorFull)}. ${title}. ${city}: ${pub}, ${year}.`,
-        html: `${formatAuthorMLA(authorFull)}. <i>${title}</i>. ${city}: ${pub}, ${year}.`
-      };
-
-    default: 
-      return { plain: '', html: '' };
+  // --- TRATAMENTO INTELIGENTE DA EDIÇÃO ---
+  // Verifica se a string contém apenas números
+  const isPureNumber = /^\d+$/.test(rawEdition);
+  let edABNT = '';
+  let edAPA = '';
+  
+  if (rawEdition) {
+    if (isPureNumber) {
+      edABNT = `${rawEdition}. ed.`;
+      edAPA = `${rawEdition}ª ed.`;
+    } else {
+      // Deixa a edição exatamente como o usuário digitou
+      edABNT = rawEdition;
+      edAPA = rawEdition;
+    }
   }
+
+  // --- TRATAMENTO INTELIGENTE DOS AUTORES ---
+  const getAuthorsBlock = (style) => {
+    if (rawAuthors.length === 0) return '';
+    
+    switch(style) {
+      case 'ABNT': {
+        if (rawAuthors.length <= 3) {
+          return rawAuthors.map(a => formatAuthorABNT(a.name)).join('; ');
+        } else {
+          return `${formatAuthorABNT(rawAuthors[0].name)} et al.`;
+        }
+      }
+      case 'APA': {
+        const apaAuths = rawAuthors.map(a => formatAuthorAPA(a.name));
+        if (apaAuths.length === 1) return apaAuths[0];
+        if (apaAuths.length === 2) return `${apaAuths[0]} & ${apaAuths[1]}`;
+        if (apaAuths.length <= 20) {
+          const last = apaAuths.pop();
+          return `${apaAuths.join(', ')}, & ${last}`;
+        }
+        const first19 = apaAuths.slice(0, 19).join(', ');
+        return `${first19}, ... ${apaAuths[apaAuths.length - 1]}`;
+      }
+      case 'Vancouver': {
+        const vanAuths = rawAuthors.map(a => formatAuthorVancouver(a.name));
+        if (vanAuths.length <= 6) return vanAuths.join(', ');
+        return `${vanAuths.slice(0, 6).join(', ')}, et al`;
+      }
+      case 'MLA': 
+      case 'Chicago': {
+        if (rawAuthors.length === 1) return formatAuthorMLA(rawAuthors[0].name, true);
+        if (rawAuthors.length === 2) return `${formatAuthorMLA(rawAuthors[0].name, true)}, e ${formatAuthorMLA(rawAuthors[1].name, false)}`;
+        return `${formatAuthorMLA(rawAuthors[0].name, true)}, et al.`;
+      }
+      default:
+        return rawAuthors.map(a => a.name).join(', ');
+    }
+  };
+
+  // --- TRATAMENTO INTELIGENTE DOS TRADUTORES ---
+  const tNames = rawTranslators.map(t => t.name);
+  const getTranslatorsBlock = (style) => {
+    if (tNames.length === 0) return '';
+    switch(style) {
+      case 'ABNT': return `Tradução de ${tNames.join(' e ')}`;
+      case 'APA': return `(${tNames.join(' & ')}, Trad.)`;
+      default: return `Traduzido por ${tNames.join(' e ')}`;
+    }
+  };
+
+  const authors = getAuthorsBlock(format);
+  const translators = getTranslatorsBlock(format);
+
+  // Helper para agrupar as partes de forma limpa, ignorando as vazias
+  const joinParts = (parts, separator = '. ') => {
+    return parts.filter(p => p && p.trim() !== '').join(separator);
+  };
+
+  // --- TRATAMENTO DO BLOCO DE PUBLICAÇÃO ---
+  const getPubBlockABNT = () => {
+    let p = [];
+    if (city && pub) p.push(`${city}: ${pub}`);
+    else if (city) p.push(city);
+    else if (pub) p.push(pub);
+    if (year) p.push(year);
+    return p.join(', ');
+  };
+  
+  const getPubBlockVancouver = () => {
+    let block = '';
+    if (city && pub) block = `${city}: ${pub}`;
+    else if (city) block = city;
+    else if (pub) block = pub;
+    if (block && year) return `${block}; ${year}`;
+    if (year) return year;
+    return block;
+  };
+
+  let plain = '';
+  let html = '';
+
+  // --- CONSTRUÇÃO FINAL DAS CITAÇÕES ---
+  switch(format) {
+    case 'ABNT': {
+      const abntPub = getPubBlockABNT(); // Retorna "Cidade: Editora, Ano" ou as partes disponíveis
+      const finalStrPlain = joinParts([authors, title, translators, edABNT, abntPub]);
+      const finalStrHtml = joinParts([authors, title ? `<b>${title}</b>` : '', translators, edABNT, abntPub]);
+      
+      plain = finalStrPlain ? `${finalStrPlain}.` : '';
+      html = finalStrHtml ? `${finalStrHtml}.` : '';
+      break;
+    }
+    case 'APA': {
+      // APA: Author. (Year). Title (Translator, Trad.; Edition). Publisher.
+      const apaYear = year ? `(${year})` : '';
+      const parenContent = joinParts([translators ? `${tNames.join(' & ')}, Trad.` : '', edAPA ? edAPA.replace(/[()]/g, '') : ''].filter(Boolean), '; ');
+      
+      let titleFullPlain = title + (parenContent ? ` (${parenContent})` : '');
+      let titleFullHtml = title ? `<i>${title}</i>` + (parenContent ? ` (${parenContent})` : '') : (parenContent ? `(${parenContent})` : '');
+
+      const finalStrPlain = joinParts([authors, apaYear, titleFullPlain, pub]);
+      const finalStrHtml = joinParts([authors, apaYear, titleFullHtml, pub]);
+
+      plain = finalStrPlain ? `${finalStrPlain}.` : '';
+      html = finalStrHtml ? `${finalStrHtml}.` : '';
+      break;
+    }
+    case 'Vancouver': {
+      const vanPub = getPubBlockVancouver();
+      const finalStr = joinParts([authors, title, translators, edABNT, vanPub]);
+      plain = finalStr ? `${finalStr}.` : '';
+      html = plain; // Vancouver não usa marcações itálico/negrito
+      break;
+    }
+    case 'Harvard': {
+      let harvardAuthYear = authors + (year ? `, ${year}` : '');
+      const harvardPub = city && pub ? `${city}: ${pub}` : (city || pub);
+      
+      const finalStrPlain = joinParts([harvardAuthYear, title, translators, edABNT, harvardPub]);
+      const finalStrHtml = joinParts([harvardAuthYear, title ? `<i>${title}</i>` : '', translators, edABNT, harvardPub]);
+      
+      plain = finalStrPlain ? `${finalStrPlain}.` : '';
+      html = finalStrHtml ? `${finalStrHtml}.` : '';
+      break;
+    }
+    case 'MLA': {
+      const mlaPubYear = joinParts([pub, year], ', ');
+      
+      const finalStrPlain = joinParts([authors, title, translators, edABNT, mlaPubYear]);
+      const finalStrHtml = joinParts([authors, title ? `<i>${title}</i>` : '', translators, edABNT, mlaPubYear]);
+      
+      plain = finalStrPlain ? `${finalStrPlain}.` : '';
+      html = finalStrHtml ? `${finalStrHtml}.` : '';
+      break;
+    }
+    case 'Chicago': {
+      const chiPubBlock = getPubBlockABNT(); // Mesmo modelo de publicação da ABNT
+      
+      const finalStrPlain = joinParts([authors, title, translators, edABNT, chiPubBlock]);
+      const finalStrHtml = joinParts([authors, title ? `<i>${title}</i>` : '', translators, edABNT, chiPubBlock]);
+      
+      plain = finalStrPlain ? `${finalStrPlain}.` : '';
+      html = finalStrHtml ? `${finalStrHtml}.` : '';
+      break;
+    }
+  }
+
+  return { plain, html };
 };

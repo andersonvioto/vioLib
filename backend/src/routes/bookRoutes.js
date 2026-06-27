@@ -18,15 +18,15 @@ router.route('/')
   .get(bookController.getAllBooks)
   .post(upload.single('coverImage'), bookController.createBook);
 
-router.route('/:id')
-  .get(bookController.getBookById)
-  .put(upload.single('coverImage'), bookController.updateBook)
-  .delete(bookController.deleteBook);
-
 /**
  * Rotas auxiliares para metadados de livros
  */
 router.get('/authors', bookController.getAllAuthors);
 router.get('/translators', bookController.getAllTranslators);
+
+router.route('/:id')
+  .get(bookController.getBookById)
+  .put(upload.single('coverImage'), bookController.updateBook)
+  .delete(bookController.deleteBook);
 
 module.exports = router;

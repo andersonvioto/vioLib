@@ -86,7 +86,6 @@ const BookForm = () => {
   const [coverFile, setCoverFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   
-  // Estados de Interface e Feedback
   const [isLoadingIsbn, setIsLoadingIsbn] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' }); 
@@ -94,16 +93,19 @@ const BookForm = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [attrRes, authRes, transRes] = await Promise.all([
-          api.get('/attributes'),
-          api.get('/books/authors').catch(() => ({ data: [] })), 
-          api.get('/books/translators').catch(() => ({ data: [] }))
-        ]);
+        // CORREÇÃO: Buscamos as taxonomias globais de forma resiliente e isolada
+        const attrRes = await api.get('/attributes').catch(() => ({ data: { genres: [] } }));
+        const authRes = await api.get('/books/authors').catch(() => ({ data: [] }));
+        const transRes = await api.get('/books/translators').catch(() => ({ data: [] }));
         
         setAttributes(attrRes.data);
         
-        setAvailableAuthors(authRes.data.map(a => ({ value: a.name, label: a.name })));
-        setAvailableTranslators(transRes.data.map(t => ({ value: t.name, label: t.name })));
+        // Mapeia corretamente os arrays para o formato que o React-Select entende
+        const authorsList = Array.isArray(authRes.data) ? authRes.data.map(a => ({ value: a.name, label: a.name })) : [];
+        const translatorsList = Array.isArray(transRes.data) ? transRes.data.map(t => ({ value: t.name, label: t.name })) : [];
+        
+        setAvailableAuthors(authorsList);
+        setAvailableTranslators(translatorsList);
 
         if (isEditMode) {
           const bookRes = await api.get(`/books/${id}`);
@@ -129,7 +131,7 @@ const BookForm = () => {
           if (b.coverImage) setPreviewUrl(getCoverUrl(b.coverImage));
         }
       } catch (error) {
-        setFeedback({ type: 'error', message: 'Erro ao carregar dados do servidor. Tente atualizar a página.' });
+        setFeedback({ type: 'error', message: 'Erro ao carregar os dados. Verifique a sua conexão.' });
       }
     };
     fetchInitialData();
@@ -155,21 +157,14 @@ const BookForm = () => {
     const file = e.target.files[0];
     
     if (file) {
-      // VALIDAÇÃO DE SEGURANÇA: Limite de 2MB (2 * 1024 * 1024 bytes)
       const MAX_FILE_SIZE = 2097152; 
       
       if (file.size > MAX_FILE_SIZE) {
-        setFeedback({ 
-          type: 'error', 
-          message: 'A imagem é muito pesada. O tamanho máximo permitido para a capa é de 2MB.' 
-        });
-        
-        // Limpa o input do ficheiro para forçar o utilizador a escolher outro
+        setFeedback({ type: 'error', message: 'A imagem é muito pesada. O tamanho máximo permitido para a capa é de 2MB.' });
         e.target.value = null; 
         return; 
       }
       
-      // Se passar a validação, limpa mensagens de erro antigas e carrega a imagem
       setFeedback({ type: '', message: '' });
       setCoverFile(file);
       setPreviewUrl(URL.createObjectURL(file));
@@ -179,9 +174,6 @@ const BookForm = () => {
     }
   };
 
-  // ==========================================
-  // BUSCA INTELIGENTE POR ISBN 
-  // ==========================================
   const handleIsbnSearch = async () => {
     if (!formData.isbn) return;
     setIsLoadingIsbn(true);
@@ -259,10 +251,10 @@ const BookForm = () => {
 
         setFeedback({ type: 'info', message: 'Dados do livro preenchidos com sucesso!' });
       } else {
-        setFeedback({ type: 'error', message: 'Livro não encontrado nas bases de dados. Você pode preencher manualmente.' });
+        setFeedback({ type: 'error', message: 'Livro não encontrado nas bases de dados. Preencha manualmente.' });
       }
     } catch (error) {
-      setFeedback({ type: 'error', message: 'Erro ao buscar as informações. Verifique sua conexão com a internet.' });
+      setFeedback({ type: 'error', message: 'Erro ao buscar as informações. Verifique sua conexão.' });
     } finally {
       setIsLoadingIsbn(false);
     }
@@ -322,7 +314,6 @@ const BookForm = () => {
         <h1 className="form-title">{isEditMode ? 'Editar Livro' : t('add_book')}</h1>
       </header>
 
-      {/* RENDERIZAÇÃO DO BANNER DE FEEDBACK */}
       {feedback.message && (
         <div className={`feedback-banner ${feedback.type}`}>
           <span className="material-symbols-rounded">
@@ -334,7 +325,6 @@ const BookForm = () => {
 
       <form onSubmit={handleSubmit}>
         
-        {/* SEÇÃO 1: UPLOAD DE CAPA */}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">image</span> Capa do Livro
@@ -352,7 +342,6 @@ const BookForm = () => {
           </label>
         </div>
 
-        {/* SEÇÃO 2: INFORMAÇÕES PRINCIPAIS */}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">auto_stories</span> Informações Principais
@@ -385,7 +374,7 @@ const BookForm = () => {
                   disabled={isLoadingIsbn || !formData.isbn}
                 >
                   {isLoadingIsbn ? (
-                    <span className="material-symbols-rounded spinner-icon" style={{ animation: 'authSpin 1s linear infinite' }}>sync</span>
+                    <span className="material-symbols-rounded spinner-icon" style={{ animation: 'authSpin 1s linear infinite reverse' }}>sync</span>
                   ) : (
                     <span className="material-symbols-rounded">search</span>
                   )}
@@ -429,7 +418,6 @@ const BookForm = () => {
           </div>
         </div>
 
-        {/* SEÇÃO 3: CLASSIFICAÇÃO */}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">category</span> Classificação
@@ -459,7 +447,6 @@ const BookForm = () => {
           </div>
         </div>
 
-        {/* SEÇÃO 4: DETALHES EDITORIAIS */}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">domain</span> Detalhes Editoriais
@@ -488,7 +475,6 @@ const BookForm = () => {
           </div>
         </div>
 
-        {/* SEÇÃO 5: NOTAS */}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">edit_note</span> Notas Pessoais
@@ -498,7 +484,6 @@ const BookForm = () => {
           </div>
         </div>
 
-        {/* BOTÕES DE AÇÃO */}
         <div className="form-actions">
           <button 
             type="button" 
@@ -515,7 +500,7 @@ const BookForm = () => {
             disabled={isSaving}
           >
             {isSaving ? (
-              <span className="material-symbols-rounded spinner-icon" style={{ animation: 'authSpin 1s linear infinite' }}>sync</span>
+              <span className="material-symbols-rounded spinner-icon" style={{ animation: 'authSpin 1s linear infinite reverse' }}>sync</span>
             ) : (
               <span className="material-symbols-rounded">save</span>
             )}

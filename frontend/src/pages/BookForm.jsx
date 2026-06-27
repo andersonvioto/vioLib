@@ -16,7 +16,6 @@ const getCoverUrl = (filename) => {
   return `${fileBaseUrl}/${filename}`;
 };
 
-// --- ESTILOS CUSTOMIZADOS PARA O REACT-SELECT ---
 const customSelectStyles = {
   control: (provided, state) => ({
     ...provided,
@@ -93,14 +92,14 @@ const BookForm = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // CORREÇÃO: Buscamos as taxonomias globais de forma resiliente e isolada
-        const attrRes = await api.get('/attributes').catch(() => ({ data: { genres: [] } }));
-        const authRes = await api.get('/books/authors').catch(() => ({ data: [] }));
-        const transRes = await api.get('/books/translators').catch(() => ({ data: [] }));
+        const [attrRes, authRes, transRes] = await Promise.all([
+          api.get('/attributes').catch(() => ({ data: { genres: [] } })),
+          api.get('/books/authors').catch(() => ({ data: [] })),
+          api.get('/books/translators').catch(() => ({ data: [] }))
+        ]);
         
         setAttributes(attrRes.data);
         
-        // Mapeia corretamente os arrays para o formato que o React-Select entende
         const authorsList = Array.isArray(authRes.data) ? authRes.data.map(a => ({ value: a.name, label: a.name })) : [];
         const translatorsList = Array.isArray(transRes.data) ? transRes.data.map(t => ({ value: t.name, label: t.name })) : [];
         
@@ -111,6 +110,12 @@ const BookForm = () => {
           const bookRes = await api.get(`/books/${id}`);
           const b = bookRes.data;
           
+          const bookAuthors = b.Authors || b.authors || [];
+          const bookTranslators = b.Translators || b.translators || [];
+          const bookTags = b.Tags || b.tags || [];
+          const bookGenres = b.Genres || b.genres || [];
+          const bookSubgenres = b.Subgenres || b.subgenres || [];
+
           setFormData({
             isbn: b.isbn || '', 
             title: b.title || '',
@@ -121,11 +126,11 @@ const BookForm = () => {
             acquisitionDate: b.acquisitionDate ? b.acquisitionDate.split('T')[0] : '',
             notes: b.notes || '',
             coverImage: b.coverImage || '',
-            authors: b.Authors ? b.Authors.map(a => ({ value: a.name, label: a.name })) : [],
-            translators: b.Translators ? b.Translators.map(t => ({ value: t.name, label: t.name })) : [],
-            tags: b.Tags ? b.Tags.map(t => t.name).join(', ') : '',
-            selectedGenre: b.Genres && b.Genres.length > 0 ? b.Genres[0].name : '',
-            selectedSubgenres: b.Subgenres ? b.Subgenres.map(s => s.id.toString()) : []
+            authors: bookAuthors.map(a => ({ value: a.name, label: a.name })),
+            translators: bookTranslators.map(t => ({ value: t.name, label: t.name })),
+            tags: bookTags.map(t => t.name).join(', '),
+            selectedGenre: bookGenres.length > 0 ? bookGenres[0].name : '',
+            selectedSubgenres: bookSubgenres.map(s => s.id.toString())
           });
 
           if (b.coverImage) setPreviewUrl(getCoverUrl(b.coverImage));
@@ -168,6 +173,8 @@ const BookForm = () => {
       setFeedback({ type: '', message: '' });
       setCoverFile(file);
       setPreviewUrl(URL.createObjectURL(file));
+      // Limpa a URL se o usuário escolher um arquivo manual
+      setFormData(prev => ({ ...prev, coverImage: '' })); 
     } else {
       setCoverFile(null);
       setPreviewUrl(null);
@@ -191,6 +198,8 @@ const BookForm = () => {
             title: data.title || '',
             publisher: data.publisher || '',
             releaseYear: data.year ? String(data.year) : '',
+            location: data.location || '',
+            coverUrl: data.cover_url || '',
             authors: data.authors || [] 
           };
         }
@@ -204,10 +213,17 @@ const BookForm = () => {
         
         if (data.items && data.items.length > 0) {
           const info = data.items[0].volumeInfo;
+          
+          // Google Books retorna capas em http (sem 's'), o que gera erro de Mixed Content no deploy
+          let cUrl = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '';
+          if (cUrl) cUrl = cUrl.replace(/^http:/i, 'https:');
+
           fetchedData = {
             title: info.title || '',
             publisher: info.publisher || '',
             releaseYear: info.publishedDate ? info.publishedDate.substring(0, 4) : '',
+            location: '', // Google Books não possui uma chave limpa de local
+            coverUrl: cUrl,
             authors: info.authors || [] 
           };
         }
@@ -241,13 +257,37 @@ const BookForm = () => {
           return existingAuthor ? existingAuthor : { value: finalName, label: finalName }; 
         });
 
+        // Atualização dos dados do formulário
         setFormData(prev => ({
           ...prev,
           title: fetchedData.title || prev.title,
           publisher: fetchedData.publisher || prev.publisher,
           releaseYear: fetchedData.releaseYear || prev.releaseYear,
-          authors: processedAuthors.length > 0 ? processedAuthors : prev.authors
+          publicationLocation: fetchedData.location || prev.publicationLocation,
+          authors: processedAuthors.length > 0 ? processedAuthors : prev.authors,
+          coverImage: (!coverFile && fetchedData.coverUrl) ? fetchedData.coverUrl : prev.coverImage
         }));
+
+        // Tratamento da imagem da capa
+        if (fetchedData.coverUrl && !coverFile) {
+          try {
+            const imgRes = await fetch(fetchedData.coverUrl);
+            if (imgRes.ok) {
+              // Sucesso no CORS: Transforma a imagem num arquivo File local
+              const blob = await imgRes.blob();
+              const file = new File([blob], 'cover_fetched.jpg', { type: blob.type });
+              setCoverFile(file);
+              setPreviewUrl(URL.createObjectURL(file));
+              // Limpa a URL do formData já que agora temos o arquivo
+              setFormData(prev => ({ ...prev, coverImage: '' }));
+            } else {
+              setPreviewUrl(fetchedData.coverUrl);
+            }
+          } catch (err) {
+            // Falha no CORS: Fazemos o fallback exibindo a URL diretamente (será salva como string)
+            setPreviewUrl(fetchedData.coverUrl);
+          }
+        }
 
         setFeedback({ type: 'info', message: 'Dados do livro preenchidos com sucesso!' });
       } else {
@@ -289,7 +329,12 @@ const BookForm = () => {
     payloadForm.append('genres', JSON.stringify(genresArr));
     payloadForm.append('subgenres', JSON.stringify(formData.selectedSubgenres));
 
-    if (coverFile) payloadForm.append('coverImage', coverFile);
+    if (coverFile) {
+      payloadForm.append('coverImage', coverFile);
+    } else if (formData.coverImage) {
+      // Garante que a URL externa ou o caminho da imagem antiga sejam enviados ao backend
+      payloadForm.append('coverImage', formData.coverImage);
+    }
 
     try {
       if (isEditMode) {

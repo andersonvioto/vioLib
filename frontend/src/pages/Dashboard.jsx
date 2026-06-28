@@ -68,14 +68,24 @@ const Dashboard = () => {
   // EFEITOS INICIAIS E SINCRONIZAÇÃO
   // ==========================================
 
+  // Busca as taxonomias dinamicamente com base na biblioteca atual
   useEffect(() => {
-    api.get('/attributes')
+    // 1. Limpa os filtros anteriores para não buscar uma categoria que não existe no amigo
+    setSearchTerm('');
+    setSelectedGenre('');
+    setSelectedSubgenre('');
+    setSelectedTag('');
+
+    // 2. Monta os parâmetros para trazer apenas categorias que possuem livros
+    const ownerQuery = currentLibrary ? `&ownerId=${currentLibrary.ownerId}` : '';
+    
+    api.get(`/attributes?usedOnly=true${ownerQuery}`)
        .then(res => {
          setAvailableGenres(res.data.genres || []);
          setAvailableTags(res.data.tags || []);
        })
        .catch(console.error);
-  }, []);
+  }, [currentLibrary]);
 
   useEffect(() => {
     setSelectedSubgenre('');
@@ -246,19 +256,15 @@ const Dashboard = () => {
         
         {/* LÓGICA DE RENDERIZAÇÃO INTELIGENTE (SKELETONS VS DADOS) */}
         {isLoading && myBooks.length === 0 ? (
-          // CASO 1: Carregamento Inicial -> Mostra apenas Esqueletos
           <div className="book-grid">
             {Array.from({ length: 10 }).map((_, idx) => (
               <SkeletonCard key={`skel-init-${idx}`} />
             ))}
           </div>
         ) : !Array.isArray(myBooks) || myBooks.length === 0 ? (
-          // CASO 2: Busca Concluída e Lista Vazia
           <p className="empty-message">Nenhum livro encontrado nesta prateleira.</p>
         ) : (
-          // CASO 3: Lista Contém Dados
           <div className="book-grid">
-            {/* Renderiza os livros reais */}
             {myBooks.map((book) => (
               <BookCard 
                 key={book.id} 
@@ -267,7 +273,6 @@ const Dashboard = () => {
               />
             ))}
             
-            {/* CASO 4: Carregando Paginação -> Adiciona Esqueletos no fim da lista */}
             {isLoading && myBooks.length > 0 && (
               Array.from({ length: 5 }).map((_, idx) => (
                 <SkeletonCard key={`skel-more-${idx}`} />
@@ -276,7 +281,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Paginação: Só exibe o botão se houver mais itens e não estiver carregando no momento */}
+        {/* Paginação */}
         {hasMore && !isLoading && (
           <div className="pagination-trigger-zone">
             <button 

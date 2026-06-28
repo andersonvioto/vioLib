@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import CreatableSelect from 'react-select/creatable'; 
-import BarcodeScanner from '../components/BarcodeScanner'; // Importação do componente de Câmera
+import BarcodeScanner from '../components/BarcodeScanner'; 
 import './BookForm.css'; 
 
 const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"><rect width="200" height="300" fill="%232c2c2c" stroke="%23D4AF37" stroke-width="2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="28" fill="%23D4AF37">vioLib</text><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23888888">Sem Capa</text></svg>`;
@@ -89,23 +89,20 @@ const BookForm = () => {
   const [isLoadingIsbn, setIsLoadingIsbn] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' }); 
-  
-  // Estado para controlar a abertura da câmera
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [attrRes, authRes, transRes] = await Promise.all([
-          api.get('/attributes').catch(() => ({ data: { genres: [] } })),
-          api.get('/books/authors').catch(() => ({ data: [] })),
-          api.get('/books/translators').catch(() => ({ data: [] }))
-        ]);
+        const attrRes = await api.get('/attributes').catch(() => ({ 
+          data: { genres: [], authors: [], translators: [] } 
+        }));
         
-        setAttributes(attrRes.data);
+        const data = attrRes.data;
+        setAttributes(data);
         
-        const authorsList = Array.isArray(authRes.data) ? authRes.data.map(a => ({ value: a.name, label: a.name })) : [];
-        const translatorsList = Array.isArray(transRes.data) ? transRes.data.map(t => ({ value: t.name, label: t.name })) : [];
+        const authorsList = Array.isArray(data.authors) ? data.authors.map(a => ({ value: a.name, label: a.name })) : [];
+        const translatorsList = Array.isArray(data.translators) ? data.translators.map(t => ({ value: t.name, label: t.name })) : [];
         
         setAvailableAuthors(authorsList);
         setAvailableTranslators(translatorsList);
@@ -184,22 +181,14 @@ const BookForm = () => {
     }
   };
 
-  /**
-   * Disparado automaticamente pelo leitor de código de barras quando detecta um número.
-   */
   const handleScanSuccess = (decodedIsbn) => {
     setIsScannerOpen(false);
     setFormData(prev => ({ ...prev, isbn: decodedIsbn }));
-    // Aguarda um ciclo de renderização para garantir que o state de isbn atualizou antes de buscar
     setTimeout(() => {
       handleIsbnSearch(decodedIsbn);
     }, 100);
   };
 
-  /**
-   * Busca as informações do livro na BrasilAPI ou Google Books.
-   * @param {string} directIsbn - Permite injetar o ISBN diretamente (útil para a câmera)
-   */
   const handleIsbnSearch = async (directIsbn = null) => {
     const targetIsbn = directIsbn || formData.isbn;
     if (!targetIsbn) return;
@@ -279,7 +268,7 @@ const BookForm = () => {
 
         setFormData(prev => ({
           ...prev,
-          isbn: cleanIsbn, // Atualiza para a versão limpa lida pela câmera
+          isbn: cleanIsbn,
           title: fetchedData.title || prev.title,
           publisher: fetchedData.publisher || prev.publisher,
           releaseYear: fetchedData.releaseYear || prev.releaseYear,
@@ -383,7 +372,6 @@ const BookForm = () => {
         </div>
       )}
 
-      {/* RENDERIZA O COMPONENTE DE CÂMERA EM OVERLAY */}
       {isScannerOpen && (
         <BarcodeScanner 
           onScanSuccess={handleScanSuccess} 
@@ -420,7 +408,8 @@ const BookForm = () => {
               <label className="form-label">
                 <span className="material-symbols-rounded">barcode_scanner</span> ISBN (Código de Barras)
               </label>
-              <div className="isbn-wrapper" style={{ display: 'flex', gap: '10px' }}>
+              
+              <div className="isbn-responsive-wrapper">
                 <input 
                   type="text" 
                   name="isbn" 
@@ -434,23 +423,20 @@ const BookForm = () => {
                   }}
                   className="form-input" 
                   placeholder="Ex: 9788535914849" 
-                  style={{ flex: 1 }}
                 />
                 
-                {/* BOTÃO DA CÂMERA */}
                 <button 
                   type="button" 
-                  className="btn-action" 
+                  className="btn-action btn-camera-trigger" 
                   onClick={() => setIsScannerOpen(true)}
                   title="Escanear Código de Barras"
-                  style={{ padding: '0 15px' }}
                 >
                   <span className="material-symbols-rounded">photo_camera</span>
                 </button>
 
                 <button 
                   type="button" 
-                  className="btn-action btn-primary" 
+                  className="btn-action btn-primary btn-search-trigger" 
                   onClick={() => handleIsbnSearch()}
                   disabled={isLoadingIsbn || !formData.isbn}
                 >

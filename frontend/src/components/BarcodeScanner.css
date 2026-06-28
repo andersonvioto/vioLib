@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COMPONENT CSS - BarcodeScanner
+   COMPONENT CSS - BarcodeScanner & ISBN Responsive Layout
    ========================================================================== */
 
 .scanner-overlay {
@@ -9,85 +9,164 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px);
-  z-index: 9999;
+  backdrop-filter: blur(5px);
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
 }
 
-.scanner-modal {
+.scanner-container {
   background-color: var(--bg-surface);
-  border: 1px solid var(--accent-gold);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 20px;
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  max-width: 440px;
+  padding: 24px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
-.scanner-title {
-  color: var(--accent-gold);
-  margin: 0;
-  font-family: serif;
-  font-size: 1.5rem;
+.scanner-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  color: var(--accent-gold);
 }
 
-#isbn-reader {
+.scanner-header h3 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.scanner-view-wrapper {
+  position: relative;
   width: 100%;
+  aspect-ratio: 4/3;
+  background-color: #000;
   border-radius: var(--radius-sm);
   overflow: hidden;
-}
-
-/* Oculta o logotipo injetado automaticamente pela biblioteca para manter o design limpo */
-#isbn-reader img {
-  display: none; 
-}
-
-/* Padronização dos botões nativos gerados pela biblioteca */
-#isbn-reader button {
-  background-color: var(--bg-input);
-  color: var(--text-primary);
   border: 1px solid var(--border-color);
-  padding: 10px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin: 10px 0;
-  font-family: var(--font-sans);
+}
+
+#scanner-preview-zone {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#scanner-preview-zone video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+.scanner-target-box {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  transition: all 0.2s ease;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-#isbn-reader button:hover {
-  border-color: var(--accent-gold);
+.scanner-target-box::before {
+  content: '';
+  position: absolute;
+  width: 260px;
+  height: 160px;
+  border: 2px dashed rgba(212, 175, 55, 0.4);
+  border-radius: 6px;
+  box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.5);
 }
 
-#isbn-reader select {
-  width: 100%;
-  padding: 10px;
-  background-color: var(--bg-input);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  margin-bottom: 10px;
+.scanner-laser {
+  position: absolute;
+  width: 250px;
+  height: 2px;
+  background-color: var(--text-danger, #ff4d4d);
+  box-shadow: 0 0 8px var(--text-danger, #ff4d4d);
+  animation: laserScan 2s linear infinite;
 }
 
-.scanner-close-btn {
+@keyframes laserScan {
+  0% { transform: translateY(-70px); }
+  50% { transform: translateY(70px); }
+  100% { transform: translateY(-70px); }
+}
+
+.scanner-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scanner-controls label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.scanner-error-alert {
+  background-color: rgba(255, 77, 77, 0.1);
+  color: var(--text-danger, #ff4d4d);
+  border: 1px solid rgba(255, 77, 77, 0.2);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.scanner-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-scanner-cancel {
   width: 100%;
   justify-content: center;
-  margin-top: 10px;
-  border-color: #ff4d4d;
-  color: #ff4d4d;
+  border-color: var(--border-color);
+  color: var(--text-secondary);
 }
 
-.scanner-close-btn:hover {
-  background-color: #ff4d4d;
-  color: #fff;
+.btn-scanner-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+/* --- CLASSES DE RESPONSIVIDADE DO PROPRIO BOTÃO DO FORMULÁRIO DE LIVROS --- */
+.isbn-responsive-wrapper {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 480px) {
+  .isbn-responsive-wrapper {
+    flex-wrap: wrap;
+  }
+  
+  .isbn-responsive-wrapper .form-input {
+    flex: 1 1 calc(100% - 70px) !important;
+  }
+  
+  .isbn-responsive-wrapper .btn-camera-trigger {
+    flex: 0 0 50px !important;
+    padding: 0 !important;
+    justify-content: center;
+  }
+  
+  .isbn-responsive-wrapper .btn-search-trigger {
+    flex: 1 1 100% !important;
+    width: 100%;
+    justify-content: center;
+    padding: 12px !important;
+  }
 }

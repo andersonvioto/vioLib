@@ -86,6 +86,10 @@ const BookDetailHeader = ({ book, onDelete }) => {
 
           {book.isOwner && (
             <>
+              <button onClick={() => { navigate('/configuracoes'); setIsMenuOpen(false); }} className="btn-action">
+                <span className="material-symbols-rounded">settings</span> 
+                <span className="action-label">Ajustes</span>
+              </button>
               <button onClick={() => navigate(`/editar-livro/${book.id}`)} className="btn-action edit-btn">
                 <span className="material-symbols-rounded">edit</span> Editar Obra
               </button>

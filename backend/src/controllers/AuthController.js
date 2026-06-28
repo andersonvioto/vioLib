@@ -4,12 +4,11 @@ const crypto = require('crypto');
 const { Op } = require('sequelize');
 const { User, Genre, Subgenre, sequelize } = require('../models');
 const mailService = require('../services/mailService');
+const { OAuth2Client } = require('google-auth-library');
 
-/**
- * Constantes de domínio para configuração inicial de usuários.
- */
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 const DEFAULT_GENRES = [
-  { name: 'Biografia', subgenres: [] },
   { name: 'Fantasia', subgenres: ['Fantasia Medieval', 'Fantasia Urbana', 'Fantasia Sombria'] },
   { name: 'Suspense', subgenres: ['Policial', 'Thriller Psicológico', 'Noir'] },
   { name: 'Ficção Científica', subgenres: ['Cyberpunk', 'Ópera Espacial', 'Viagem no Tempo', 'Distopia'] },
@@ -20,8 +19,19 @@ const DEFAULT_GENRES = [
 ];
 
 /**
- * Registra um novo usuário no sistema e inicializa suas categorias padrão.
+ * Função auxiliar para montar a estrutura inicial da biblioteca do usuário.
  */
+const initializeUserGenres = async (userId, transaction) => {
+  await Promise.all(DEFAULT_GENRES.map(async (item) => {
+    const genre = await Genre.create({ name: item.name, UserId: userId }, { transaction });
+    if (item.subgenres.length > 0) {
+      await Promise.all(item.subgenres.map(sub => 
+        Subgenre.create({ name: sub, GenreId: genre.id }, { transaction })
+      ));
+    }
+  }));
+};
+
 exports.register = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
@@ -45,15 +55,7 @@ exports.register = async (req, res) => {
       isVerified: false
     }, { transaction });
 
-    // Inicialização paralela de categorias para performance
-    await Promise.all(DEFAULT_GENRES.map(async (item) => {
-      const genre = await Genre.create({ name: item.name, UserId: user.id }, { transaction });
-      if (item.subgenres.length > 0) {
-        await Promise.all(item.subgenres.map(sub => 
-          Subgenre.create({ name: sub, GenreId: genre.id }, { transaction })
-        ));
-      }
-    }));
+    await initializeUserGenres(user.id, transaction);
 
     await transaction.commit();
     await mailService.sendVerificationEmail(user.email, verificationToken);
@@ -66,9 +68,6 @@ exports.register = async (req, res) => {
   }
 };
 
-/**
- * Autentica o usuário e gera um JWT.
- */
 exports.login = async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
@@ -93,8 +92,53 @@ exports.login = async (req, res) => {
 };
 
 /**
- * Ativa a conta de usuário via token de e-mail.
+ * Autentica ou cadastra o usuário através do Token do Google.
  */
+exports.googleLogin = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { token } = req.body;
+    
+    // O Google valida a assinatura da credencial para garantir que não foi forjada
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    
+    const payload = ticket.getPayload();
+    const { email, name } = payload;
+
+    let user = await User.findOne({ where: { email }, transaction });
+
+    if (!user) {
+      // Como usuários do Google não usam senha no nosso app, geramos uma hash aleatória forte
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      user = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        isVerified: true, // Já validado pelo Google
+        language: 'pt-BR' 
+      }, { transaction });
+
+      await initializeUserGenres(user.id, transaction);
+    }
+
+    await transaction.commit();
+
+    // Login via Google por padrão gera uma sessão de longa duração
+    const jwtToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+
+    res.json({ user: { id: user.id, name: user.name, email: user.email }, token: jwtToken });
+  } catch (error) {
+    await transaction.rollback();
+    console.error("🕵️ ERRO NO AUTHCONTROLLER (GOOGLE):", error);
+    res.status(500).json({ error: 'Falha ao autenticar com o Google.' });
+  }
+};
+
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
@@ -115,9 +159,6 @@ exports.verifyEmail = async (req, res) => {
   }
 };
 
-/**
- * Envia link para redefinição de senha.
- */
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -126,7 +167,7 @@ exports.forgotPassword = async (req, res) => {
     if (user) {
       const token = crypto.randomBytes(32).toString('hex');
       user.resetPasswordToken = token;
-      user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hora
+      user.resetPasswordExpires = new Date(Date.now() + 3600000); 
       await user.save();
       await mailService.sendResetPasswordEmail(user.email, token);
     }
@@ -138,9 +179,6 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-/**
- * Redefine a senha do usuário utilizando token válido.
- */
 exports.resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;

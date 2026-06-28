@@ -2,7 +2,7 @@ const { Op } = require('sequelize');
 const { Book, Author, Translator, Genre, Subgenre, Tag, Loan, LibraryAccess } = require('../models');
 
 /**
- * Helper para processar associações N:N (Autores, Tags, etc.)
+ * Helper para processar associações N:N simples (Autores, Tradutores, Tags).
  */
 const processRelations = async (book, items, Model, userId, associationMethod) => {
   if (items && items.length > 0) {
@@ -13,6 +13,45 @@ const processRelations = async (book, items, Model, userId, associationMethod) =
     await book[associationMethod](instances);
   } else {
     await book[associationMethod]([]);
+  }
+};
+
+/**
+ * Helper inteligente para processar Gêneros e Subgêneros hierárquicos on-the-fly.
+ */
+const processCategories = async (book, genreNames, subgenreNames, userId, methodPrefix) => {
+  const setGenres = methodPrefix + 'Genres';       // ex: 'addGenres' ou 'setGenres'
+  const setSubgenres = methodPrefix + 'Subgenres'; // ex: 'addSubgenres' ou 'setSubgenres'
+
+  let genreInstance = null;
+  
+  // 1. Processa o Gênero Pai
+  if (genreNames && genreNames.length > 0) {
+    const genreName = genreNames[0].trim();
+    if (genreName) {
+      [genreInstance] = await Genre.findOrCreate({ where: { name: genreName, UserId: userId } });
+      await book[setGenres]([genreInstance]);
+    } else {
+      await book[setGenres]([]);
+    }
+  } else {
+    await book[setGenres]([]);
+  }
+
+  // 2. Processa os Subgêneros (apenas se existir um Gênero Pai válido)
+  if (subgenreNames && subgenreNames.length > 0 && genreInstance) {
+    const subInstances = await Promise.all(subgenreNames.map(async (subName) => {
+      subName = subName.trim();
+      if (!subName) return null;
+      
+      const [subInstance] = await Subgenre.findOrCreate({
+        where: { name: subName, GenreId: genreInstance.id }
+      });
+      return subInstance;
+    }));
+    await book[setSubgenres](subInstances.filter(Boolean));
+  } else {
+    await book[setSubgenres]([]);
   }
 };
 
@@ -45,12 +84,10 @@ exports.createBook = async (req, res) => {
 
     await processRelations(book, authors, Author, userId, 'addAuthors');
     await processRelations(book, translators, Translator, userId, 'addTranslators');
-    await processRelations(book, genres, Genre, userId, 'addGenres');
     await processRelations(book, tags, Tag, userId, 'addTags');
-
-    if (subgenres?.length > 0) {
-      await book.addSubgenres(subgenres.map(id => parseInt(id, 10)));
-    }
+    
+    // Processamento hierárquico dinâmico para Gêneros
+    await processCategories(book, genres, subgenres, userId, 'add');
 
     res.status(201).json({ message: 'Livro cadastrado com sucesso!', book });
   } catch (error) {
@@ -167,11 +204,10 @@ exports.updateBook = async (req, res) => {
 
     await processRelations(book, JSON.parse(req.body.authors || '[]'), Author, userId, 'setAuthors');
     await processRelations(book, JSON.parse(req.body.translators || '[]'), Translator, userId, 'setTranslators');
-    await processRelations(book, JSON.parse(req.body.genres || '[]'), Genre, userId, 'setGenres');
     await processRelations(book, JSON.parse(req.body.tags || '[]'), Tag, userId, 'setTags');
-
-    const subgenres = JSON.parse(req.body.subgenres || '[]');
-    await book.setSubgenres(subgenres.map(id => parseInt(id, 10)));
+    
+    // Processamento hierárquico dinâmico para Gêneros na atualização
+    await processCategories(book, JSON.parse(req.body.genres || '[]'), JSON.parse(req.body.subgenres || '[]'), userId, 'set');
 
     res.json({ message: 'Livro atualizado com sucesso!', book });
   } catch (error) {

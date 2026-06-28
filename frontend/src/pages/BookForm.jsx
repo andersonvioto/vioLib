@@ -63,6 +63,10 @@ const customSelectStyles = {
   placeholder: (provided) => ({
     ...provided,
     color: 'var(--text-muted)'
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: 'var(--text-primary)' // Fixa o contraste para opções únicas criadas
   })
 };
 
@@ -75,10 +79,12 @@ const BookForm = () => {
   const [formData, setFormData] = useState({
     isbn: '', title: '', edition: '', releaseYear: '', publisher: '', publicationLocation: '', acquisitionDate: '',
     notes: '', coverImage: '', authors: [], translators: [], tags: '',
-    selectedGenre: '', selectedSubgenres: []
+    selectedGenre: null, selectedSubgenre: null 
   });
 
   const [attributes, setAttributes] = useState({ genres: [] });
+  
+  const [availableGenres, setAvailableGenres] = useState([]);
   const [availableSubgenres, setAvailableSubgenres] = useState([]);
   const [availableAuthors, setAvailableAuthors] = useState([]);
   const [availableTranslators, setAvailableTranslators] = useState([]);
@@ -101,9 +107,11 @@ const BookForm = () => {
         const data = attrRes.data;
         setAttributes(data);
         
+        const genresList = Array.isArray(data.genres) ? data.genres.map(g => ({ value: g.name, label: g.name })) : [];
         const authorsList = Array.isArray(data.authors) ? data.authors.map(a => ({ value: a.name, label: a.name })) : [];
         const translatorsList = Array.isArray(data.translators) ? data.translators.map(t => ({ value: t.name, label: t.name })) : [];
         
+        setAvailableGenres(genresList);
         setAvailableAuthors(authorsList);
         setAvailableTranslators(translatorsList);
 
@@ -130,8 +138,8 @@ const BookForm = () => {
             authors: bookAuthors.map(a => ({ value: a.name, label: a.name })),
             translators: bookTranslators.map(t => ({ value: t.name, label: t.name })),
             tags: bookTags.map(t => t.name).join(', '),
-            selectedGenre: bookGenres.length > 0 ? bookGenres[0].name : '',
-            selectedSubgenres: bookSubgenres.map(s => s.id.toString())
+            selectedGenre: bookGenres.length > 0 ? { value: bookGenres[0].name, label: bookGenres[0].name } : null,
+            selectedSubgenre: bookSubgenres.length > 0 ? { value: bookSubgenres[0].name, label: bookSubgenres[0].name } : null
           });
 
           if (b.coverImage) setPreviewUrl(getCoverUrl(b.coverImage));
@@ -144,20 +152,17 @@ const BookForm = () => {
   }, [id, isEditMode]);
 
   useEffect(() => {
-    if (formData.selectedGenre && attributes.genres) {
-      const genreObj = attributes.genres.find(g => g.name === formData.selectedGenre);
-      setAvailableSubgenres(genreObj ? genreObj.Subgenres : []);
+    if (formData.selectedGenre && formData.selectedGenre.value && attributes.genres) {
+      const genreObj = attributes.genres.find(g => g.name === formData.selectedGenre.value);
+      // Fallback robusto garantindo captura tanto de "Subgenres" (Sequelize Include) quanto "subgenres"
+      const subgenresArray = genreObj?.Subgenres || genreObj?.subgenres || [];
+      setAvailableSubgenres(subgenresArray.map(s => ({ value: s.name, label: s.name })));
     } else {
       setAvailableSubgenres([]);
     }
   }, [formData.selectedGenre, attributes.genres]);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-  
-  const handleSubgenreChange = (e) => {
-    const values = Array.from(e.target.selectedOptions, option => option.value);
-    setFormData({ ...formData, selectedSubgenres: values });
-  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -360,9 +365,13 @@ const BookForm = () => {
     const tagsArr = formData.tags ? formData.tags.split(',').map(i => i.trim()).filter(i => i !== '') : [];
     payloadForm.append('tags', JSON.stringify(tagsArr));
 
-    const genresArr = formData.selectedGenre ? [formData.selectedGenre] : [];
+    // Agora passamos os textos crús garantindo o formato em array que o Backend espera
+    const genresArr = formData.selectedGenre ? [formData.selectedGenre.value] : [];
     payloadForm.append('genres', JSON.stringify(genresArr));
-    payloadForm.append('subgenres', JSON.stringify(formData.selectedSubgenres));
+    
+    // Convertido para aceitar apenas 1 Subgênero
+    const subgenresArr = formData.selectedSubgenre ? [formData.selectedSubgenre.value] : [];
+    payloadForm.append('subgenres', JSON.stringify(subgenresArr));
 
     if (coverFile) {
       payloadForm.append('coverImage', coverFile);
@@ -515,6 +524,7 @@ const BookForm = () => {
           </div>
         </div>
 
+        {}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">category</span> Classificação
@@ -522,24 +532,39 @@ const BookForm = () => {
           <div className="form-grid">
             <div className="form-group">
               <label className="form-label"><span className="material-symbols-rounded">sell</span> Gênero Principal</label>
-              <select name="selectedGenre" value={formData.selectedGenre} onChange={handleChange} className="form-select">
-                <option value="">Selecione um Gênero...</option>
-                {attributes.genres && attributes.genres.map(g => (
-                  <option key={g.id} value={g.name}>{g.name}</option>
-                ))}
-              </select>
+              <CreatableSelect
+                isClearable
+                options={availableGenres}
+                value={formData.selectedGenre}
+                // Limpa o subgênero dependente caso o Gênero Pai mude
+                onChange={(newValue) => setFormData({ ...formData, selectedGenre: newValue, selectedSubgenre: null })}
+                styles={customSelectStyles}
+                placeholder="Selecione ou digite um novo..."
+                formatCreateLabel={(inputValue) => `Criar gênero: "${inputValue}"`}
+                noOptionsMessage={() => "Nenhum gênero encontrado"}
+              />
             </div>
+            
             <div className="form-group">
+              <label className="form-label">
+                <span className="material-symbols-rounded">list</span> Subgênero
+              </label>
+              <CreatableSelect
+                isClearable 
+                isDisabled={!formData.selectedGenre}
+                options={availableSubgenres}
+                value={formData.selectedSubgenre}
+                onChange={(newValue) => setFormData({ ...formData, selectedSubgenre: newValue })}
+                styles={customSelectStyles}
+                placeholder={formData.selectedGenre ? "Selecione ou digite..." : "Bloqueado (Selecione um Gênero)"}
+                formatCreateLabel={(inputValue) => `Criar subgênero: "${inputValue}"`}
+                noOptionsMessage={() => formData.selectedGenre ? "Nenhum subgênero cadastrado neste gênero" : "Selecione um Gênero Principal primeiro"}
+              />
+            </div>
+
+            <div className="form-group full-width">
               <label className="form-label"><span className="material-symbols-rounded">style</span> Tags</label>
               <input type="text" name="tags" value={formData.tags} onChange={handleChange} className="form-input" placeholder="Separadas por vírgula" />
-            </div>
-            <div className="form-group full-width">
-              <label className="form-label"><span className="material-symbols-rounded">list</span> Subgêneros (Segure CTRL)</label>
-              <select multiple value={formData.selectedSubgenres} onChange={handleSubgenreChange} className="form-select" style={{ height: '100px' }}>
-                {availableSubgenres.map(sub => (
-                  <option key={sub.id} value={sub.id}>{sub.name}</option>
-                ))}
-              </select>
             </div>
           </div>
         </div>
@@ -601,7 +626,7 @@ const BookForm = () => {
             ) : (
               <span className="material-symbols-rounded">save</span>
             )}
-            {isSaving ? 'Salvando...' : (isEditMode ? 'Atualizar Livro' : 'Salvar Livro')}
+            {isSaving ? 'A guardar...' : (isEditMode ? 'Atualizar Livro' : 'Guardar Livro')}
           </button>
         </div>
       </form>

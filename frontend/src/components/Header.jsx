@@ -68,78 +68,80 @@ const Header = () => {
   return (
     <>
       <header className="dash-header">
-        <div className="brand-container" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <img src={miniLogo} alt="vioLib" className="brand-logo" />
-          
-          <div className="library-switcher-wrapper">
-            <select 
-              className="form-select library-select" 
-              style={{ 
-                backgroundColor: 'var(--bg-input)', 
-                color: 'var(--accent-gold)', 
-                fontWeight: 'bold', 
-                border: '1px solid var(--accent-gold)', 
-                borderRadius: '8px',
-                padding: '10px 16px',
-                fontSize: '1rem',
-                cursor: 'pointer',
-                // Truncamento Inteligente para evitar quebra de layout mobile
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-              }}
-              value={currentLibrary ? currentLibrary.ownerId : "mine"}
-              onChange={handleLibraryChange}
-            >
-              <option value="mine">Minha Biblioteca</option>
-              
-              {sharedLibraries.length > 0 && (
-                <optgroup label="Compartilhadas Comigo">
-                  {sharedLibraries.map(lib => {
-                    const ownerName = lib.ownerName || lib.Owner?.name || lib.User?.name || 'Convidado';
-                    
-                    return (
-                      <option key={lib.ownerId} value={lib.ownerId}>
-                        Biblioteca de {ownerName}
-                      </option>
-                    );
-                  })}
-                </optgroup>
-              )}
-            </select>
-          </div>
-        </div>
-        
-        <div className="user-actions-container">
-          <button className="mobile-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            <span className="material-symbols-rounded">{isMenuOpen ? 'close' : 'more_vert'}</span>
-          </button>
-
-          <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
+        <div className="dash-header-inner">
+          <div className="brand-container" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <img src={miniLogo} alt="vioLib" className="brand-logo" />
             
-            {!currentLibrary && (
-              <>
-                <button onClick={() => { navigate('/configuracoes'); setIsMenuOpen(false); }} className="btn-action">
-                  <span className="material-symbols-rounded">settings</span> 
-                  <span className="action-label">Ajustes</span>
-                </button>
+            <div className="library-switcher-wrapper">
+              <select 
+                className="form-select library-select" 
+                style={{ 
+                  backgroundColor: 'var(--bg-input)', 
+                  color: 'var(--accent-gold)', 
+                  fontWeight: 'bold', 
+                  border: '1px solid var(--accent-gold)', 
+                  borderRadius: '8px',
+                  padding: '10px 16px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  // Truncamento Inteligente para evitar quebra de layout mobile
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
+                value={currentLibrary ? currentLibrary.ownerId : "mine"}
+                onChange={handleLibraryChange}
+              >
+                <option value="mine">Minha Biblioteca</option>
                 
-                <button onClick={openShareModal} className="btn-action">
-                  <span className="material-symbols-rounded">group_add</span> 
-                  <span className="action-label">Convidar</span>
-                </button>
-                
-                <button onClick={() => { navigate('/novo-livro'); setIsMenuOpen(false); }} className="btn-action btn-primary">
-                  <span className="material-symbols-rounded">library_add</span> 
-                  <span className="action-label">Novo</span>
-                </button>
-              </>
-            )}
-
-            <button onClick={() => { logout(); setIsMenuOpen(false); }} className="btn-action btn-logout">
-              <span className="material-symbols-rounded">logout</span> 
-              <span className="action-label">Sair</span>
+                {sharedLibraries.length > 0 && (
+                  <optgroup label="Compartilhadas Comigo">
+                    {sharedLibraries.map(lib => {
+                      const ownerName = lib.ownerName || lib.Owner?.name || lib.User?.name || 'Convidado';
+                      
+                      return (
+                        <option key={lib.ownerId} value={lib.ownerId}>
+                          Biblioteca de {ownerName}
+                        </option>
+                      );
+                    })}
+                  </optgroup>
+                )}
+              </select>
+            </div>
+          </div>
+          
+          <div className="user-actions-container">
+            <button className="mobile-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              <span className="material-symbols-rounded">{isMenuOpen ? 'close' : 'more_vert'}</span>
             </button>
+
+            <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
+              
+              {!currentLibrary && (
+                <>
+                  <button onClick={() => { navigate('/configuracoes'); setIsMenuOpen(false); }} className="btn-action">
+                    <span className="material-symbols-rounded">settings</span> 
+                    <span className="action-label">Ajustes</span>
+                  </button>
+                  
+                  <button onClick={openShareModal} className="btn-action">
+                    <span className="material-symbols-rounded">group_add</span> 
+                    <span className="action-label">Convidar</span>
+                  </button>
+                  
+                  <button onClick={() => { navigate('/novo-livro'); setIsMenuOpen(false); }} className="btn-action btn-primary">
+                    <span className="material-symbols-rounded">library_add</span> 
+                    <span className="action-label">Novo</span>
+                  </button>
+                </>
+              )}
+
+              <button onClick={() => { logout(); setIsMenuOpen(false); }} className="btn-action btn-logout">
+                <span className="material-symbols-rounded">logout</span> 
+                <span className="action-label">Sair</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>

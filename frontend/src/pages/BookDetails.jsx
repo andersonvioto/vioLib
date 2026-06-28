@@ -7,7 +7,7 @@ import { getCoverUrl } from '../utils/bookHelpers';
 import BookDetailHeader from '../components/BookDetailHeader';
 import LoanManager from '../components/LoanManager';
 import BookMetadataGrid from '../components/BookMetadataGrid';
-import BookDetailSkeleton from '../components/BookDetailSkeleton'; // <-- NOVO
+import BookDetailSkeleton from '../components/BookDetailSkeleton'; 
 
 import './BookDetails.css';
 
@@ -56,8 +56,12 @@ const BookDetails = () => {
   return (
     <div className="details-container">
       
-      {/* 1. Componente de Cabeçalho e Menus */}
-      <BookDetailHeader book={book} onDelete={handleDelete} />
+      {/* 1. Componente de Cabeçalho Envelopado em Barra Fixa */}
+      <div className="fixed-detail-header">
+        <div className="fixed-detail-header-inner">
+          <BookDetailHeader book={book} onDelete={handleDelete} />
+        </div>
+      </div>
       
       <div className="editorial-layout">
         

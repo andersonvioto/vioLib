@@ -3,9 +3,29 @@
    Estilos macro da tela de detalhes da obra (Layout Assimétrico Principal).
    ========================================================================== */
 
-/* --- CONTAINER BASE --- */
+/* --- CABEÇALHO FIXO GLOBAL DA TELA DE DETALHES --- */
+.fixed-detail-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  background-color: var(--bg-main, #121212);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.fixed-detail-header-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  /* Espaçamento leve, o BookDetailHeader provavelmente traz seu próprio padding */
+  padding: 10px 40px; 
+}
+
+/* --- CONTAINER BASE DA PÁGINA --- */
 .details-container {
-  padding: 40px;
+  /* O teto foi ampliado de 40px para 120px para limpar o header fixo */
+  padding: 120px 40px 40px 40px;
   max-width: 1000px;
   margin: 0 auto;
 }
@@ -21,7 +41,8 @@
 /* --- COLUNA ESQUERDA: CAPA --- */
 .cover-wrapper {
   position: sticky;
-  top: 120px;
+  /* A capa cola a 120px do topo da tela, evitando sumir sob o header fixo */
+  top: 120px; 
 }
 
 .details-cover {
@@ -61,9 +82,13 @@
 /* TABLET RETRATO (até 900px) */
 @media (max-width: 900px) {
   .details-container {
-    padding: 20px;
+    padding: 100px 20px 20px 20px;
   }
   
+  .fixed-detail-header-inner {
+    padding: 10px 20px;
+  }
+
   .editorial-layout {
     grid-template-columns: 220px 1fr; 
     gap: 30px;
@@ -77,8 +102,11 @@
 /* CELULAR (até 600px) */
 @media (max-width: 600px) {
   .details-container {
-    padding: 15px;
-    padding-bottom: 40px;
+    padding: 90px 15px 40px 15px;
+  }
+
+  .fixed-detail-header-inner {
+    padding: 10px 15px;
   }
 
   .editorial-layout { 

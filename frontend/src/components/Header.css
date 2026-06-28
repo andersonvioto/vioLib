@@ -4,18 +4,26 @@
    ========================================================================== */
 
 .dash-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  background-color: var(--bg-main, #121212);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.dash-header-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: nowrap;
   gap: 15px;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background-color: var(--bg-main);
-  margin: -40px -40px 30px -40px;
-  padding: 40px 40px 20px 40px;
-  border-bottom: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 40px;
 }
 
 .brand-container {
@@ -111,10 +119,15 @@
 /* ==========================================================================
    RESPONSIVIDADE - Header (Mobile)
    ========================================================================== */
+@media (max-width: 900px) {
+  .dash-header-inner {
+    padding: 15px 20px;
+  }
+}
+
 @media (max-width: 600px) {
-  .dash-header {
-    margin: -15px -15px 20px -15px;
-    padding: 15px 20px 15px 15px;
+  .dash-header-inner {
+    padding: 15px;
   }
 
   .brand-logo { 

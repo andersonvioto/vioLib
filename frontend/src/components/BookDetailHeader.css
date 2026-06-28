@@ -17,7 +17,7 @@
   background-color: var(--bg-main);
   
   /* Truque mágico: o fundo expande para cobrir o scroll nas laterais */
-  margin: -40px -40px 40px -40px;
+  margin: -40px -40px -11px -40px;
   padding: 40px 40px 20px 40px;
   border-bottom: 1px solid var(--border-color);
 }
@@ -131,7 +131,7 @@
     flex-direction: row; 
     justify-content: space-between;
     align-items: center;
-    margin: -15px -15px 25px -15px;
+    margin: -15px -15px -11px -15px;
     padding: 15px 20px 15px 15px;
   }
 

@@ -8,7 +8,8 @@
    1. ESTRUTURA GLOBAL DA PÁGINA E BOTÕES
    ========================================================================== */
 .dashboard-container {
-  padding: 40px;
+  /* O padding-top de 120px compensa a altura da barra fixa do cabeçalho */
+  padding: 120px 40px 40px 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -216,7 +217,7 @@
 
 @media (max-width: 900px) {
   .dashboard-container { 
-    padding: 20px; 
+    padding: 100px 20px 20px 20px; 
   }
   
   .book-grid { 
@@ -231,7 +232,7 @@
 
 @media (max-width: 600px) {
   .dashboard-container { 
-    padding: 15px; 
+    padding: 90px 15px 15px 15px; 
   }
 
   .book-grid { 

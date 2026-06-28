@@ -1,0 +1,93 @@
+/* ==========================================================================
+   COMPONENT CSS - BarcodeScanner
+   ========================================================================== */
+
+.scanner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.scanner-modal {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--accent-gold);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.scanner-title {
+  color: var(--accent-gold);
+  margin: 0;
+  font-family: serif;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#isbn-reader {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+/* Oculta o logotipo injetado automaticamente pela biblioteca para manter o design limpo */
+#isbn-reader img {
+  display: none; 
+}
+
+/* Padronização dos botões nativos gerados pela biblioteca */
+#isbn-reader button {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 10px 0;
+  font-family: var(--font-sans);
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+#isbn-reader button:hover {
+  border-color: var(--accent-gold);
+}
+
+#isbn-reader select {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.scanner-close-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 10px;
+  border-color: #ff4d4d;
+  color: #ff4d4d;
+}
+
+.scanner-close-btn:hover {
+  background-color: #ff4d4d;
+  color: #fff;
+}

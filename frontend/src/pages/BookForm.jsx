@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import CreatableSelect from 'react-select/creatable'; 
+import BarcodeScanner from '../components/BarcodeScanner'; // Importação do componente de Câmera
 import './BookForm.css'; 
 
 const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"><rect width="200" height="300" fill="%232c2c2c" stroke="%23D4AF37" stroke-width="2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="28" fill="%23D4AF37">vioLib</text><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23888888">Sem Capa</text></svg>`;
@@ -88,6 +89,9 @@ const BookForm = () => {
   const [isLoadingIsbn, setIsLoadingIsbn] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' }); 
+  
+  // Estado para controlar a abertura da câmera
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -173,7 +177,6 @@ const BookForm = () => {
       setFeedback({ type: '', message: '' });
       setCoverFile(file);
       setPreviewUrl(URL.createObjectURL(file));
-      // Limpa a URL se o usuário escolher um arquivo manual
       setFormData(prev => ({ ...prev, coverImage: '' })); 
     } else {
       setCoverFile(null);
@@ -181,12 +184,30 @@ const BookForm = () => {
     }
   };
 
-  const handleIsbnSearch = async () => {
-    if (!formData.isbn) return;
+  /**
+   * Disparado automaticamente pelo leitor de código de barras quando detecta um número.
+   */
+  const handleScanSuccess = (decodedIsbn) => {
+    setIsScannerOpen(false);
+    setFormData(prev => ({ ...prev, isbn: decodedIsbn }));
+    // Aguarda um ciclo de renderização para garantir que o state de isbn atualizou antes de buscar
+    setTimeout(() => {
+      handleIsbnSearch(decodedIsbn);
+    }, 100);
+  };
+
+  /**
+   * Busca as informações do livro na BrasilAPI ou Google Books.
+   * @param {string} directIsbn - Permite injetar o ISBN diretamente (útil para a câmera)
+   */
+  const handleIsbnSearch = async (directIsbn = null) => {
+    const targetIsbn = directIsbn || formData.isbn;
+    if (!targetIsbn) return;
+    
     setIsLoadingIsbn(true);
     setFeedback({ type: '', message: '' }); 
     
-    const cleanIsbn = formData.isbn.replace(/\D/g, '');
+    const cleanIsbn = targetIsbn.replace(/\D/g, '');
     let fetchedData = null;
 
     try {
@@ -214,7 +235,6 @@ const BookForm = () => {
         if (data.items && data.items.length > 0) {
           const info = data.items[0].volumeInfo;
           
-          // Google Books retorna capas em http (sem 's'), o que gera erro de Mixed Content no deploy
           let cUrl = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '';
           if (cUrl) cUrl = cUrl.replace(/^http:/i, 'https:');
 
@@ -222,7 +242,7 @@ const BookForm = () => {
             title: info.title || '',
             publisher: info.publisher || '',
             releaseYear: info.publishedDate ? info.publishedDate.substring(0, 4) : '',
-            location: '', // Google Books não possui uma chave limpa de local
+            location: '',
             coverUrl: cUrl,
             authors: info.authors || [] 
           };
@@ -257,9 +277,9 @@ const BookForm = () => {
           return existingAuthor ? existingAuthor : { value: finalName, label: finalName }; 
         });
 
-        // Atualização dos dados do formulário
         setFormData(prev => ({
           ...prev,
+          isbn: cleanIsbn, // Atualiza para a versão limpa lida pela câmera
           title: fetchedData.title || prev.title,
           publisher: fetchedData.publisher || prev.publisher,
           releaseYear: fetchedData.releaseYear || prev.releaseYear,
@@ -268,23 +288,19 @@ const BookForm = () => {
           coverImage: (!coverFile && fetchedData.coverUrl) ? fetchedData.coverUrl : prev.coverImage
         }));
 
-        // Tratamento da imagem da capa
         if (fetchedData.coverUrl && !coverFile) {
           try {
             const imgRes = await fetch(fetchedData.coverUrl);
             if (imgRes.ok) {
-              // Sucesso no CORS: Transforma a imagem num arquivo File local
               const blob = await imgRes.blob();
               const file = new File([blob], 'cover_fetched.jpg', { type: blob.type });
               setCoverFile(file);
               setPreviewUrl(URL.createObjectURL(file));
-              // Limpa a URL do formData já que agora temos o arquivo
               setFormData(prev => ({ ...prev, coverImage: '' }));
             } else {
               setPreviewUrl(fetchedData.coverUrl);
             }
           } catch (err) {
-            // Falha no CORS: Fazemos o fallback exibindo a URL diretamente (será salva como string)
             setPreviewUrl(fetchedData.coverUrl);
           }
         }
@@ -332,7 +348,6 @@ const BookForm = () => {
     if (coverFile) {
       payloadForm.append('coverImage', coverFile);
     } else if (formData.coverImage) {
-      // Garante que a URL externa ou o caminho da imagem antiga sejam enviados ao backend
       payloadForm.append('coverImage', formData.coverImage);
     }
 
@@ -368,6 +383,14 @@ const BookForm = () => {
         </div>
       )}
 
+      {/* RENDERIZA O COMPONENTE DE CÂMERA EM OVERLAY */}
+      {isScannerOpen && (
+        <BarcodeScanner 
+          onScanSuccess={handleScanSuccess} 
+          onClose={() => setIsScannerOpen(false)} 
+        />
+      )}
+
       <form onSubmit={handleSubmit}>
         
         <div className="form-section">
@@ -397,7 +420,7 @@ const BookForm = () => {
               <label className="form-label">
                 <span className="material-symbols-rounded">barcode_scanner</span> ISBN (Código de Barras)
               </label>
-              <div className="isbn-wrapper">
+              <div className="isbn-wrapper" style={{ display: 'flex', gap: '10px' }}>
                 <input 
                   type="text" 
                   name="isbn" 
@@ -410,12 +433,25 @@ const BookForm = () => {
                     }
                   }}
                   className="form-input" 
-                  placeholder="Ex: 9788535914849 (Preenche os dados automaticamente)" 
+                  placeholder="Ex: 9788535914849" 
+                  style={{ flex: 1 }}
                 />
+                
+                {/* BOTÃO DA CÂMERA */}
+                <button 
+                  type="button" 
+                  className="btn-action" 
+                  onClick={() => setIsScannerOpen(true)}
+                  title="Escanear Código de Barras"
+                  style={{ padding: '0 15px' }}
+                >
+                  <span className="material-symbols-rounded">photo_camera</span>
+                </button>
+
                 <button 
                   type="button" 
                   className="btn-action btn-primary" 
-                  onClick={handleIsbnSearch}
+                  onClick={() => handleIsbnSearch()}
                   disabled={isLoadingIsbn || !formData.isbn}
                 >
                   {isLoadingIsbn ? (

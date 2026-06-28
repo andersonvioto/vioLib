@@ -214,27 +214,57 @@ const BookForm = () => {
           };
         }
       } catch (error) {
-        console.warn("Brasil API falhou, tentando Google Books...");
+        console.warn("BrasilAPI falhou ou não encontrou.");
       }
 
       if (!fetchedData) {
-        const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}`);
-        const data = await response.json();
-        
-        if (data.items && data.items.length > 0) {
-          const info = data.items[0].volumeInfo;
-          
-          let cUrl = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '';
-          if (cUrl) cUrl = cUrl.replace(/^http:/i, 'https:');
+        try {
+          const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.items && data.items.length > 0) {
+              const info = data.items[0].volumeInfo;
+              
+              let cUrl = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '';
+              if (cUrl) cUrl = cUrl.replace(/^http:/i, 'https:');
 
-          fetchedData = {
-            title: info.title || '',
-            publisher: info.publisher || '',
-            releaseYear: info.publishedDate ? info.publishedDate.substring(0, 4) : '',
-            location: '',
-            coverUrl: cUrl,
-            authors: info.authors || [] 
-          };
+              fetchedData = {
+                title: info.title || '',
+                publisher: info.publisher || '',
+                releaseYear: info.publishedDate ? info.publishedDate.substring(0, 4) : '',
+                location: '',
+                coverUrl: cUrl,
+                authors: info.authors || [] 
+              };
+            }
+          }
+        } catch (error) {
+          console.warn("Google Books falhou ou não encontrou.");
+        }
+      }
+
+      if (!fetchedData) {
+        try {
+          const response = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${cleanIsbn}&format=json&jscmd=data`);
+          if (response.ok) {
+            const data = await response.json();
+            const bookKey = `ISBN:${cleanIsbn}`;
+            
+            if (data[bookKey]) {
+              const info = data[bookKey];
+              
+              fetchedData = {
+                title: info.title || '',
+                publisher: info.publishers ? info.publishers[0].name : '',
+                releaseYear: info.publish_date ? (info.publish_date.match(/\d{4}/)?.[0] || '') : '',
+                location: info.publish_places ? info.publish_places[0].name : '',
+                coverUrl: info.cover ? (info.cover.large || info.cover.medium || '') : '',
+                authors: info.authors ? info.authors.map(a => a.name) : []
+              };
+            }
+          }
+        } catch (error) {
+          console.warn("Open Library falhou ou não encontrou.");
         }
       }
 

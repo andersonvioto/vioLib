@@ -6,9 +6,14 @@ const { User, Genre, Subgenre, sequelize } = require('../models');
 const mailService = require('../services/mailService');
 const { OAuth2Client } = require('google-auth-library');
 
+// Cliente do Google OAuth para o Login Social
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+/**
+ * Constantes de domínio para configuração inicial de usuários.
+ */
 const DEFAULT_GENRES = [
+  { name: 'Biografia', subgenres: [] },
   { name: 'Fantasia', subgenres: ['Fantasia Medieval', 'Fantasia Urbana', 'Fantasia Sombria'] },
   { name: 'Suspense', subgenres: ['Policial', 'Thriller Psicológico', 'Noir'] },
   { name: 'Ficção Científica', subgenres: ['Cyberpunk', 'Ópera Espacial', 'Viagem no Tempo', 'Distopia'] },
@@ -32,6 +37,9 @@ const initializeUserGenres = async (userId, transaction) => {
   }));
 };
 
+/**
+ * Registra um novo usuário no sistema e inicializa suas categorias padrão.
+ */
 exports.register = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
@@ -55,19 +63,41 @@ exports.register = async (req, res) => {
       isVerified: false
     }, { transaction });
 
+    // Inicialização paralela de categorias para performance
     await initializeUserGenres(user.id, transaction);
 
+    // MELHORIA CRUCIAL (Operação Atômica): 
+    // O e-mail é enviado ANTES de commitar a transação no banco. 
+    // Se o serviço de e-mail falhar, a execução pula direto para o catch(),
+    // a transação sofre rollback e o usuário "preso" não é gravado no banco.
+    try {
+      await mailService.sendVerificationEmail(user.email, verificationToken);
+    } catch (emailError) {
+      console.error(`📧 ERRO DETALHADO NO SERVIÇO DE E-MAIL (Registo - ${user.email}):`, emailError);
+      throw emailError; // Re-lança o erro para forçar o rollback no catch principal
+    }
+
+    // Se o e-mail foi enviado com sucesso, consolidamos no banco de dados.
     await transaction.commit();
-    await mailService.sendVerificationEmail(user.email, verificationToken);
 
     res.status(201).json({ message: 'Conta criada com sucesso! Verifique seu e-mail para ativar.' });
   } catch (error) {
-    await transaction.rollback();
+    // PROTEÇÃO SÊNIOR: Apenas executa rollback se a transação ainda estiver pendente.
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
     console.error("🕵️ ERRO NO AUTHCONTROLLER (REGISTER):", error);
-    res.status(400).json({ error: 'Erro ao processar registro: ' + error.message });
+    
+    // Tratativa de UX mais clara para o usuário
+    res.status(400).json({ 
+      error: 'Não foi possível enviar o e-mail de confirmação devido a uma instabilidade. O cadastro foi revertido, tente novamente em alguns instantes.' 
+    });
   }
 };
 
+/**
+ * Autentica o usuário e gera um JWT.
+ */
 exports.login = async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
@@ -119,7 +149,7 @@ exports.googleLogin = async (req, res) => {
         name,
         email,
         password: hashedPassword,
-        isVerified: true, // Já validado pelo Google
+        isVerified: true, // Já validado pelo Google, pula validação de e-mail
         language: 'pt-BR' 
       }, { transaction });
 
@@ -133,12 +163,17 @@ exports.googleLogin = async (req, res) => {
 
     res.json({ user: { id: user.id, name: user.name, email: user.email }, token: jwtToken });
   } catch (error) {
-    await transaction.rollback();
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
     console.error("🕵️ ERRO NO AUTHCONTROLLER (GOOGLE):", error);
     res.status(500).json({ error: 'Falha ao autenticar com o Google.' });
   }
 };
 
+/**
+ * Ativa a conta de usuário via token de e-mail.
+ */
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
@@ -159,6 +194,9 @@ exports.verifyEmail = async (req, res) => {
   }
 };
 
+/**
+ * Envia link para redefinição de senha.
+ */
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -167,9 +205,15 @@ exports.forgotPassword = async (req, res) => {
     if (user) {
       const token = crypto.randomBytes(32).toString('hex');
       user.resetPasswordToken = token;
-      user.resetPasswordExpires = new Date(Date.now() + 3600000); 
+      user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hora
       await user.save();
-      await mailService.sendResetPasswordEmail(user.email, token);
+      
+      try {
+        await mailService.sendResetPasswordEmail(user.email, token);
+      } catch (emailError) {
+        console.error(`📧 ERRO DETALHADO NO SERVIÇO DE E-MAIL (Recuperação - ${user.email}):`, emailError);
+        throw emailError;
+      }
     }
 
     res.json({ message: 'Se o e-mail estiver cadastrado, você receberá um link de recuperação em breve.' });
@@ -179,6 +223,9 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
+/**
+ * Redefine a senha do usuário utilizando token válido.
+ */
 exports.resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;

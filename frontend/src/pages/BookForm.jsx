@@ -1,25 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import api from '../services/api';
 import CreatableSelect from 'react-select/creatable'; 
 import BarcodeScanner from '../components/BarcodeScanner'; 
-import './BookForm.css'; 
 import useBookFormLogic from '../hooks/useBookFormLogic';
-
-// ============================================================================
-// 1. UTILITÁRIOS E ESTILOS GLOBAIS
-// ============================================================================
-const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"><rect width="200" height="300" fill="%232c2c2c" stroke="%23D4AF37" stroke-width="2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="28" fill="%23D4AF37">vioLib</text><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23888888">Sem Capa</text></svg>`;
-
-const getCoverUrl = (filename) => {
-  if (!filename) return DEFAULT_COVER;
-  if (filename.startsWith('http')) return filename; 
-  
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api';
-  const fileBaseUrl = apiUrl.replace('/api', '/files');
-  return `${fileBaseUrl}/${filename}`;
-};
+import './BookForm.css'; 
 
 const customSelectStyles = {
   control: (provided, state) => ({
@@ -70,19 +53,13 @@ const customSelectStyles = {
   }),
   singleValue: (provided) => ({
     ...provided,
-    color: 'var(--text-primary)'
+    color: 'var(--text-primary)' 
   })
 };
 
-
-
-// ============================================================================
-// 2. COMPONENTE VISUAL (A "Casca" do Formulário)
-// ============================================================================
 const BookForm = () => {
   const { t } = useTranslation();
   
-  // Consumindo a lógica centralizada
   const {
     navigate, isEditMode, formData, setFormData, availableGenres, availableSubgenres, 
     availableAuthors, availableTranslators, previewUrl, isLoadingIsbn, isSaving, 

@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, #1a1a1a 0%, var(--bg-main) 100%);
+  background: radial-gradient(circle at center, var(--bg-surface) 0%, var(--bg-main) 100%);
   padding: 20px;
   box-sizing: border-box;
 }
@@ -125,7 +125,7 @@
 /* Efeito dourado premium aplicado ao grupo quando o input interno é focado */
 .input-group:focus-within {
   border-color: var(--accent-gold);
-  background-color: #333333;
+  background-color: var(--bg-surface); /* Corrigido: Adapta-se ao Modo Claro e Escuro */
   box-shadow: 0 0 0 3px var(--accent-gold-glow);
 }
 
@@ -166,7 +166,7 @@
 /* Garantia de opacidade do grupo inteiro quando desativado */
 .input-group:has(.auth-input:disabled) {
   opacity: 0.6;
-  background-color: #222222;
+  background-color: var(--bg-main); /* Corrigido: Adapta-se ao Modo Claro e Escuro */
   cursor: not-allowed;
 }
 

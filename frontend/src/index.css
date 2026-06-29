@@ -2,7 +2,7 @@
 /*@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500&display=swap');*/
 
 :root {
-  /* Paleta Premium Escura e Dourada */
+  /* Paleta Premium Escura e Dourada (Padrão) */
   --bg-main: #121212;
   --bg-surface: #1e1e1e;
   --bg-input: #2a2a2a;
@@ -24,6 +24,24 @@
   --radius-md: 8px;
   --radius-sm: 4px;
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Paleta do Modo Claro (Elegância em tons Marfim e Gelo) */
+[data-theme="light"] {
+  --bg-main: #f4f4f0; /* Fundo principal em tom gelo/marfim suave */
+  --bg-surface: #ffffff; /* Painéis e cartões em branco para dar profundidade */
+  --bg-input: #eeeeee;
+  
+  --accent-gold: #c59b27; /* Dourado ligeiramente escurecido para não sumir no branco */
+  --accent-gold-hover: #a37f1e;
+  --accent-gold-glow: rgba(197, 155, 39, 0.15);
+  
+  --text-primary: #1a1a1a; /* Quase preto para não cansar a leitura */
+  --text-secondary: #555555;
+  --text-muted: #888888;
+  
+  --border-color: #dddddd;
+  --border-focus: #bbbbbb;
 }
 
 /* Reset Base */

@@ -30,7 +30,7 @@ const customSelectStyles = {
   }),
   multiValue: (provided) => ({
     ...provided,
-    backgroundColor: '#333333',
+    backgroundColor: 'var(--border-color)',
     borderRadius: '4px'
   }),
   multiValueLabel: (provided) => ({

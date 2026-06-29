@@ -4,45 +4,36 @@ import './BookCard.css';
 
 /**
  * Componente visual de um cartão de livro individual.
- * Suporta o modo "Padrão" (Flat) e o modo "Livro Realista" (3D).
+ * @param {Object} props.book - Objeto contendo as informações do livro.
+ * @param {boolean} props.showTags - Booleano indicando se as tags devem aparecer no cartão.
  */
 const BookCard = ({ book, showTags }) => {
   const navigate = useNavigate();
+
   const isBorrowed = book.Loans?.some(loan => !loan.returnDate);
   const authorName = book.Authors?.length > 0 ? book.Authors[0].name : 'Autor Desconhecido';
 
   return (
     <div className="book-card" onClick={() => navigate(`/livro/${book.id}`)}>
       
-      {/* 
-        ENVÓLUCRO DA CAPA
-        No modo 3D, este wrapper ganha perspectiva para criar profundidade.
-      */}
+      {/* O Palco 3D (Perspectiva) */}
       <div className="book-cover-wrapper">
         
-        {/* 
-          O VOLUME DO LIVRO (O Objeto 3D)
-          Contém as faces do livro: Frente, Trás, Lombada e Páginas.
-        */}
+        {/* O Bloco 3D que engloba todas as faces e que irá rodar no Hover */}
         <div className="book-volume">
-          {/* Capa Traseira (Dá peso e volume ao livro) */}
-          <div className="book-back"></div>
           
-          {/* Lateral Direita (Simula o bloco de folhas de papel) */}
+          {/* Face 1: Capa Frontal */}
+          <img src={getCoverUrl(book.coverImage)} alt={book.title} className="book-cover-img" />
+          
+          {/* Face 2: Verniz e Vinco sobre a capa */}
+          <div className="book-cover-overlay"></div>
+          
+          {/* Face 3: Páginas (Lateral Direita) */}
           <div className="book-pages"></div>
           
-          {/* Lateral Esquerda (A lombada física do livro) */}
-          <div className="book-spine"></div>
+          {/* Face 4: Contra-capa (Fundo) */}
+          <div className="book-back"></div>
           
-          {/* Capa Frontal (A imagem enviada ou o SVG padrão) */}
-          <img 
-            src={getCoverUrl(book.coverImage)} 
-            alt={book.title} 
-            className="book-cover-img" 
-          />
-          
-          {/* Overlay Brilhante (Simula o reflexo da luz numa capa plastificada) */}
-          <div className="book-cover-overlay"></div>
         </div>
 
       </div>
@@ -58,8 +49,11 @@ const BookCard = ({ book, showTags }) => {
                 #{tag.name}
               </span>
             ))}
+            
             {book.Tags.length > 2 && (
-              <span className="card-tag-more">+{book.Tags.length - 2}</span>
+              <span className="card-tag-more">
+                +{book.Tags.length - 2}
+              </span>
             )}
           </div>
         )}

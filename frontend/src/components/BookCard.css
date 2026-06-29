@@ -33,7 +33,7 @@
 .book-cover-wrapper {
   position: relative;
   width: 100%;
-  height: 280px;
+  aspect-ratio: 3 / 4;
   background-color: transparent;
   border-bottom: 1px solid var(--border-color);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
@@ -41,7 +41,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  overflow: hidden; /* Corta sobras no modo flat */
+  overflow: hidden; 
   transition: all 0.4s ease;
 }
 
@@ -59,8 +59,8 @@
   display: block;
 }
 
-/* Esconde as peças 3D no modo Flat */
 .book-cover-overlay,
+.book-spine,
 .book-pages,
 .book-back {
   display: none;
@@ -70,50 +70,40 @@
    MÁGICA DO LIVRO REALISTA (3D ISOMÉTRICO)
    ========================================================================== */
 
-/* 1. O Palco (Perspectiva) */
 [data-cover-style="book"] .book-cover-wrapper {
   perspective: 1200px;
   border-bottom: none;
-  overflow: visible; /* Liberta as bordas para a rotação 3D */
+  overflow: visible; 
   padding: 20px 30px 25px 25px; 
 }
 
-/* 2. O Objeto 3D (O Bloco Inteiro) */
 [data-cover-style="book"] .book-volume {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d; 
-  /* Rotação Negativa (-20deg): A lombada vai para trás e as páginas vêm para a frente */
   transform: rotateY(-20deg) rotateX(6deg);
 }
 
-/* Sombra 3D projetada atrás do livro */
 [data-cover-style="book"] .book-volume::after {
   content: "";
   position: absolute;
   inset: 0; 
   background: rgba(0, 0, 0, 0.4);
-  /* Sombra fica atrás do bloco (-20px) e desce ligeiramente para a direita */
   transform: translateZ(-20px) translate(12px, 12px);
   filter: blur(12px);
   border-radius: 4px;
   transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* Sombra 3D suave no Modo Claro */
 [data-theme="light"][data-cover-style="book"] .book-volume::after {
   background: rgba(0, 0, 0, 0.15);
   filter: blur(10px);
 }
 
-/* 3. Efeito Interativo de Hover (Fica reto) */
 [data-cover-style="book"] .book-card:hover .book-volume {
-  /* Mantemos um leve ângulo de -3deg para evitar o "flicker" de anti-aliasing
-     do navegador na renderização exata de 90 graus das páginas */
   transform: rotateY(-3deg) rotateX(0deg) scale(1.03);
 }
 
-/* O Hover afasta a sombra, dando a ilusão de que o livro flutua em nossa direção */
 [data-cover-style="book"] .book-card:hover .book-volume::after {
   transform: translateZ(-30px) translate(8px, 15px);
   filter: blur(16px);
@@ -124,15 +114,14 @@
   background: rgba(0, 0, 0, 0.1);
 }
 
-/* 4. As Faces Geométricas do Polígono */
 [data-cover-style="book"] .book-cover-overlay,
+[data-cover-style="book"] .book-spine,
 [data-cover-style="book"] .book-pages,
 [data-cover-style="book"] .book-back {
   display: block;
   position: absolute;
 }
 
-/* FACE FRONTAL: Puxada 10px para a frente */
 [data-cover-style="book"] .book-cover-img {
   position: absolute;
   inset: 0;
@@ -140,7 +129,6 @@
   border-radius: 2px 4px 4px 2px;
 }
 
-/* FACE TRASEIRA: Puxada 10px para trás e invertida */
 [data-cover-style="book"] .book-back {
   inset: 0;
   transform: translateZ(-10px) rotateY(180deg);
@@ -148,17 +136,14 @@
   border-radius: 4px 2px 2px 4px; 
 }
 
-/* FACE LATERAL DIREITA (Páginas - Visíveis e texturizadas) */
 [data-cover-style="book"] .book-pages {
   top: 1%;
   bottom: 1%;
   right: 0;
-  width: 20px; /* Espessura total do livro (10px frente + 10px trás) */
+  width: 20px; 
   transform-origin: right center;
-  /* Posicionamento geométrico exato para colar a folha na borda frontal e traseira */
   transform: translateZ(10px) rotateY(90deg);
   background-color: #e6e3d1; 
-  /* Linhas simulando as folhas */
   background-image: repeating-linear-gradient(
     to right,
     rgba(0,0,0,0.06) 0px,
@@ -169,14 +154,23 @@
   box-shadow: inset 2px 0 5px rgba(0,0,0,0.1);
 }
 
+[data-cover-style="book"] .book-spine {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 20px;
+  transform-origin: left center;
+  transform: translateZ(10px) rotateY(-90deg);
+  background-color: #2c2c2c; 
+}
+
 /* ==========================================================================
    OVERLAY: A "MARCA" DA LOMBADA E ILUMINAÇÃO
    ========================================================================== */
 
-/* Estado Padrão (Livro inclinado): Marca sutil para não interferir na imagem */
 [data-cover-style="book"] .book-cover-overlay {
   inset: 0;
-  transform: translateZ(10.5px); /* Logo acima da imagem para evitar falhas de renderização */
+  transform: translateZ(10.5px); 
   border-radius: 2px 4px 4px 2px;
   pointer-events: none;
   
@@ -187,11 +181,9 @@
     rgba(255, 255, 255, 0) 3%,
     rgba(255, 255, 255, 0) 90%
   );
-  /* Sincronização Perfeita com o .book-volume para evitar flashes visuais */
   transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* Hover (Livro reto): A marca da lombada aprofunda e o vinco brilho aparece! */
 [data-cover-style="book"] .book-card:hover .book-cover-overlay {
   box-shadow: inset 8px 0 16px rgba(0, 0, 0, 0.5), inset -1px 0 2px rgba(255, 255, 255, 0.1);
   background: linear-gradient(
@@ -203,7 +195,6 @@
   );
 }
 
-/* Ajustes da marca da lombada no Hover do Modo Claro */
 [data-theme="light"][data-cover-style="book"] .book-card:hover .book-cover-overlay {
   box-shadow: inset 6px 0 12px rgba(0, 0, 0, 0.2);
   background: linear-gradient(
@@ -289,4 +280,4 @@
 
 .badge-borrowed .material-symbols-rounded {
   font-size: 1.3em !important;
-} 
+}

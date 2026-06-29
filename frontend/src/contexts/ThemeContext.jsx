@@ -3,27 +3,28 @@ import { createContext, useState, useEffect } from 'react';
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  // O estado inicial procura no localStorage, se não achar, usa 'system' por padrão
+  // 1. Estado do Tema (Claro/Escuro/Sistema)
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('violib_theme') || 'system';
   });
 
+  // 2. NOVO: Estado do Estilo da Capa (Flat/Book)
+  const [coverStyle, setCoverStyle] = useState(() => {
+    return localStorage.getItem('violib_cover_style') || 'flat';
+  });
+
+  // Efeito que controla a cor do Tema
   useEffect(() => {
     const root = document.documentElement;
     let activeTheme = theme;
 
-    // Se a escolha for 'system', descobrimos qual é a preferência do SO do usuário
     if (theme === 'system') {
       activeTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
 
-    // Injeta um atributo data-theme na tag <html> para o CSS reconhecer
     root.setAttribute('data-theme', activeTheme);
-    
-    // Salva a escolha (system, light ou dark) para a próxima visita
     localStorage.setItem('violib_theme', theme);
 
-    // Cria um "ouvinte" para caso o usuário mude o tema do celular com o app aberto
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e) => {
       if (theme === 'system') {
@@ -35,8 +36,14 @@ export const ThemeProvider = ({ children }) => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
 
+  // NOVO: Efeito que aplica o estilo da capa globalmente
+  useEffect(() => {
+    document.documentElement.setAttribute('data-cover-style', coverStyle);
+    localStorage.setItem('violib_cover_style', coverStyle);
+  }, [coverStyle]);
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, coverStyle, setCoverStyle }}>
       {children}
     </ThemeContext.Provider>
   );

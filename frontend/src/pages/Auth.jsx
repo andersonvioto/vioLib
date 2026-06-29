@@ -6,7 +6,7 @@ import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext'; 
 
 import './Auth.css'; 
-import logoImg from '../assets/violib-logo-full.png';
+import logoImg from '../assets/violib-logo-full2.png';
 
 const Auth = () => {
   const { t } = useTranslation();

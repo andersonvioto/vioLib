@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import logoImg from '../assets/violib-logo-full.png';
+import logoImg from '../assets/violib-logo-full2.png';
 import './Auth.css'; // Atualizado para apontar para o CSS Mestre de Autenticação
 
 const ResetPassword = () => {

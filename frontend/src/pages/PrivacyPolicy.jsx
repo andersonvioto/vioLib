@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import logoImg from '../assets/violib-logo-full.png'; 
+import logoImg from '../assets/violib-logo-full2.png'; 
 import './PrivacyPolicy.css'; 
 
 const PrivacyPolicy = () => {

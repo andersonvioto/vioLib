@@ -1,0 +1,107 @@
+/* Overlay escuro e desfocado cobrindo a tela toda */
+.legal-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Caixa principal do Modal */
+.legal-modal-box {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--accent-gold);
+  border-radius: var(--radius-md);
+  width: 100%;
+  max-width: 600px;
+  max-height: 85vh; /* Evita que o modal passe da altura da tela */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.legal-modal-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.legal-modal-title {
+  margin: 0;
+  font-size: 1.3em;
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legal-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: var(--transition-smooth);
+}
+
+.legal-modal-close:hover {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+}
+
+/* Área de rolagem do texto */
+.legal-modal-content {
+  padding: 20px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.legal-content-body h3 {
+  color: var(--accent-gold);
+  font-size: 1.1em;
+  margin: 20px 0 10px 0;
+}
+
+.legal-content-body p {
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 0.95em;
+  margin-bottom: 15px;
+}
+
+.legal-modal-footer {
+  padding: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsividade Mobile: Modal ocupa quase toda a tela e o botão de fechar fica mais acessível */
+@media (max-width: 600px) {
+  .legal-modal-overlay {
+    padding: 10px;
+  }
+  .legal-modal-box {
+    max-height: 95vh;
+  }
+}

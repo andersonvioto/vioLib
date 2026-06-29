@@ -5,6 +5,7 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext'; 
 
+import LegalModal from '../components/LegalModal'; // <-- Importação do Modal
 import './Auth.css'; 
 import logoImg from '../assets/violib-logo-full2.png';
 
@@ -22,6 +23,10 @@ const Auth = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Novos estados para os Termos Legais
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [activeModal, setActiveModal] = useState(null); // 'terms' | 'privacy' | null
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     
@@ -38,6 +43,7 @@ const Auth = () => {
     setShowPassword(false);
     setShowConfirmPassword(false);
     setRememberMe(false);
+    setTermsAccepted(false); // Reseta o aceite ao trocar de view
     setIsLoading(false);
   };
 
@@ -66,6 +72,12 @@ const Auth = () => {
 
     try {
       if (view === 'register') {
+        // Validação dos Termos (Obrigatório para registro via Formulário)
+        if (!termsAccepted) {
+          setIsLoading(false);
+          return setMessage({ type: 'error', text: 'Você deve aceitar os Termos de Serviço e a Política de Privacidade para continuar.' });
+        }
+        
         if (formData.password !== formData.confirmPassword) {
           setIsLoading(false);
           return setMessage({ type: 'error', text: 'As senhas não coincidem. Tente novamente.' });
@@ -85,6 +97,7 @@ const Auth = () => {
         setFormData({ name: '', email: '', password: '', confirmPassword: '' });
         setShowPassword(false);
         setShowConfirmPassword(false);
+        setTermsAccepted(false);
         setIsLoading(false);
         setMessage({ type: 'success', text: response.data.message });
       } 
@@ -231,6 +244,40 @@ const Auth = () => {
               </div>
             )}
 
+            {/* Checkbox de Aceite Legal Obrigatório no Registro */}
+            {view === 'register' && (
+              <div className="remember-me-container" style={{ alignItems: 'flex-start', marginTop: '5px' }}>
+                <label className="remember-me-label" style={{ alignItems: 'flex-start' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={termsAccepted} 
+                    onChange={(e) => setTermsAccepted(e.target.checked)} 
+                    disabled={isLoading}
+                    className="remember-me-checkbox"
+                    style={{ marginTop: '2px', flexShrink: 0 }}
+                  />
+                  <span style={{ fontSize: '0.9em', lineHeight: '1.4', color: 'var(--text-secondary)' }}>
+                    Li e concordo com os{' '}
+                    <span 
+                      className="auth-link" 
+                      onClick={(e) => { e.preventDefault(); setActiveModal('terms'); }}
+                      style={{ marginLeft: 0 }}
+                    >
+                      Termos de Serviço
+                    </span>{' '}
+                    e a{' '}
+                    <span 
+                      className="auth-link" 
+                      onClick={(e) => { e.preventDefault(); setActiveModal('privacy'); }}
+                      style={{ marginLeft: 0 }}
+                    >
+                      Política de Privacidade
+                    </span>.
+                  </span>
+                </label>
+              </div>
+            )}
+
             <button type="submit" className="btn-auth-submit" disabled={isLoading}>
               {isLoading ? (
                 <span className="auth-spinner"></span>
@@ -248,15 +295,24 @@ const Auth = () => {
                   <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
                 </div>
                 
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                   <GoogleLogin
                     onSuccess={handleGoogleSuccess}
                     onError={() => setMessage({ type: 'error', text: 'Ocorreu um erro ao comunicar com o Google.' })}
-                    theme="filled_black" // Opções: outline, filled_blue, filled_black
+                    theme="filled_black" 
                     text={view === 'login' ? "signin_with" : "signup_with"}
                     shape="pill"
                     width="100%"
                   />
+                  
+                  {/* Aviso sutil do Google no Registro */}
+                  {view === 'register' && (
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '5px' }}>
+                      Ao entrar com o Google, você aceita nossos{' '}
+                      <span className="auth-link" onClick={() => setActiveModal('terms')} style={{ marginLeft: 0, fontSize: 'inherit' }}>Termos</span> e{' '}
+                      <span className="auth-link" onClick={() => setActiveModal('privacy')} style={{ marginLeft: 0, fontSize: 'inherit' }}>Privacidade</span>.
+                    </span>
+                  )}
                 </div>
               </>
             )}
@@ -301,6 +357,11 @@ const Auth = () => {
           </div>
         </div>
       </div>
+
+      {/* Renderização do Modal de Documentos Legais */}
+      {activeModal && (
+        <LegalModal type={activeModal} onClose={() => setActiveModal(null)} />
+      )}
     </GoogleOAuthProvider>
   );
 };

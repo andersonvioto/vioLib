@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { PrivacyContent } from '../components/LegalContent';
+import { TermsContent } from '../components/LegalContent';
 
-const PrivacyPolicy = () => {
+const TermsOfService = () => {
   const navigate = useNavigate();
 
   return (
@@ -15,14 +15,14 @@ const PrivacyPolicy = () => {
       </button>
 
       <h1 style={{ color: 'var(--accent-gold)', marginBottom: '30px', fontSize: '2.5em', fontFamily: 'serif' }}>
-        Política de Privacidade
+        Termos de Serviço
       </h1>
       
       <div style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-        <PrivacyContent />
+        <TermsContent />
       </div>
     </div>
   );
 };
 
-export default PrivacyPolicy;
+export default TermsOfService;

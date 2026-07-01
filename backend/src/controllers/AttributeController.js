@@ -24,35 +24,39 @@ exports.getAllAttributes = async (req, res) => {
 
     const isUsedOnly = usedOnly === 'true';
 
-    // 2. Lógica de Junção (INNER JOIN) caso queira apenas categorias em uso
-    const bookInclude = isUsedOnly ? [{ model: Book, attributes: [], required: true }] : [];
+    // 2. Estratégia de Joins Seguros (Prevenção de Colapso SQL)
+    // Para tabelas primárias (Autores, Gêneros, Tags), exigimos que tenham livros
+    const requiredBookInclude = isUsedOnly ? [{ model: Book, attributes: ['id'], required: true }] : [];
+    
+    // Para sub-tabelas (Subgêneros), NÃO podemos exigir na query SQL, senão o banco 
+    // transforma o LEFT JOIN em INNER JOIN, ocultando Gêneros inteiros.
+    const optionalBookInclude = isUsedOnly ? [{ model: Book, attributes: ['id'], required: false }] : [];
 
     // 3. Execução em paralelo
     const [authors, translators, tags, genres] = await Promise.all([
       Author.findAll({ 
         where: { UserId: targetUserId }, 
-        include: bookInclude,
+        include: requiredBookInclude,
         order: [['name', 'ASC']] 
       }),
       Translator.findAll({ 
         where: { UserId: targetUserId }, 
-        include: bookInclude,
+        include: requiredBookInclude,
         order: [['name', 'ASC']] 
       }),
       Tag.findAll({ 
         where: { UserId: targetUserId }, 
-        include: bookInclude,
+        include: requiredBookInclude,
         order: [['name', 'ASC']] 
       }),
       Genre.findAll({
         where: { UserId: targetUserId },
         include: [
-          ...bookInclude,
+          ...requiredBookInclude,
           { 
             model: Subgenre,
-            include: bookInclude,
-            // Não exige que o Gênero tenha obrigatoriamente um Subgênero
-            required: false 
+            include: optionalBookInclude,
+            required: false // Garante que o Gênero venha mesmo sem Subgênero
           }
         ],
         order: [
@@ -62,7 +66,7 @@ exports.getAllAttributes = async (req, res) => {
       })
     ]);
 
-    // 4. Limpeza de duplicatas geradas pelo INNER JOIN em relacionamentos N:N
+    // 4. Limpeza e Filtro Inteligente (Pós-Processamento Node.js)
     const unique = (arr) => {
       if (!arr) return [];
       const seen = new Set();
@@ -74,18 +78,39 @@ exports.getAllAttributes = async (req, res) => {
       });
     };
 
+    // Função auxiliar para limpar o objeto "Books" do payload JSON, mantendo a API rápida
+    const cleanPayload = (items) => {
+      return unique(items).map(item => {
+        const obj = typeof item.toJSON === 'function' ? item.toJSON() : item;
+        delete obj.Books; 
+        return obj;
+      });
+    };
+
     const cleanGenres = unique(genres).map(g => {
       const genreObj = typeof g.toJSON === 'function' ? g.toJSON() : g;
-      if (isUsedOnly && genreObj.Subgenres) {
-        genreObj.Subgenres = unique(genreObj.Subgenres);
+      delete genreObj.Books; // Limpa livros do Gênero
+
+      if (genreObj.Subgenres) {
+        let subgenresList = unique(genreObj.Subgenres);
+
+        // Se for usedOnly, filtramos pelo JS os subgêneros que efetivamente trouxeram livros
+        if (isUsedOnly) {
+          subgenresList = subgenresList.filter(sub => sub.Books && sub.Books.length > 0);
+        }
+
+        genreObj.Subgenres = subgenresList.map(sub => {
+          delete sub.Books; // Limpa livros do Subgênero para não pesar a rede
+          return sub;
+        });
       }
       return genreObj;
     });
 
     res.json({
-      authors: unique(authors),
-      translators: unique(translators),
-      tags: unique(tags),
+      authors: cleanPayload(authors),
+      translators: cleanPayload(translators),
+      tags: cleanPayload(tags),
       genres: cleanGenres
     });
   } catch (error) {

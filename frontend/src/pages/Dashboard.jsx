@@ -76,10 +76,15 @@ const Dashboard = () => {
     setSelectedSubgenre('');
     setSelectedTag('');
 
-    // 2. Monta os parâmetros para trazer apenas categorias que possuem livros
-    const ownerQuery = currentLibrary ? `&ownerId=${currentLibrary.ownerId}` : '';
+    // 2. Monta os parâmetros de forma segura (Reativando o usedOnly)
+    const params = new URLSearchParams();
+    params.append('usedOnly', 'true'); // <-- Filtro reativado!
+
+    if (currentLibrary) {
+      params.append('ownerId', currentLibrary.ownerId);
+    }
     
-    api.get(`/attributes?usedOnly=true${ownerQuery}`)
+    api.get(`/attributes?${params.toString()}`)
        .then(res => {
          setAvailableGenres(res.data.genres || []);
          setAvailableTags(res.data.tags || []);
@@ -160,7 +165,7 @@ const Dashboard = () => {
   }, [fetchBooks]); 
 
   // ==========================================
-  // HANDLERS
+  // HANDLERS E VARIÁVEIS DE RENDERIZAÇÃO
   // ==========================================
   
   const handleLoadMore = () => {
@@ -169,7 +174,13 @@ const Dashboard = () => {
     fetchBooks(nextPage, false); 
   };
 
-  const activeGenreObj = availableGenres.find(g => g.name === selectedGenre);
+  // Comparação à prova de falhas: ignora case sensitive e espaços vazios acidentais
+  const activeGenreObj = availableGenres.find(
+    g => g.name?.trim().toLowerCase() === selectedGenre?.trim().toLowerCase()
+  );
+  const activeSubgenres = activeGenreObj ? (activeGenreObj.Subgenres || activeGenreObj.subgenres || []) : [];
+  
+  const libraryOwnerName = currentLibrary ? (currentLibrary.ownerName || currentLibrary.Owner?.name || currentLibrary.User?.name || 'Convidado') : '';
 
   // ==========================================
   // RENDERIZAÇÃO
@@ -227,9 +238,9 @@ const Dashboard = () => {
       />
 
       {/* 5. PRATELEIRA SECUNDÁRIA (SUBGÊNEROS) */}
-      {activeGenreObj && activeGenreObj.Subgenres?.length > 0 && (
+      {activeSubgenres.length > 0 && (
         <Shelf 
-          items={activeGenreObj.Subgenres}
+          items={activeSubgenres}
           activeItem={selectedSubgenre}
           onSelect={setSelectedSubgenre}
           defaultLabel={`Todos em ${activeGenreObj.name}`}
@@ -248,7 +259,7 @@ const Dashboard = () => {
               ? selectedSubgenre 
               : selectedGenre 
                 ? selectedGenre 
-                : (currentLibrary ? `Acervo de ${currentLibrary.ownerName}` : 'Minha Biblioteca')
+                : (currentLibrary ? `Acervo de ${libraryOwnerName}` : 'Minha Biblioteca')
             }
             <span className="title-count">({isLoading && myBooks.length === 0 ? '...' : totalBooks})</span>
           </h2>

@@ -14,6 +14,16 @@ export const formatDateSafe = (dateString) => {
   return dateString.split('-').reverse().join('/');
 };
 
+/**
+ * Formata de modo padronizado um ISBN de 13 dígitos
+ */
+export const formatISBN = (isbn) => {
+  if (!isbn) return '';
+  const v = String(isbn).replace(/\D/g, '');
+  if (v.length !== 13) return isbn; 
+  return `${v.substring(0,3)}-${v.substring(3,5)}-${v.substring(5,8)}-${v.substring(8,12)}-${v.substring(12,13)}`;
+};
+
 // ============================================================================
 // FORMATADORES DE NOMES DE AUTORES (Por Norma)
 // ============================================================================
@@ -67,7 +77,11 @@ export const getCitationText = (book, format) => {
   
   const title = book.title ? book.title.trim() : '';
   const year = book.releaseYear ? String(book.releaseYear).trim() : '';
-  const city = book.publicationLocation ? book.publicationLocation.trim() : '';
+  
+  // Limpeza de Município/Estado: Se vier "Curitiba, PR", isola apenas "Curitiba".
+  const rawLocation = book.publicationLocation ? book.publicationLocation.trim() : '';
+  const city = rawLocation.split(',')[0].trim();
+  
   const pub = book.publisher ? book.publisher.trim() : '';
   const rawEdition = book.edition ? book.edition.trim() : '';
 
@@ -141,9 +155,33 @@ export const getCitationText = (book, format) => {
   const authors = getAuthorsBlock(format);
   const translators = getTranslatorsBlock(format);
 
-  // Helper para agrupar as partes de forma limpa, ignorando as vazias
+  // Helper para agrupar as partes ignorando as vazias e evitando "pontos duplicados"
   const joinParts = (parts, separator = '. ') => {
-    return parts.filter(p => p && p.trim() !== '').join(separator);
+    const validParts = parts.filter(p => p && String(p).trim() !== '');
+    if (validParts.length === 0) return '';
+    
+    return validParts.reduce((acc, part, index) => {
+      if (index === 0) return String(part).trim();
+      const cleanPart = String(part).trim();
+      
+      // Se a string acumulada já terminar num ponto, usamos apenas o espaço em vez do ponto e espaço.
+      if (separator === '. ' && acc.endsWith('.')) {
+        return `${acc} ${cleanPart}`;
+      }
+      return `${acc}${separator}${cleanPart}`;
+    }, '');
+  };
+
+  // Helper de segurança para garantir a pontuação final de fechamento, sem conflito de tags
+  const ensureEndingDot = (str) => {
+    if (!str) return '';
+    const trimmed = String(str).trim();
+    // Verifica qual é o último caractere visível ignorando tags como </i> ou </b>
+    const cleanStr = trimmed.replace(/<\/?[^>]+(>|$)/g, "");
+    if (cleanStr.endsWith('.')) {
+        return trimmed;
+    }
+    return `${trimmed}.`;
   };
 
   // --- TRATAMENTO DO BLOCO DE PUBLICAÇÃO ---
@@ -172,16 +210,15 @@ export const getCitationText = (book, format) => {
   // --- CONSTRUÇÃO FINAL DAS CITAÇÕES ---
   switch(format) {
     case 'ABNT': {
-      const abntPub = getPubBlockABNT(); // Retorna "Cidade: Editora, Ano" ou as partes disponíveis
+      const abntPub = getPubBlockABNT(); 
       const finalStrPlain = joinParts([authors, title, translators, edABNT, abntPub]);
       const finalStrHtml = joinParts([authors, title ? `<b>${title}</b>` : '', translators, edABNT, abntPub]);
       
-      plain = finalStrPlain ? `${finalStrPlain}.` : '';
-      html = finalStrHtml ? `${finalStrHtml}.` : '';
+      plain = ensureEndingDot(finalStrPlain);
+      html = ensureEndingDot(finalStrHtml);
       break;
     }
     case 'APA': {
-      // APA: Author. (Year). Title (Translator, Trad.; Edition). Publisher.
       const apaYear = year ? `(${year})` : '';
       const parenContent = joinParts([translators ? `${tNames.join(' & ')}, Trad.` : '', edAPA ? edAPA.replace(/[()]/g, '') : ''].filter(Boolean), '; ');
       
@@ -191,15 +228,15 @@ export const getCitationText = (book, format) => {
       const finalStrPlain = joinParts([authors, apaYear, titleFullPlain, pub]);
       const finalStrHtml = joinParts([authors, apaYear, titleFullHtml, pub]);
 
-      plain = finalStrPlain ? `${finalStrPlain}.` : '';
-      html = finalStrHtml ? `${finalStrHtml}.` : '';
+      plain = ensureEndingDot(finalStrPlain);
+      html = ensureEndingDot(finalStrHtml);
       break;
     }
     case 'Vancouver': {
       const vanPub = getPubBlockVancouver();
       const finalStr = joinParts([authors, title, translators, edABNT, vanPub]);
-      plain = finalStr ? `${finalStr}.` : '';
-      html = plain; // Vancouver não usa marcações itálico/negrito
+      plain = ensureEndingDot(finalStr);
+      html = plain; 
       break;
     }
     case 'Harvard': {
@@ -209,8 +246,8 @@ export const getCitationText = (book, format) => {
       const finalStrPlain = joinParts([harvardAuthYear, title, translators, edABNT, harvardPub]);
       const finalStrHtml = joinParts([harvardAuthYear, title ? `<i>${title}</i>` : '', translators, edABNT, harvardPub]);
       
-      plain = finalStrPlain ? `${finalStrPlain}.` : '';
-      html = finalStrHtml ? `${finalStrHtml}.` : '';
+      plain = ensureEndingDot(finalStrPlain);
+      html = ensureEndingDot(finalStrHtml);
       break;
     }
     case 'MLA': {
@@ -219,18 +256,18 @@ export const getCitationText = (book, format) => {
       const finalStrPlain = joinParts([authors, title, translators, edABNT, mlaPubYear]);
       const finalStrHtml = joinParts([authors, title ? `<i>${title}</i>` : '', translators, edABNT, mlaPubYear]);
       
-      plain = finalStrPlain ? `${finalStrPlain}.` : '';
-      html = finalStrHtml ? `${finalStrHtml}.` : '';
+      plain = ensureEndingDot(finalStrPlain);
+      html = ensureEndingDot(finalStrHtml);
       break;
     }
     case 'Chicago': {
-      const chiPubBlock = getPubBlockABNT(); // Mesmo modelo de publicação da ABNT
+      const chiPubBlock = getPubBlockABNT(); 
       
       const finalStrPlain = joinParts([authors, title, translators, edABNT, chiPubBlock]);
       const finalStrHtml = joinParts([authors, title ? `<i>${title}</i>` : '', translators, edABNT, chiPubBlock]);
       
-      plain = finalStrPlain ? `${finalStrPlain}.` : '';
-      html = finalStrHtml ? `${finalStrHtml}.` : '';
+      plain = ensureEndingDot(finalStrPlain);
+      html = ensureEndingDot(finalStrHtml);
       break;
     }
   }

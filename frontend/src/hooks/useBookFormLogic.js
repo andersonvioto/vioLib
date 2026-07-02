@@ -13,6 +13,32 @@ const getCoverUrl = (filename) => {
   return `${fileBaseUrl}/${filename}`;
 };
 
+const formatIsbnInput = (value) => {
+  let v = value.replace(/\D/g, '');
+  if (v.length > 13) v = v.substring(0, 13);
+  
+  let masked = v;
+  if (v.length > 3) masked = v.substring(0, 3) + '-' + v.substring(3);
+  if (v.length > 5) masked = masked.substring(0, 6) + '-' + masked.substring(6);
+  if (v.length > 8) masked = masked.substring(0, 10) + '-' + masked.substring(10);
+  if (v.length > 12) masked = masked.substring(0, 15) + '-' + masked.substring(15);
+  
+  return masked;
+};
+
+const buildFullTitle = (title, subtitle) => {
+  if (!title) return '';
+  if (!subtitle) return title.trim();
+  
+  const cleanTitle = title.trim();
+  const cleanSubtitle = subtitle.trim();
+  
+  if (cleanTitle.endsWith(':')) {
+    return `${cleanTitle} ${cleanSubtitle}`;
+  }
+  return `${cleanTitle}: ${cleanSubtitle}`;
+};
+
 const useBookFormLogic = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -66,7 +92,7 @@ const useBookFormLogic = () => {
           const bookSubgenres = b.Subgenres || b.subgenres || [];
 
           setFormData({
-            isbn: b.isbn || '', 
+            isbn: b.isbn ? formatIsbnInput(b.isbn) : '', 
             title: b.title || '',
             edition: b.edition || '',
             releaseYear: b.releaseYear || '',
@@ -101,7 +127,14 @@ const useBookFormLogic = () => {
     }
   }, [formData.selectedGenre, attributes.genres]);
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'isbn') {
+      setFormData({ ...formData, [name]: formatIsbnInput(value) });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -124,7 +157,7 @@ const useBookFormLogic = () => {
 
   const handleScanSuccess = (decodedIsbn) => {
     setIsScannerOpen(false);
-    setFormData(prev => ({ ...prev, isbn: decodedIsbn }));
+    setFormData(prev => ({ ...prev, isbn: formatIsbnInput(decodedIsbn) }));
     setTimeout(() => handleIsbnSearch(decodedIsbn), 100);
   };
 
@@ -144,9 +177,12 @@ const useBookFormLogic = () => {
         if (response.ok) {
           const data = await response.json();
           fetchedData = {
-            title: data.title || '', publisher: data.publisher || '',
-            releaseYear: data.year ? String(data.year) : '', location: data.location || '',
-            coverUrl: data.cover_url || '', authors: data.authors || [] 
+            title: buildFullTitle(data.title, data.subtitle), 
+            publisher: data.publisher || '',
+            releaseYear: data.year ? String(data.year) : '', 
+            location: data.location || '',
+            coverUrl: data.cover_url || '', 
+            authors: data.authors || [] 
           };
         }
       } catch (e) { console.warn("BrasilAPI falhou."); }
@@ -161,9 +197,12 @@ const useBookFormLogic = () => {
               let cUrl = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '';
               if (cUrl) cUrl = cUrl.replace(/^http:/i, 'https:');
               fetchedData = {
-                title: info.title || '', publisher: info.publisher || '',
-                releaseYear: info.publishedDate ? info.publishedDate.substring(0, 4) : '', location: '',
-                coverUrl: cUrl, authors: info.authors || [] 
+                title: buildFullTitle(info.title, info.subtitle), 
+                publisher: info.publisher || '',
+                releaseYear: info.publishedDate ? info.publishedDate.substring(0, 4) : '', 
+                location: '',
+                coverUrl: cUrl, 
+                authors: info.authors || [] 
               };
             }
           }
@@ -179,7 +218,8 @@ const useBookFormLogic = () => {
             if (data[bookKey]) {
               const info = data[bookKey];
               fetchedData = {
-                title: info.title || '', publisher: info.publishers ? info.publishers[0].name : '',
+                title: buildFullTitle(info.title, info.subtitle), 
+                publisher: info.publishers ? info.publishers[0].name : '',
                 releaseYear: info.publish_date ? (info.publish_date.match(/\d{4}/)?.[0] || '') : '',
                 location: info.publish_places ? info.publish_places[0].name : '',
                 coverUrl: info.cover ? (info.cover.large || info.cover.medium || '') : '',
@@ -212,7 +252,7 @@ const useBookFormLogic = () => {
         });
 
         setFormData(prev => ({
-          ...prev, isbn: cleanIsbn, title: fetchedData.title || prev.title,
+          ...prev, isbn: formatIsbnInput(cleanIsbn), title: fetchedData.title || prev.title,
           publisher: fetchedData.publisher || prev.publisher, releaseYear: fetchedData.releaseYear || prev.releaseYear,
           publicationLocation: fetchedData.location || prev.publicationLocation,
           authors: processedAuthors.length > 0 ? processedAuthors : prev.authors,
@@ -250,7 +290,8 @@ const useBookFormLogic = () => {
     setFeedback({ type: '', message: '' });
 
     const payloadForm = new FormData();
-    payloadForm.append('isbn', formData.isbn);
+    // Limpamos a máscara para enviar o dado íntegro para o backend
+    payloadForm.append('isbn', formData.isbn.replace(/\D/g, ''));
     payloadForm.append('title', formData.title);
     payloadForm.append('edition', formData.edition);
     payloadForm.append('releaseYear', formData.releaseYear);

@@ -1,4 +1,4 @@
-import { formatDateSafe } from '../utils/bookHelpers';
+import { formatDateSafe, formatISBN } from '../utils/bookHelpers';
 import './BookMetadataGrid.css';
 
 /**
@@ -41,7 +41,7 @@ const BookMetadataGrid = ({ book }) => {
         {/* Renderização limpa e declarativa dos campos */}
         {renderMetaItem('Gênero', genresList)}
         {renderMetaItem('Subgêneros', subgenresList)}
-        {renderMetaItem('ISBN', book.isbn)}
+        {renderMetaItem('ISBN', formatISBN(book.isbn))}
         {renderMetaItem('Local de Publicação', book.publicationLocation)}
         {renderMetaItem('Ano de Lançamento', book.releaseYear)}
         {renderMetaItem('Editora', book.publisher)}

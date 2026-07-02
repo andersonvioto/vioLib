@@ -59,6 +59,11 @@ const useBookFormLogic = () => {
   const [coverFile, setCoverFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isLoadingIsbn, setIsLoadingIsbn] = useState(false);
+  
+  // Novos Estados para a Amazon
+  const [amazonUrl, setAmazonUrl] = useState('');
+  const [isLoadingAmazon, setIsLoadingAmazon] = useState(false);
+  
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' }); 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -161,6 +166,80 @@ const useBookFormLogic = () => {
     setTimeout(() => handleIsbnSearch(decodedIsbn), 100);
   };
 
+  // Helper interno de autores para reutilizar no ISBN e Amazon
+  const processFetchedAuthors = (fetchedAuthorsArray) => {
+    const removeAccents = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    return fetchedAuthorsArray.map(authorName => {
+      let finalName = authorName.trim();
+      if (finalName.includes(',')) {
+        const parts = finalName.split(',');
+        if (parts.length === 2) {
+          const lastName = parts[0].trim();
+          const firstName = parts[1].trim();
+          const formattedLastName = lastName === lastName.toUpperCase() 
+            ? lastName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
+            : lastName;
+          finalName = `${firstName} ${formattedLastName}`;
+        }
+      }
+      const sanitizedNewName = removeAccents(finalName);
+      const existingAuthor = availableAuthors.find(existing => removeAccents(existing.value) === sanitizedNewName);
+      return existingAuthor ? existingAuthor : { value: finalName, label: finalName }; 
+    });
+  };
+
+  // =========================================================================
+  // MOTOR DE BUSCA: AMAZON
+  // =========================================================================
+  const handleAmazonImport = async () => {
+    if (!amazonUrl) return;
+    setIsLoadingAmazon(true);
+    setFeedback({ type: '', message: '' });
+
+    try {
+      const response = await api.post('/books/amazon-scrape', { url: amazonUrl });
+      const fetchedData = response.data;
+      const processedAuthors = processFetchedAuthors(fetchedData.authors || []);
+
+      setFormData(prev => ({
+        ...prev,
+        isbn: fetchedData.isbn ? formatIsbnInput(fetchedData.isbn) : prev.isbn,
+        title: buildFullTitle(fetchedData.title, fetchedData.subtitle) || prev.title,
+        publisher: fetchedData.publisher || prev.publisher,
+        releaseYear: fetchedData.releaseYear || prev.releaseYear,
+        edition: fetchedData.edition || prev.edition,
+        authors: processedAuthors.length > 0 ? processedAuthors : prev.authors,
+        coverImage: (!coverFile && fetchedData.coverImage) ? fetchedData.coverImage : prev.coverImage
+      }));
+
+      // Lida com o Cover Image via URL segura
+      if (fetchedData.coverImage && !coverFile) {
+        try {
+          const imgRes = await fetch(fetchedData.coverImage);
+          if (imgRes.ok) {
+            const blob = await imgRes.blob();
+            const file = new File([blob], 'cover_amazon.jpg', { type: blob.type });
+            setCoverFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+            setFormData(prev => ({ ...prev, coverImage: '' }));
+          } else {
+            setPreviewUrl(fetchedData.coverImage);
+          }
+        } catch (err) { setPreviewUrl(fetchedData.coverImage); }
+      }
+
+      setFeedback({ type: 'info', message: 'Dados da Amazon importados com sucesso!' });
+      setAmazonUrl(''); // Limpa a URL após importação
+    } catch (error) {
+      setFeedback({ type: 'error', message: error.response?.data?.error || 'Erro ao extrair dados da Amazon.' });
+    } finally {
+      setIsLoadingAmazon(false);
+    }
+  };
+
+  // =========================================================================
+  // MOTOR DE BUSCA: ISBN
+  // =========================================================================
   const handleIsbnSearch = async (directIsbn = null) => {
     const targetIsbn = directIsbn || formData.isbn;
     if (!targetIsbn) return;
@@ -231,25 +310,7 @@ const useBookFormLogic = () => {
       }
 
       if (fetchedData) {
-        const removeAccents = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-
-        const processedAuthors = fetchedData.authors.map(authorName => {
-          let finalName = authorName.trim();
-          if (finalName.includes(',')) {
-            const parts = finalName.split(',');
-            if (parts.length === 2) {
-              const lastName = parts[0].trim();
-              const firstName = parts[1].trim();
-              const formattedLastName = lastName === lastName.toUpperCase() 
-                ? lastName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
-                : lastName;
-              finalName = `${firstName} ${formattedLastName}`;
-            }
-          }
-          const sanitizedNewName = removeAccents(finalName);
-          const existingAuthor = availableAuthors.find(existing => removeAccents(existing.value) === sanitizedNewName);
-          return existingAuthor ? existingAuthor : { value: finalName, label: finalName }; 
-        });
+        const processedAuthors = processFetchedAuthors(fetchedData.authors || []);
 
         setFormData(prev => ({
           ...prev, isbn: formatIsbnInput(cleanIsbn), title: fetchedData.title || prev.title,
@@ -290,7 +351,6 @@ const useBookFormLogic = () => {
     setFeedback({ type: '', message: '' });
 
     const payloadForm = new FormData();
-    // Limpamos a máscara para enviar o dado íntegro para o backend
     payloadForm.append('isbn', formData.isbn.replace(/\D/g, ''));
     payloadForm.append('title', formData.title);
     payloadForm.append('edition', formData.edition);
@@ -331,7 +391,8 @@ const useBookFormLogic = () => {
     navigate, isEditMode, formData, setFormData, availableGenres, availableSubgenres, 
     availableAuthors, availableTranslators, previewUrl, isLoadingIsbn, isSaving, 
     feedback, isScannerOpen, setIsScannerOpen, handleChange, handleFileChange, 
-    handleScanSuccess, handleIsbnSearch, handleSubmit
+    handleScanSuccess, handleIsbnSearch, handleSubmit,
+    amazonUrl, setAmazonUrl, isLoadingAmazon, handleAmazonImport
   };
 };
 

@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const bookController = require('../controllers/BookController');
+const AmazonController = require('../controllers/AmazonScraperController');
 const authMiddleware = require('../middlewares/authMiddleware');
+
 
 // Configuração do Multer para upload de imagens
 const multer = require('multer');
@@ -23,6 +25,8 @@ router.route('/')
  */
 router.get('/authors', bookController.getAllAuthors);
 router.get('/translators', bookController.getAllTranslators);
+
+router.post('/amazon-scrape', AmazonController.importFromAmazon);
 
 router.route('/:id')
   .get(bookController.getBookById)

@@ -30,7 +30,7 @@ const customSelectStyles = {
   }),
   multiValue: (provided) => ({
     ...provided,
-    backgroundColor: 'var(--border-color)',
+    backgroundColor: 'var(--border-color)', 
     borderRadius: '4px'
   }),
   multiValueLabel: (provided) => ({
@@ -64,7 +64,8 @@ const BookForm = () => {
     navigate, isEditMode, formData, setFormData, availableGenres, availableSubgenres, 
     availableAuthors, availableTranslators, previewUrl, isLoadingIsbn, isSaving, 
     feedback, isScannerOpen, setIsScannerOpen, handleChange, handleFileChange, 
-    handleScanSuccess, handleIsbnSearch, handleSubmit
+    handleScanSuccess, handleIsbnSearch, handleSubmit,
+    amazonUrl, setAmazonUrl, isLoadingAmazon, handleAmazonImport
   } = useBookFormLogic();
 
   return (
@@ -113,16 +114,17 @@ const BookForm = () => {
 
         <div className="form-section">
           <h2 className="section-title">
-            <span className="material-symbols-rounded">auto_stories</span> Informações Principais
+            <span className="material-symbols-rounded">auto_stories</span> Importação e Dados Principais
           </h2>
           <div className="form-grid">
             
             <div className="form-group full-width">
               <label className="form-label">
-                <span className="material-symbols-rounded">barcode_scanner</span> ISBN (Código de Barras)
+                <span className="material-symbols-rounded">magic_button</span> Importação Inteligente
               </label>
               
-              <div className="isbn-responsive-wrapper">
+              {/* Box 1: ISBN */}
+              <div className="isbn-responsive-wrapper" style={{ marginBottom: '10px' }}>
                 <input 
                   type="text" 
                   name="isbn" 
@@ -135,7 +137,7 @@ const BookForm = () => {
                     }
                   }}
                   className="form-input" 
-                  placeholder="Ex: 9788535914849" 
+                  placeholder="Pesquisar por código ISBN..." 
                 />
                 
                 <button 
@@ -158,12 +160,45 @@ const BookForm = () => {
                   ) : (
                     <span className="material-symbols-rounded">search</span>
                   )}
-                  Buscar
+                  Buscar ISBN
+                </button>
+              </div>
+
+              {/* Box 2: URL da Amazon */}
+              <div className="isbn-responsive-wrapper">
+                <input 
+                  type="url" 
+                  value={amazonUrl} 
+                  onChange={(e) => setAmazonUrl(e.target.value)} 
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault(); 
+                      handleAmazonImport(); 
+                    }
+                  }}
+                  className="form-input" 
+                  placeholder="Ou cole a URL da Amazon (Ex: https://amazon.com.br/dp/...)" 
+                  style={{ borderLeft: '4px solid #ff9900' }}
+                />
+
+                <button 
+                  type="button" 
+                  className="btn-action btn-search-trigger" 
+                  onClick={handleAmazonImport}
+                  disabled={isLoadingAmazon || !amazonUrl}
+                  style={{ backgroundColor: '#ff9900', color: '#000', border: 'none', fontWeight: 'bold' }}
+                >
+                  {isLoadingAmazon ? (
+                    <span className="material-symbols-rounded spinner-icon" style={{ animation: 'authSpin 1s linear infinite reverse' }}>sync</span>
+                  ) : (
+                    <span className="material-symbols-rounded">shopping_cart</span>
+                  )}
+                  Importar
                 </button>
               </div>
             </div>
 
-            <div className="form-group full-width">
+            <div className="form-group full-width" style={{ marginTop: '10px' }}>
               <label className="form-label"><span className="material-symbols-rounded">title</span> Título do Livro *</label>
               <input type="text" name="title" value={formData.title} onChange={handleChange} required className="form-input" />
             </div>

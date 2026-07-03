@@ -2,6 +2,15 @@ const { Op } = require('sequelize');
 const { Book, Author, Translator, Genre, Subgenre, Tag, Loan, LibraryAccess } = require('../models');
 
 /**
+ * Função utilitária para normalizar strings (remove acentos e converte para minúsculas).
+ * Essencial para buscas tolerantes a falhas.
+ */
+const normalizeText = (text) => {
+  if (!text) return '';
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+};
+
+/**
  * Helper para processar associações N:N simples (Autores, Tradutores, Tags).
  */
 const processRelations = async (book, items, Model, userId, associationMethod) => {
@@ -106,15 +115,15 @@ exports.getAllBooks = async (req, res) => {
     const offset = (page - 1) * limit;
     const bookWhere = { UserId: req.userId };
 
-    if (search) bookWhere.title = { [Op.like]: `%${search}%` };
-
     const orderClause = sortBy === 'author' 
       ? [[Author, 'name', order], ['title', 'ASC']] 
       : sortBy === 'releaseYear' 
       ? [['releaseYear', order], ['title', 'ASC']] 
       : [['title', order]];
 
-    const { count, rows } = await Book.findAndCountAll({
+    const needsMemorySearch = search.trim().length > 0;
+
+    const queryOptions = {
       where: bookWhere,
       include: [
         { model: Author }, { model: Translator },
@@ -124,10 +133,48 @@ exports.getAllBooks = async (req, res) => {
         { model: Loan, where: borrowed === 'true' ? { returnDate: null } : undefined, required: borrowed === 'true' }
       ],
       order: orderClause,
-      limit: parseInt(limit, 10),
-      offset: parseInt(offset, 10),
       distinct: true
-    });
+    };
+
+    if (!needsMemorySearch) {
+      queryOptions.limit = parseInt(limit, 10);
+      queryOptions.offset = parseInt(offset, 10);
+    }
+
+    let { count, rows } = await Book.findAndCountAll(queryOptions);
+
+    if (needsMemorySearch) {
+      const searchTerms = normalizeText(search).split(/\s+/).filter(Boolean);
+
+      const scoredBooks = rows.map(book => {
+        const bookTitle = normalizeText(book.title);
+        const authorNames = book.Authors ? book.Authors.map(a => normalizeText(a.name)).join(' ') : '';
+        const translatorNames = book.Translators ? book.Translators.map(t => normalizeText(t.name)).join(' ') : '';
+        
+        const searchableText = `${bookTitle} ${authorNames} ${translatorNames}`;
+
+        let score = 0;
+        for (const term of searchTerms) {
+          if (searchableText.includes(term)) {
+            score++;
+          }
+        }
+        return { book, score };
+      }).filter(item => item.score > 0);
+
+      // Ordena por pontuação (Maior para o Menor). Em caso de empate, usa a ordem alfabética do título.
+      scoredBooks.sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score; 
+        }
+        return a.book.title.localeCompare(b.book.title); 
+      });
+
+      // Atualiza o total de itens para o Frontend e aplica a paginação programaticamente no array
+      count = scoredBooks.length;
+      const paginatedScoredBooks = scoredBooks.slice(offset, offset + parseInt(limit, 10));
+      rows = paginatedScoredBooks.map(item => item.book);
+    }
 
     res.json({ books: rows, totalItems: count, totalPages: Math.ceil(count / limit), currentPage: parseInt(page, 10) });
   } catch (error) {

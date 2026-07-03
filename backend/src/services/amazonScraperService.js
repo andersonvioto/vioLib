@@ -82,7 +82,6 @@ exports.scrapeBook = async (url) => {
     // ========================================================================
     const extractFromText = (text) => {
       // TRUQUE DE MESTRE: A Amazon injeta \u200E e \u200F (Marcadores LTR/RTL invisíveis).
-      // Se não removermos isto, o javascript falha a identificar as palavras!
       const cleanText = text.replace(/[\u200e\u200f\u202a-\u202c]/gi, '').replace(/\s+/g, ' ').trim();
       const parts = cleanText.split(':');
 
@@ -128,9 +127,14 @@ exports.scrapeBook = async (url) => {
       extractFromText($(el).text());
     });
 
+    // Guarda de Validação: Se não extraiu o título, a página não é de um livro válido ou o IP foi bloqueado.
+    if (!title) {
+      throw new Error('Não foi possível extrair os dados. Verifique a URL ou tente novamente mais tarde (possível bloqueio de verificação da Amazon).');
+    }
+
     return { title, subtitle, authors, coverImage, publisher, releaseYear, isbn, edition };
   } catch (error) {
     console.error("🕵️ ERRO NO AMAZON SCRAPER:", error.message);
-    throw new Error('Falha ao extrair dados da Amazon. A URL pode ser inválida ou a Amazon bloqueou temporariamente.');
+    throw new Error(error.message || 'Falha ao extrair dados da Amazon. A URL pode ser inválida.');
   }
 };

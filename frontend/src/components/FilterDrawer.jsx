@@ -73,6 +73,7 @@ const FilterDrawer = ({
                 <option value="title">Título</option>
                 <option value="author">Autor Principal</option>
                 <option value="releaseYear">Ano de Lançamento</option>
+                <option value="createdAt">Data de Inclusão</option>
               </select>
               
               <select 

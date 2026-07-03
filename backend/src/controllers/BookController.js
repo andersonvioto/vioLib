@@ -119,6 +119,8 @@ exports.getAllBooks = async (req, res) => {
       ? [[Author, 'name', order], ['title', 'ASC']] 
       : sortBy === 'releaseYear' 
       ? [['releaseYear', order], ['title', 'ASC']] 
+      : sortBy === 'createdAt'
+      ? [['createdAt', order]]
       : [['title', order]];
 
     const needsMemorySearch = search.trim().length > 0;

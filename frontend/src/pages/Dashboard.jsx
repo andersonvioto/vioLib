@@ -49,20 +49,33 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [totalBooks, setTotalBooks] = useState(0);
 
-  // Estados dos Filtros Ativos
+  // Estados dos Filtros Ativos (com persistência no localStorage)
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('title');
-  const [sortOrder, setSortOrder] = useState('ASC');
+  const [sortBy, setSortBy] = useState(() => localStorage.getItem('violib_sortBy') || 'title');
+  const [sortOrder, setSortOrder] = useState(() => localStorage.getItem('violib_sortOrder') || 'ASC');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedSubgenre, setSelectedSubgenre] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
-  const [showOnlyBorrowed, setShowOnlyBorrowed] = useState(false);
-  const [showTagsOnCards, setShowTagsOnCards] = useState(true);
+  const [showOnlyBorrowed, setShowOnlyBorrowed] = useState(() => localStorage.getItem('violib_showOnlyBorrowed') === 'true');
+  const [showTagsOnCards, setShowTagsOnCards] = useState(() => {
+    const saved = localStorage.getItem('violib_showTagsOnCards');
+    return saved !== null ? saved === 'true' : true;
+  });
   
   // Estados de UI
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [availableGenres, setAvailableGenres] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
+
+  // ==========================================
+  // PERSISTÊNCIA DAS PREFERÊNCIAS DO USUÁRIO
+  // ==========================================
+  useEffect(() => {
+    localStorage.setItem('violib_sortBy', sortBy);
+    localStorage.setItem('violib_sortOrder', sortOrder);
+    localStorage.setItem('violib_showOnlyBorrowed', showOnlyBorrowed);
+    localStorage.setItem('violib_showTagsOnCards', showTagsOnCards);
+  }, [sortBy, sortOrder, showOnlyBorrowed, showTagsOnCards]);
 
   // ==========================================
   // EFEITOS INICIAIS E SINCRONIZAÇÃO

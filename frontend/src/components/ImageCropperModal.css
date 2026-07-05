@@ -1,0 +1,78 @@
+.cropper-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.cropper-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--accent-gold);
+  border-radius: var(--radius-md);
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+
+.cropper-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-main);
+}
+
+.cropper-title {
+  color: var(--accent-gold);
+  margin: 0 0 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.3em;
+}
+
+.cropper-subtitle {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.cropper-wrap {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.cropper-image {
+  max-height: 55vh;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.cropper-actions {
+  padding: 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  background-color: var(--bg-main);
+}
+
+@media (max-width: 600px) {
+  .cropper-overlay { padding: 10px; }
+  .cropper-wrap { max-height: 55vh; padding: 10px; }
+  .cropper-actions { flex-direction: column; }
+  .cropper-actions .btn-action { width: 100%; justify-content: center; }
+}

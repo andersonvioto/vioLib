@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import CreatableSelect from 'react-select/creatable'; 
 import BarcodeScanner from '../components/BarcodeScanner'; 
+import ImageCropperModal from '../components/ImageCropperModal'; // Importando o nosso novo modal
 import useBookFormLogic from '../hooks/useBookFormLogic';
 import './BookForm.css'; 
 
@@ -65,11 +66,22 @@ const BookForm = () => {
     availableAuthors, availableTranslators, previewUrl, isLoadingIsbn, isSaving, 
     feedback, isScannerOpen, setIsScannerOpen, handleChange, handleFileChange, 
     handleScanSuccess, handleIsbnSearch, handleSubmit,
-    amazonUrl, setAmazonUrl, isLoadingAmazon, handleAmazonImport
+    amazonUrl, setAmazonUrl, isLoadingAmazon, handleAmazonImport,
+    imageSrcForCrop, handleCropComplete, handleCropCancel // Recuperando as funções de crop do Hook
   } = useBookFormLogic();
 
   return (
     <div className="form-container">
+      
+      {/* RENDERIZAÇÃO DO MODAL DE CORTE DE IMAGEM */}
+      {imageSrcForCrop && (
+        <ImageCropperModal
+          imageSrc={imageSrcForCrop}
+          onComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+        />
+      )}
+
       <header className="form-header">
         <span className="material-symbols-rounded" style={{ fontSize: '2.5em', color: 'var(--accent-gold)' }}>
           {isEditMode ? 'edit_document' : 'library_add'}
@@ -99,17 +111,45 @@ const BookForm = () => {
           <h2 className="section-title">
             <span className="material-symbols-rounded">image</span> Capa do Livro
           </h2>
-          <label className="cover-dropzone">
-            {previewUrl ? (
-              <img src={previewUrl} alt="Preview da Capa" className="cover-preview" />
-            ) : (
-              <span className="material-symbols-rounded dropzone-icon">cloud_upload</span>
-            )}
-            <span className="dropzone-text" style={{ color: 'var(--text-secondary)' }}>
-              {previewUrl ? 'Clique para trocar a imagem' : 'Clique ou arraste a capa aqui (Máx: 2MB)'}
-            </span>
-            <input type="file" accept="image/*" onChange={handleFileChange} className="file-input-hidden" />
-          </label>
+          <div className="cover-upload-area">
+            <div className="cover-preview-container">
+              {previewUrl ? (
+                <img src={previewUrl} alt="Preview da Capa" className="cover-preview" />
+              ) : (
+                <span className="material-symbols-rounded dropzone-icon">cloud_upload</span>
+              )}
+              <span className="dropzone-text" style={{ color: 'var(--text-secondary)' }}>
+                {previewUrl ? 'Deseja trocar a capa atual?' : 'Selecione uma opção abaixo'}
+              </span>
+            </div>
+            
+            <div className="cover-actions">
+              {/* Botão 1: Aciona diretamente a Câmera Traseira no Mobile */}
+              <label className="btn-action btn-cover-option">
+                <span className="material-symbols-rounded">photo_camera</span>
+                Tirar Foto
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  capture="environment" 
+                  onChange={handleFileChange} 
+                  className="file-input-hidden" 
+                />
+              </label>
+              
+              {/* Botão 2: Abre o Seletor de Arquivos / Galeria */}
+              <label className="btn-action btn-cover-option">
+                <span className="material-symbols-rounded">photo_library</span>
+                Galeria / Arquivo
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFileChange} 
+                  className="file-input-hidden" 
+                />
+              </label>
+            </div>
+          </div>
         </div>
 
         <div className="form-section">
@@ -124,7 +164,7 @@ const BookForm = () => {
               </label>
               
               {/* Box 1: ISBN */}
-              <div className="isbn-responsive-wrapper" style={{ marginBottom: '10px' }}>
+              <div className="isbn-wrapper" style={{ marginBottom: '10px' }}>
                 <input 
                   type="text" 
                   name="isbn" 
@@ -165,7 +205,7 @@ const BookForm = () => {
               </div>
 
               {/* Box 2: URL da Amazon */}
-              <div className="isbn-responsive-wrapper">
+              <div className="isbn-wrapper">
                 <input 
                   type="url" 
                   value={amazonUrl} 

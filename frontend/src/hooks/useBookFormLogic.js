@@ -56,11 +56,12 @@ const useBookFormLogic = () => {
   const [availableAuthors, setAvailableAuthors] = useState([]);
   const [availableTranslators, setAvailableTranslators] = useState([]);
 
+  // Estados de Imagem e Crop
   const [coverFile, setCoverFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [imageSrcForCrop, setImageSrcForCrop] = useState(null);
+
   const [isLoadingIsbn, setIsLoadingIsbn] = useState(false);
-  
-  // Novos Estados para a Amazon
   const [amazonUrl, setAmazonUrl] = useState('');
   const [isLoadingAmazon, setIsLoadingAmazon] = useState(false);
   
@@ -141,23 +142,46 @@ const useBookFormLogic = () => {
     }
   };
 
+  // =========================================================================
+  // NOVA LÓGICA DA CAPA: Aceita fotos gigantes para repassar ao Cropper
+  // =========================================================================
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const MAX_FILE_SIZE = 2097152; 
-      if (file.size > MAX_FILE_SIZE) {
-        setFeedback({ type: 'error', message: 'A imagem é muito pesada. O tamanho máximo permitido para a capa é de 2MB.' });
-        e.target.value = null; 
-        return; 
-      }
+      // O limite de 2MB NÃO é mais verificado aqui. A imagem vai para o modal!
       setFeedback({ type: '', message: '' });
-      setCoverFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-      setFormData(prev => ({ ...prev, coverImage: '' })); 
-    } else {
-      setCoverFile(null);
-      setPreviewUrl(null);
+      
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setImageSrcForCrop(reader.result.toString());
+      });
+      reader.readAsDataURL(file);
     }
+    e.target.value = null; // Reseta o input para permitir selecionar a mesma foto novamente
+  };
+
+  // Chamado pelo Cropper quando o usuário clica em "Aplicar e Comprimir"
+  const handleCropComplete = (file, url) => {
+    // A VALIDAÇÃO DE 2MB OCORRE AQUI, APÓS A COMPRESSÃO (Por garantia técnica)
+    const MAX_FILE_SIZE = 2097152; // 2MB
+    if (file.size > MAX_FILE_SIZE) {
+      setFeedback({ 
+        type: 'error', 
+        message: 'A imagem original é muito complexa e, mesmo após a compressão, excedeu 2MB. Por favor, tente uma foto mais leve.' 
+      });
+      setImageSrcForCrop(null);
+      return;
+    }
+
+    setFeedback({ type: '', message: '' });
+    setCoverFile(file);
+    setPreviewUrl(url);
+    setImageSrcForCrop(null); 
+    setFormData(prev => ({ ...prev, coverImage: '' })); 
+  };
+
+  const handleCropCancel = () => {
+    setImageSrcForCrop(null); 
   };
 
   const handleScanSuccess = (decodedIsbn) => {
@@ -166,7 +190,6 @@ const useBookFormLogic = () => {
     setTimeout(() => handleIsbnSearch(decodedIsbn), 100);
   };
 
-  // Helper interno de autores para reutilizar no ISBN e Amazon
   const processFetchedAuthors = (fetchedAuthorsArray) => {
     const removeAccents = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     return fetchedAuthorsArray.map(authorName => {
@@ -188,16 +211,13 @@ const useBookFormLogic = () => {
     });
   };
 
-  // =========================================================================
-  // MOTOR DE BUSCA: AMAZON
-  // =========================================================================
   const handleAmazonImport = async () => {
     if (!amazonUrl) return;
     setIsLoadingAmazon(true);
     setFeedback({ type: '', message: '' });
 
     try {
-      const response = await api.post('/books/amazon-scrape', { url: amazonUrl });
+      const response = await api.post('/amazon-scrape', { url: amazonUrl });
       const fetchedData = response.data;
       const processedAuthors = processFetchedAuthors(fetchedData.authors || []);
 
@@ -212,7 +232,6 @@ const useBookFormLogic = () => {
         coverImage: (!coverFile && fetchedData.coverImage) ? fetchedData.coverImage : prev.coverImage
       }));
 
-      // Lida com o Cover Image via URL segura
       if (fetchedData.coverImage && !coverFile) {
         try {
           const imgRes = await fetch(fetchedData.coverImage);
@@ -229,7 +248,7 @@ const useBookFormLogic = () => {
       }
 
       setFeedback({ type: 'info', message: 'Dados da Amazon importados com sucesso!' });
-      setAmazonUrl(''); // Limpa a URL após importação
+      setAmazonUrl(''); 
     } catch (error) {
       setFeedback({ type: 'error', message: error.response?.data?.error || 'Erro ao extrair dados da Amazon.' });
     } finally {
@@ -237,9 +256,6 @@ const useBookFormLogic = () => {
     }
   };
 
-  // =========================================================================
-  // MOTOR DE BUSCA: ISBN
-  // =========================================================================
   const handleIsbnSearch = async (directIsbn = null) => {
     const targetIsbn = directIsbn || formData.isbn;
     if (!targetIsbn) return;
@@ -392,7 +408,8 @@ const useBookFormLogic = () => {
     availableAuthors, availableTranslators, previewUrl, isLoadingIsbn, isSaving, 
     feedback, isScannerOpen, setIsScannerOpen, handleChange, handleFileChange, 
     handleScanSuccess, handleIsbnSearch, handleSubmit,
-    amazonUrl, setAmazonUrl, isLoadingAmazon, handleAmazonImport
+    amazonUrl, setAmazonUrl, isLoadingAmazon, handleAmazonImport,
+    imageSrcForCrop, handleCropComplete, handleCropCancel
   };
 };
 

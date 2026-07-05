@@ -151,24 +151,25 @@
   min-height: 100px;
 }
 
-/* --- DROPZONE DA CAPA (Área de Upload) --- */
-.cover-dropzone {
+/* --- ÁREA DA CAPA (Upload e Câmera) --- */
+.cover-upload-area {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 30px 20px;
   border: 2px dashed var(--border-color);
   border-radius: var(--radius-md);
   background: var(--bg-input);
-  cursor: pointer;
   transition: var(--transition-smooth);
   text-align: center;
 }
 
-.cover-dropzone:hover {
-  border-color: var(--accent-gold);
-  background: rgba(212, 175, 55, 0.05);
+.cover-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .dropzone-icon {
@@ -183,6 +184,23 @@
   border-radius: var(--radius-sm);
   box-shadow: 0 4px 10px rgba(0,0,0,0.5);
   margin-bottom: 15px;
+}
+
+.cover-actions {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-cover-option {
+  background-color: var(--bg-surface);
+  cursor: pointer;
+  border: 1px solid var(--accent-gold);
+}
+
+.btn-cover-option:hover {
+  background-color: var(--accent-gold-glow);
 }
 
 .file-input-hidden {
@@ -207,9 +225,17 @@
    RESPONSIVIDADE (Tablet & Mobile)
    ========================================================================== */
 @media (max-width: 900px) {
-  .form-container { padding: 20px; }
-  .form-section { padding: 20px; }
-  .form-grid { gap: 15px; }
+  .form-container { 
+    padding: 20px; 
+  }
+  
+  .form-section { 
+    padding: 20px; 
+  }
+  
+  .form-grid { 
+    gap: 15px; 
+  }
 }
 
 @media (max-width: 600px) {
@@ -224,8 +250,13 @@
     gap: 5px;
   }
 
-  .form-title { font-size: 1.8em; }
-  .form-grid { grid-template-columns: 1fr; }
+  .form-title { 
+    font-size: 1.8em; 
+  }
+  
+  .form-grid { 
+    grid-template-columns: 1fr; 
+  }
 
   .form-input, .form-select {
     padding: 14px 15px;
@@ -243,6 +274,23 @@
     padding: 15px; 
   }
 
-  .isbn-wrapper { flex-direction: column; }
-  .isbn-wrapper .btn-action { width: 100%; padding: 15px; }
+  .cover-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-cover-option {
+    width: 100%;
+    justify-content: center;
+    padding: 15px;
+  }
+
+  .isbn-wrapper { 
+    flex-direction: column; 
+  }
+  
+  .isbn-wrapper .btn-action { 
+    width: 100%; 
+    padding: 15px; 
+  }
 }

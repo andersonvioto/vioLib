@@ -286,11 +286,25 @@
   }
 
   .isbn-wrapper { 
-    flex-direction: column; 
+    flex-direction: row; 
+    flex-wrap: wrap;
   }
   
+  .isbn-wrapper .form-input {
+    flex: 1;
+    min-width: 120px;
+  }
+
   .isbn-wrapper .btn-action { 
-    width: 100%; 
     padding: 15px; 
+  }
+
+  .isbn-wrapper .btn-camera-trigger {
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  .isbn-wrapper .btn-search-trigger {
+    width: 100%; 
   }
 }

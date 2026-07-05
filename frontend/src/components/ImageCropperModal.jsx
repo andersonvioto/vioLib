@@ -4,11 +4,22 @@ import 'react-image-crop/dist/ReactCrop.css';
 import './ImageCropperModal.css';
 
 /**
- * Helper para centralizar a área de corte inicialmente com a proporção correta
+ * Helper para centralizar a área de corte inicialmente com a proporção correta,
+ * garantindo matematicamente que não ultrapassa as margens da imagem original.
  */
 function centerAspectCrop(mediaWidth, mediaHeight, aspect) {
+  const imageAspect = mediaWidth / mediaHeight;
+  let cropWidthPercent = 90; // Valor base: 90% da largura
+
+  // Se a imagem for mais "larga" do que a proporção que queremos (ex: modo paisagem),
+  // forçar 90% da largura fará com que a altura da caixa passe dos 100% da imagem,
+  // o que quebra a biblioteca. Neste caso, calculamos a largura baseada em 90% da altura.
+  if (imageAspect > aspect) {
+    cropWidthPercent = (90 * mediaHeight * aspect) / mediaWidth;
+  }
+
   return centerCrop(
-    makeAspectCrop({ unit: '%', width: 90 }, aspect, mediaWidth, mediaHeight),
+    makeAspectCrop({ unit: '%', width: cropWidthPercent }, aspect, mediaWidth, mediaHeight),
     mediaWidth,
     mediaHeight
   );
@@ -20,17 +31,27 @@ function centerAspectCrop(mediaWidth, mediaHeight, aspect) {
 const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
   const [crop, setCrop] = useState();
   const [completedCrop, setCompletedCrop] = useState();
+  const [isAspectLocked, setIsAspectLocked] = useState(true);
   const imgRef = useRef(null);
 
-  // Assim que a imagem carrega na tela, define a caixa de corte com a proporção de um livro (2/3)
   const onImageLoad = (e) => {
     const { width, height } = e.currentTarget;
-    const initialCrop = centerAspectCrop(width, height, 2 / 3);
+    const initialCrop = centerAspectCrop(width, height, 3 / 4);
     setCrop(initialCrop);
-    
-    // CORREÇÃO 1: Força o registro do crop em pixels imediatamente para o caso 
-    // do usuário clicar em "Aplicar" sem mover a caixa de corte.
     setCompletedCrop(convertToPixelCrop(initialCrop, width, height));
+  };
+
+  const handleToggleAspect = () => {
+    const newAspectLocked = !isAspectLocked;
+    setIsAspectLocked(newAspectLocked);
+    
+    // Se o usuário reativar a trava, re-centralizamos e forçamos a proporção 3:4 perfeitamente
+    if (newAspectLocked && imgRef.current) {
+      const { width, height } = imgRef.current;
+      const newCrop = centerAspectCrop(width, height, 3 / 4);
+      setCrop(newCrop);
+      setCompletedCrop(convertToPixelCrop(newCrop, width, height));
+    }
   };
 
   const handleConfirm = () => {
@@ -46,7 +67,7 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
 
-    // LÓGICA DE COMPRESSÃO: Limite máximo de resolução (800px)
+    // Lógica de compressão: Limite máximo de resolução (800px)
     const MAX_DIMENSION = 800;
     let targetWidth = completedCrop.width * scaleX;
     let targetHeight = completedCrop.height * scaleY;
@@ -90,12 +111,10 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
           return;
         }
         
-        // CORREÇÃO 2: Transformar o Blob genérico num Arquivo (File) legítimo.
-        // O backend exige que o arquivo tenha um nome e extensão para aceitar o upload.
+        // Transforma o Blob num Arquivo (File) legítimo para o backend aceitar o upload
         const file = new File([blob], 'capa_recortada_comprimida.jpg', { type: 'image/jpeg' });
         const previewUrl = URL.createObjectURL(file);
         
-        // Devolve o arquivo final limpo e pequeno para o formulário
         onComplete(file, previewUrl);
       },
       'image/jpeg',
@@ -120,7 +139,7 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
             onComplete={(c) => setCompletedCrop(c)}
-            aspect={2 / 3} /* Trava a proporção perfeita para capas de livro */
+            aspect={isAspectLocked ? 3 / 4 : undefined}
           >
             <img
               ref={imgRef}
@@ -130,6 +149,17 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
               className="cropper-image"
             />
           </ReactCrop>
+        </div>
+
+        <div className="cropper-options">
+          <label className="cropper-aspect-toggle">
+            <input 
+              type="checkbox" 
+              checked={isAspectLocked} 
+              onChange={handleToggleAspect} 
+            />
+            <span>Manter proporção de livro (3:4)</span>
+          </label>
         </div>
 
         <div className="cropper-actions">

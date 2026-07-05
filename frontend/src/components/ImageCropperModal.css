@@ -46,19 +46,87 @@
 }
 
 .cropper-wrap {
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 15px;
   background-color: #000;
-  max-height: 60vh;
-  overflow: auto;
+  /* Retorna o limite de altura seguro para caber na tela */
+  max-height: 55vh;
+  /* Retorna o scroll como rota de fuga, caso o celular seja muito pequeno */
+  overflow: auto; 
+  /* Centraliza sem usar flex, mantendo as proporções naturais da imagem intactas */
+  text-align: center;
+}
+
+/* Trava o contêiner gerado pela biblioteca react-image-crop */
+.ReactCrop {
+  /* O segredo: inline-block faz a caixa do cropper "vestir" a imagem perfeitamente */
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: middle;
 }
 
 .cropper-image {
-  max-height: 55vh;
+  /* Força imagens gigantes a encolherem para caber na tela */
+  max-height: 45vh;
   max-width: 100%;
-  object-fit: contain;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.cropper-options {
+  padding: 15px 20px;
+  background-color: var(--bg-main);
+  display: flex;
+  justify-content: flex-start;
+  border-top: 1px solid var(--border-color);
+}
+
+.cropper-aspect-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 0.9em;
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition-smooth);
+}
+
+.cropper-aspect-toggle:hover {
+  color: var(--text-primary);
+}
+
+.cropper-aspect-toggle input[type="checkbox"] {
+  appearance: none;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+  outline: none;
+}
+
+.cropper-aspect-toggle input[type="checkbox"]:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 2px var(--accent-gold-glow);
+}
+
+.cropper-aspect-toggle input[type="checkbox"]:checked {
+  background-color: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
+.cropper-aspect-toggle input[type="checkbox"]:checked::before {
+  content: "✓";
+  color: #000;
+  font-weight: bold;
+  font-size: 0.85em;
 }
 
 .cropper-actions {
@@ -72,7 +140,9 @@
 
 @media (max-width: 600px) {
   .cropper-overlay { padding: 10px; }
-  .cropper-wrap { max-height: 55vh; padding: 10px; }
+  .cropper-wrap { max-height: 50vh; padding: 10px; }
+  .cropper-image { max-height: 40vh; }
   .cropper-actions { flex-direction: column; }
   .cropper-actions .btn-action { width: 100%; justify-content: center; }
+  .cropper-options { justify-content: center; }
 }

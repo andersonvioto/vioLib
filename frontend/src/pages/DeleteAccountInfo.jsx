@@ -28,7 +28,7 @@ const DeleteAccountInfo = () => {
 
         <ul className="delete-instructions-list">
           <li>
-            <strong>Pelo Aplicativo:</strong> Faça login na sua conta, navegue até <em>Configurações &gt; Segurança</em> e clique em "Desejo excluir minha conta". Será necessário confirmar com a sua senha atual.
+            <strong>Pelo Aplicativo:</strong> Faça login na sua conta, navegue até <em>Configurações &gt; Meu Perfil</em> e clique em "Desejo excluir minha conta". Será necessário confirmar com a sua senha atual.
           </li>
           <li>
             <strong>Por E-mail:</strong> Envie um e-mail para <strong>suporte@violib.com.br</strong> a partir do endereço de e-mail registado na sua conta, solicitando a "Exclusão de Conta". Os seus dados serão apagados no prazo de até 7 dias úteis.

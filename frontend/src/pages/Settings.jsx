@@ -4,8 +4,7 @@ import ProfileSettings from '../components/settings/ProfileSettings';
 import ShareSettings from '../components/settings/ShareSettings';
 import TaxonomyManager from '../components/settings/TaxonomyManager';
 import GenreManager from '../components/settings/GenreManager';
-import SecuritySettings from '../components/settings/SecuritySettings';
-import AppearanceSettings from '../components/settings/AppearanceSettings'; // <-- Nova Importação
+import AppearanceSettings from '../components/settings/AppearanceSettings'; 
 import './Settings.css';
 
 /**
@@ -21,10 +20,8 @@ const Settings = () => {
     switch (activeTab) {
       case 'profile':
         return <ProfileSettings />;
-      case 'appearance': // <-- Nova Aba
+      case 'appearance': 
         return <AppearanceSettings />;
-      case 'security':
-        return <SecuritySettings />;
       case 'shares':
         return <ShareSettings />;
       case 'authors':
@@ -51,7 +48,6 @@ const Settings = () => {
         <aside className="settings-sidebar">
           <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}>Meu Perfil</button>
           <button className={activeTab === 'appearance' ? 'active' : ''} onClick={() => setActiveTab('appearance')}>Aparência</button>
-          <button className={activeTab === 'security' ? 'active' : ''} onClick={() => setActiveTab('security')}>Segurança</button>
           <button className={activeTab === 'shares' ? 'active' : ''} onClick={() => setActiveTab('shares')}>Compartilhamento</button>
           <button className={activeTab === 'authors' ? 'active' : ''} onClick={() => setActiveTab('authors')}>Meus Autores</button>
           <button className={activeTab === 'translators' ? 'active' : ''} onClick={() => setActiveTab('translators')}>Meus Tradutores</button>

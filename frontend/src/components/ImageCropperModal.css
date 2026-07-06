@@ -48,9 +48,9 @@
 .cropper-wrap {
   padding: 15px;
   background-color: #000;
-  /* Retorna o limite de altura seguro para caber na tela */
+  /* Retorna o limite de altura seguro para caber na tela no Desktop */
   max-height: 55vh;
-  /* Retorna o scroll como rota de fuga, caso o celular seja muito pequeno */
+  /* Retorna o scroll como rota de fuga */
   overflow: auto; 
   /* Centraliza sem usar flex, mantendo as proporções naturais da imagem intactas */
   text-align: center;
@@ -65,7 +65,7 @@
 }
 
 .cropper-image {
-  /* Força imagens gigantes a encolherem para caber na tela */
+  /* Força imagens gigantes a encolherem para caber na tela no Desktop */
   max-height: 45vh;
   max-width: 100%;
   width: auto;
@@ -138,11 +138,44 @@
   background-color: var(--bg-main);
 }
 
+/* ==========================================
+   AJUSTES EXCLUSIVOS PARA MOBILE
+   ========================================== */
 @media (max-width: 600px) {
-  .cropper-overlay { padding: 10px; }
-  .cropper-wrap { max-height: 50vh; padding: 10px; }
-  .cropper-image { max-height: 40vh; }
-  .cropper-actions { flex-direction: column; }
-  .cropper-actions .btn-action { width: 100%; justify-content: center; }
-  .cropper-options { justify-content: center; }
+  .cropper-overlay { 
+    padding: 10px; 
+  }
+  
+  .cropper-card {
+    /* Trava de Segurança: O modal não pode ultrapassar a tela do celular */
+    max-height: 95vh;
+  }
+  
+  .cropper-wrap { 
+    /* Mágica Flexbox: Ocupa só o que sobra da tela, gerando scroll interno se precisar */
+    flex: 1; 
+    min-height: 0; 
+    max-height: none; 
+    padding: 10px; 
+  }
+  
+  .cropper-image { 
+    /* Encolhe a imagem agressivamente no mobile para garantir que caiba com os botões empilhados */
+    max-height: 40vh; 
+  }
+  
+  .cropper-actions { 
+    flex-direction: column; 
+    padding: 15px;
+  }
+  
+  .cropper-actions .btn-action { 
+    width: 100%; 
+    justify-content: center; 
+  }
+  
+  .cropper-options { 
+    justify-content: center; 
+    padding: 15px; 
+  }
 }

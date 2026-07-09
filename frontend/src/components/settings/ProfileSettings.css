@@ -75,9 +75,28 @@
   color: var(--accent-gold);
 }
 
+/* ==========================================================================
+   RESPONSIVIDADE (Tablets e Mobile)
+   ========================================================================== */
+
 @media (max-width: 900px) {
   .auth-input,
   .settings-input-wrapper input {
     padding: 14px 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .settings-form {
+    max-width: 100%;
+  }
+
+  /* Garante que os botões (salvar, alterar senha, excluir conta) sejam fáceis de tocar */
+  .settings-form .btn-action,
+  .settings-section .btn-action {
+    width: 100%;
+    justify-content: center;
+    padding: 14px;
+    margin-bottom: 10px;
   }
 }

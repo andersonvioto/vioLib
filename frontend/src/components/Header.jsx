@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { LibraryContext } from '../contexts/LibraryContext';
 import api from '../services/api';
@@ -11,6 +11,7 @@ import './Header.css';
  */
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useContext(AuthContext);
   const { currentLibrary, setCurrentLibrary, sharedLibraries } = useContext(LibraryContext);
 
@@ -21,6 +22,8 @@ const Header = () => {
   const [guestEmail, setGuestEmail] = useState('');
   const [isSharing, setIsSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState({ type: '', text: '' });
+
+  const isCollectionsPath = location.pathname.startsWith('/colecoes');
 
   const openShareModal = () => {
     setShareMsg({ type: '', text: '' });
@@ -70,7 +73,6 @@ const Header = () => {
             className="brand-container"
             style={{ display: 'flex', alignItems: 'center', gap: '15px' }}
           >
-            {/* O clique no logótipo leva sempre à página principal da biblioteca */}
             <img
               src={miniLogo}
               alt="vioLib"
@@ -136,17 +138,29 @@ const Header = () => {
                     <span className="action-label">Ajustes</span>
                   </button>
 
-                  {/* NOVO BOTÃO DE ACESSO ÀS COLEÇÕES */}
-                  <button
-                    onClick={() => {
-                      navigate('/colecoes');
-                      setIsMenuOpen(false);
-                    }}
-                    className="btn-action"
-                  >
-                    <span className="material-symbols-rounded">workspace_premium</span>
-                    <span className="action-label">Coleções</span>
-                  </button>
+                  {isCollectionsPath ? (
+                    <button
+                      onClick={() => {
+                        navigate('/biblioteca');
+                        setIsMenuOpen(false);
+                      }}
+                      className="btn-action"
+                    >
+                      <span className="material-symbols-rounded">library_books</span>
+                      <span className="action-label">Biblioteca</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        navigate('/colecoes');
+                        setIsMenuOpen(false);
+                      }}
+                      className="btn-action"
+                    >
+                      <span className="material-symbols-rounded">workspace_premium</span>
+                      <span className="action-label">Coleções</span>
+                    </button>
+                  )}
 
                   <button onClick={openShareModal} className="btn-action">
                     <span className="material-symbols-rounded">group_add</span>
@@ -181,7 +195,6 @@ const Header = () => {
         </div>
       </header>
 
-      {/* --- MODAL DE CONVITE --- */}
       {showShareModal && (
         <div
           style={{

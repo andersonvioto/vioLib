@@ -1,5 +1,7 @@
 import { createContext, useState, useEffect } from 'react';
 
+// O comentário abaixo ensina o Vite a não reclamar sobre exportar contextos junto com componentes
+// eslint-disable-next-line react-refresh/only-export-components
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {

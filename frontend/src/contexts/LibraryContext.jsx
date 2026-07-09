@@ -2,6 +2,7 @@ import { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from './AuthContext';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const LibraryContext = createContext();
 
 /**
@@ -11,7 +12,7 @@ export const LibraryContext = createContext();
  */
 export const LibraryProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
-  
+
   const [currentLibrary, setCurrentLibrary] = useState(null);
   const [sharedLibraries, setSharedLibraries] = useState([]);
 
@@ -22,12 +23,12 @@ export const LibraryProvider = ({ children }) => {
 
       try {
         const response = await api.get('/access/shared-with-me');
-        
+
         // Normaliza o retorno da API para garantir que sempre teremos um array
-        const dataArray = Array.isArray(response.data) 
-          ? response.data 
-          : (response.data?.shares || []);
-          
+        const dataArray = Array.isArray(response.data)
+          ? response.data
+          : response.data?.shares || [];
+
         setSharedLibraries(dataArray);
       } catch (error) {
         console.error('Erro ao buscar bibliotecas compartilhadas:', error);

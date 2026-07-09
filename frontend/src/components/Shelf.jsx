@@ -12,12 +12,12 @@ import './Shelf.css'; // Importação do estilo isolado do componente
  * @param {string} props.defaultLabel - Texto do botão principal (ex: "Toda a Biblioteca").
  * @param {boolean} [props.isSubgenre=false] - Define se a prateleira deve usar o estilo visual reduzido de subgênero.
  */
-const Shelf = ({ 
-  items = [], 
-  activeItem, 
-  onSelect, 
-  defaultLabel = "Todos", 
-  isSubgenre = false 
+const Shelf = ({
+  items = [],
+  activeItem,
+  onSelect,
+  defaultLabel = 'Todos',
+  isSubgenre = false
 }) => {
   // Inicializa o nosso custom hook de física e rolagem
   const { ref, events, scrollShelf } = useDragScroll();
@@ -33,23 +33,19 @@ const Shelf = ({
 
   return (
     <div className={wrapperClass}>
-      
       {/* Botão de Rolagem Esquerda */}
-      <button 
-        className={`${navBtnClass} left`} 
-        onClick={() => scrollShelf('left')}
-      >
+      <button className={`${navBtnClass} left`} onClick={() => scrollShelf('left')}>
         <span className="material-symbols-rounded">chevron_left</span>
       </button>
 
       {/* Contêiner com física de arrasto (Drag to Scroll) */}
-      <div 
+      <div
         className={containerClass}
         ref={ref}
         {...events} // Espalha os eventos de mouse (onMouseDown, onMouseMove, etc)
       >
         {/* Pílula Padrão (Limpar Filtro) */}
-        <button 
+        <button
           className={`${pillClass} ${activeItem === '' ? 'active' : ''}`}
           onClick={() => onSelect('')}
         >
@@ -57,9 +53,9 @@ const Shelf = ({
         </button>
 
         {/* Mapeamento dos Itens da Prateleira */}
-        {items.map(item => (
-          <button 
-            key={item.id} 
+        {items.map((item) => (
+          <button
+            key={item.id}
             className={`${pillClass} ${activeItem === item.name ? 'active' : ''}`}
             onClick={() => onSelect(item.name)}
           >
@@ -69,13 +65,9 @@ const Shelf = ({
       </div>
 
       {/* Botão de Rolagem Direita */}
-      <button 
-        className={`${navBtnClass} right`} 
-        onClick={() => scrollShelf('right')}
-      >
+      <button className={`${navBtnClass} right`} onClick={() => scrollShelf('right')}>
         <span className="material-symbols-rounded">chevron_right</span>
       </button>
-      
     </div>
   );
 };

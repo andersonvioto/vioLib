@@ -4,7 +4,7 @@ const { google } = require('googleapis');
 const oAuth2Client = new google.auth.OAuth2(
   process.env.GMAIL_CLIENT_ID,
   process.env.GMAIL_CLIENT_SECRET,
-  "https://developers.google.com/oauthplayground"
+  'https://developers.google.com/oauthplayground'
 );
 
 oAuth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
@@ -22,7 +22,7 @@ const encodeMessage = (to, from, subject, message) => {
     'MIME-Version: 1.0',
     'Content-Type: text/html; charset=utf-8',
     '',
-    message,
+    message
   ].join('\n');
 
   return Buffer.from(str)
@@ -39,7 +39,7 @@ const sendEmail = async (to, subject, htmlContent) => {
   const rawMessage = encodeMessage(to, process.env.GMAIL_USER, subject, htmlContent);
   const response = await gmail.users.messages.send({
     userId: 'me',
-    requestBody: { raw: rawMessage },
+    requestBody: { raw: rawMessage }
   });
   return response.data;
 };

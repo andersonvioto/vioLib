@@ -18,17 +18,17 @@ api.interceptors.request.use((config) => {
 
 /**
  * Interceptador de Resposta:
- * Monitora retornos da API. Se receber 401 (Não Autorizado) em rotas protegidas, 
- * limpa os dados locais e força logout. Ignora erros 401 na rota de login para 
+ * Monitora retornos da API. Se receber 401 (Não Autorizado) em rotas protegidas,
+ * limpa os dados locais e força logout. Ignora erros 401 na rota de login para
  * permitir a exibição de mensagens de erro de "Senha incorreta" no frontend.
  */
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      
       // Verifica se a requisição que gerou o erro 401 foi a tentativa de login
-      const isLoginRequest = error.config && error.config.url && error.config.url.includes('/auth/login');
+      const isLoginRequest =
+        error.config && error.config.url && error.config.url.includes('/auth/login');
 
       // Se não for a rota de login, significa que o token expirou durante o uso do app
       if (!isLoginRequest) {
@@ -37,7 +37,7 @@ api.interceptors.response.use(
         window.location.href = '/login';
       }
     }
-    
+
     return Promise.reject(error);
   }
 );

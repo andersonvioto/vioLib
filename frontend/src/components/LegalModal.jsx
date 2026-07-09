@@ -17,12 +17,9 @@ const LegalModal = ({ type, onClose }) => {
   return (
     <div className="legal-modal-overlay" onClick={onClose}>
       <div className="legal-modal-box" onClick={handleContentClick}>
-        
         <header className="legal-modal-header">
           <h2 className="legal-modal-title">
-            <span className="material-symbols-rounded">
-              {isTerms ? 'gavel' : 'shield_person'}
-            </span>
+            <span className="material-symbols-rounded">{isTerms ? 'gavel' : 'shield_person'}</span>
             {isTerms ? 'Termos de Serviço' : 'Política de Privacidade'}
           </h2>
           <button className="legal-modal-close" onClick={onClose} title="Fechar">
@@ -30,16 +27,17 @@ const LegalModal = ({ type, onClose }) => {
           </button>
         </header>
 
-        <div className="legal-modal-content">
-          {isTerms ? <TermsContent /> : <PrivacyContent />}
-        </div>
+        <div className="legal-modal-content">{isTerms ? <TermsContent /> : <PrivacyContent />}</div>
 
         <footer className="legal-modal-footer">
-          <button className="btn-action btn-primary" onClick={onClose} style={{ width: '100%', justifyContent: 'center' }}>
+          <button
+            className="btn-action btn-primary"
+            onClick={onClose}
+            style={{ width: '100%', justifyContent: 'center' }}
+          >
             Entendido
           </button>
         </footer>
-
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ exports.importFromAmazon = async (req, res) => {
     }
 
     const bookData = await amazonScraperService.scrapeBook(url);
-    
+
     res.json(bookData);
   } catch (error) {
     res.status(500).json({ error: error.message });

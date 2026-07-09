@@ -7,7 +7,6 @@ import './BookMetadataGrid.css';
  * * @param {Object} props.book - Objeto com os dados detalhados da obra.
  */
 const BookMetadataGrid = ({ book }) => {
-  
   /**
    * Helper interno para padronizar a renderização de cada bloco de metadado.
    * Evita a repetição de JSX e garante consistência visual.
@@ -18,7 +17,7 @@ const BookMetadataGrid = ({ book }) => {
   const renderMetaItem = (label, value, isFullWidth = false) => {
     // Se não houver valor, aplicamos um traço sutil para indicar ausência de dado
     const displayValue = value || <span className="meta-empty-state">—</span>;
-    
+
     return (
       <div className={`meta-item ${isFullWidth ? 'full-width' : ''}`}>
         <span className="meta-label">{label}</span>
@@ -28,10 +27,10 @@ const BookMetadataGrid = ({ book }) => {
   };
 
   // Formata os arrays para strings separadas por vírgula
-  const genresList = book.Genres?.map(g => g.name).join(', ');
-  const subgenresList = book.Subgenres?.map(s => s.name).join(', ');
-  const translatorsList = book.Translators?.map(t => t.name).join(', ');
-  
+  const genresList = book.Genres?.map((g) => g.name).join(', ');
+  const subgenresList = book.Subgenres?.map((s) => s.name).join(', ');
+  const translatorsList = book.Translators?.map((t) => t.name).join(', ');
+
   // Tratamento da data usando a função segura para isolar o fuso horário
   const formattedAcquisitionDate = formatDateSafe(book.acquisitionDate);
 
@@ -54,7 +53,7 @@ const BookMetadataGrid = ({ book }) => {
           <span className="meta-label">Etiquetas (Tags)</span>
           <div className="meta-tags-container">
             {book.Tags?.length > 0 ? (
-              book.Tags.map(tag => (
+              book.Tags.map((tag) => (
                 <span key={tag.id} className="meta-tag-pill">
                   #{tag.name}
                 </span>

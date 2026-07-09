@@ -5,13 +5,13 @@ const { Genre } = require('../models');
  */
 exports.list = async (req, res) => {
   try {
-    const genres = await Genre.findAll({ 
+    const genres = await Genre.findAll({
       where: { UserId: req.userId },
       order: [['name', 'ASC']]
     });
     res.json(genres);
   } catch (error) {
-    console.error("🕵️ ERRO NO GENRE CONTROLLER (LIST):", error);
+    console.error('🕵️ ERRO NO GENRE CONTROLLER (LIST):', error);
     res.status(500).json({ error: 'Erro ao buscar gêneros.' });
   }
 };
@@ -23,7 +23,7 @@ exports.store = async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'O nome é obrigatório.' });
-    
+
     const [genre, created] = await Genre.findOrCreate({
       where: { name, UserId: req.userId }
     });
@@ -34,7 +34,7 @@ exports.store = async (req, res) => {
 
     res.status(201).json(genre);
   } catch (error) {
-    console.error("🕵️ ERRO NO GENRE CONTROLLER (STORE):", error);
+    console.error('🕵️ ERRO NO GENRE CONTROLLER (STORE):', error);
     res.status(500).json({ error: 'Erro ao criar gênero.' });
   }
 };
@@ -54,10 +54,10 @@ exports.update = async (req, res) => {
 
     genre.name = name;
     await genre.save();
-    
+
     res.json(genre);
   } catch (error) {
-    console.error("🕵️ ERRO NO GENRE CONTROLLER (UPDATE):", error);
+    console.error('🕵️ ERRO NO GENRE CONTROLLER (UPDATE):', error);
     res.status(500).json({ error: 'Erro ao editar gênero.' });
   }
 };
@@ -68,8 +68,8 @@ exports.update = async (req, res) => {
 exports.destroy = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const deletedCount = await Genre.destroy({ 
+
+    const deletedCount = await Genre.destroy({
       where: { id, UserId: req.userId }
     });
 
@@ -79,7 +79,7 @@ exports.destroy = async (req, res) => {
 
     res.json({ message: 'Gênero removido com sucesso.' });
   } catch (error) {
-    console.error("🕵️ ERRO NO GENRE CONTROLLER (DESTROY):", error);
+    console.error('🕵️ ERRO NO GENRE CONTROLLER (DESTROY):', error);
     res.status(500).json({ error: 'Erro ao remover gênero.' });
   }
 };

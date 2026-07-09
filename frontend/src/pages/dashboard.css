@@ -165,7 +165,7 @@
   width: 100%;
   aspect-ratio: 3 / 4;
   height: auto;
-  background: var(--bg-input); 
+  background: var(--bg-input);
   animation: skeletonPulse 1.5s infinite ease-in-out;
 }
 
@@ -207,9 +207,15 @@
 }
 
 @keyframes skeletonPulse {
-  0% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-  100% { opacity: 0.4; }
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.4;
+  }
 }
 
 /* ==========================================================================
@@ -217,32 +223,32 @@
    ========================================================================== */
 
 @media (max-width: 900px) {
-  .dashboard-container { 
-    padding: 100px 20px 20px 20px; 
+  .dashboard-container {
+    padding: 100px 20px 20px 20px;
   }
-  
-  .book-grid { 
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); 
-    gap: 20px; 
+
+  .book-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 20px;
   }
-  
-  .skeleton-img { 
-    height: 240px; 
+
+  .skeleton-img {
+    height: 240px;
   }
 }
 
 @media (max-width: 600px) {
-  .dashboard-container { 
-    padding: 90px 15px 15px 15px; 
+  .dashboard-container {
+    padding: 90px 15px 15px 15px;
   }
 
-  .book-grid { 
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
-    gap: 12px; 
+  .book-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
   }
-  
-  .skeleton-img { 
-    height: 190px; 
+
+  .skeleton-img {
+    height: 190px;
   }
 
   .search-filter-bar {
@@ -250,14 +256,14 @@
     align-items: stretch;
     gap: 10px;
   }
-  
-  .search-wrapper { 
-    width: 100%; 
+
+  .search-wrapper {
+    width: 100%;
   }
-  
-  .btn-filter-trigger { 
-    width: 100%; 
-    justify-content: center; 
-    padding: 14px; 
+
+  .btn-filter-trigger {
+    width: 100%;
+    justify-content: center;
+    padding: 14px;
   }
 }

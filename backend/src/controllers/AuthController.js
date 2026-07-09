@@ -16,9 +16,18 @@ const DEFAULT_GENRES = [
   { name: 'Biografia', subgenres: [] },
   { name: 'Fantasia', subgenres: ['Fantasia Medieval', 'Fantasia Urbana', 'Fantasia Sombria'] },
   { name: 'Suspense', subgenres: ['Policial', 'Thriller Psicológico', 'Noir'] },
-  { name: 'Ficção Científica', subgenres: ['Cyberpunk', 'Ópera Espacial', 'Viagem no Tempo', 'Distopia'] },
-  { name: 'Ficção Romântica', subgenres: ['Romance Contemporâneo', 'Romance de Época', 'Jovem Adulto', 'Romance de Fantasia'] },
-  { name: 'Terror', subgenres: ['Horror Sobrenatural', 'Terror Psicológico', 'Slasher', 'Horror Cósmico'] },
+  {
+    name: 'Ficção Científica',
+    subgenres: ['Cyberpunk', 'Ópera Espacial', 'Viagem no Tempo', 'Distopia']
+  },
+  {
+    name: 'Ficção Romântica',
+    subgenres: ['Romance Contemporâneo', 'Romance de Época', 'Jovem Adulto', 'Romance de Fantasia']
+  },
+  {
+    name: 'Terror',
+    subgenres: ['Horror Sobrenatural', 'Terror Psicológico', 'Slasher', 'Horror Cósmico']
+  },
   { name: 'Ficção Histórica', subgenres: [] },
   { name: 'Não Ficção', subgenres: ['Biografia', 'Crime Real', 'Autoajuda', 'História'] }
 ];
@@ -27,14 +36,18 @@ const DEFAULT_GENRES = [
  * Função auxiliar para montar a estrutura inicial da biblioteca do usuário.
  */
 const initializeUserGenres = async (userId, transaction) => {
-  await Promise.all(DEFAULT_GENRES.map(async (item) => {
-    const genre = await Genre.create({ name: item.name, UserId: userId }, { transaction });
-    if (item.subgenres.length > 0) {
-      await Promise.all(item.subgenres.map(sub => 
-        Subgenre.create({ name: sub, GenreId: genre.id }, { transaction })
-      ));
-    }
-  }));
+  await Promise.all(
+    DEFAULT_GENRES.map(async (item) => {
+      const genre = await Genre.create({ name: item.name, UserId: userId }, { transaction });
+      if (item.subgenres.length > 0) {
+        await Promise.all(
+          item.subgenres.map((sub) =>
+            Subgenre.create({ name: sub, GenreId: genre.id }, { transaction })
+          )
+        );
+      }
+    })
+  );
 };
 
 /**
@@ -54,43 +67,52 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      language,
-      verificationToken,
-      isVerified: false
-    }, { transaction });
+    const user = await User.create(
+      {
+        name,
+        email,
+        password: hashedPassword,
+        language,
+        verificationToken,
+        isVerified: false
+      },
+      { transaction }
+    );
 
     // Inicialização paralela de categorias para performance
     await initializeUserGenres(user.id, transaction);
 
-    // MELHORIA CRUCIAL (Operação Atômica): 
-    // O e-mail é enviado ANTES de commitar a transação no banco. 
+    // MELHORIA CRUCIAL (Operação Atômica):
+    // O e-mail é enviado ANTES de commitar a transação no banco.
     // Se o serviço de e-mail falhar, a execução pula direto para o catch(),
     // a transação sofre rollback e o usuário "preso" não é gravado no banco.
     try {
       await mailService.sendVerificationEmail(user.email, verificationToken);
     } catch (emailError) {
-      console.error(`📧 ERRO DETALHADO NO SERVIÇO DE E-MAIL (Registo - ${user.email}):`, emailError);
+      console.error(
+        `📧 ERRO DETALHADO NO SERVIÇO DE E-MAIL (Registo - ${user.email}):`,
+        emailError
+      );
       throw emailError; // Re-lança o erro para forçar o rollback no catch principal
     }
 
     // Se o e-mail foi enviado com sucesso, consolidamos no banco de dados.
     await transaction.commit();
 
-    res.status(201).json({ message: 'Conta criada com sucesso! Verifique seu e-mail para ativar.' });
+    res
+      .status(201)
+      .json({ message: 'Conta criada com sucesso! Verifique seu e-mail para ativar.' });
   } catch (error) {
     // PROTEÇÃO SÊNIOR: Apenas executa rollback se a transação ainda estiver pendente.
     if (!transaction.finished) {
       await transaction.rollback();
     }
-    console.error("🕵️ ERRO NO AUTHCONTROLLER (REGISTER):", error);
-    
+    console.error('🕵️ ERRO NO AUTHCONTROLLER (REGISTER):', error);
+
     // Tratativa de UX mais clara para o usuário
-    res.status(400).json({ 
-      error: 'Não foi possível enviar o e-mail de confirmação devido a uma instabilidade. O cadastro foi revertido, tente novamente em alguns instantes.' 
+    res.status(400).json({
+      error:
+        'Não foi possível enviar o e-mail de confirmação devido a uma instabilidade. O cadastro foi revertido, tente novamente em alguns instantes.'
     });
   }
 };
@@ -116,7 +138,7 @@ exports.login = async (req, res) => {
 
     res.json({ user: { id: user.id, name: user.name, email: user.email }, token });
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHCONTROLLER (LOGIN):", error);
+    console.error('🕵️ ERRO NO AUTHCONTROLLER (LOGIN):', error);
     res.status(500).json({ error: 'Erro interno ao realizar login.' });
   }
 };
@@ -128,13 +150,13 @@ exports.googleLogin = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
     const { token } = req.body;
-    
+
     // O Google valida a assinatura da credencial para garantir que não foi forjada
     const ticket = await googleClient.verifyIdToken({
       idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: process.env.GOOGLE_CLIENT_ID
     });
-    
+
     const payload = ticket.getPayload();
     const { email, name } = payload;
 
@@ -145,13 +167,16 @@ exports.googleLogin = async (req, res) => {
       const randomPassword = crypto.randomBytes(16).toString('hex');
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-      user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        isVerified: true, // Já validado pelo Google, pula validação de e-mail
-        language: 'pt-BR' 
-      }, { transaction });
+      user = await User.create(
+        {
+          name,
+          email,
+          password: hashedPassword,
+          isVerified: true, // Já validado pelo Google, pula validação de e-mail
+          language: 'pt-BR'
+        },
+        { transaction }
+      );
 
       await initializeUserGenres(user.id, transaction);
     }
@@ -166,7 +191,7 @@ exports.googleLogin = async (req, res) => {
     if (!transaction.finished) {
       await transaction.rollback();
     }
-    console.error("🕵️ ERRO NO AUTHCONTROLLER (GOOGLE):", error);
+    console.error('🕵️ ERRO NO AUTHCONTROLLER (GOOGLE):', error);
     res.status(500).json({ error: 'Falha ao autenticar com o Google.' });
   }
 };
@@ -189,7 +214,7 @@ exports.verifyEmail = async (req, res) => {
 
     res.json({ message: 'E-mail verificado com sucesso!' });
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHCONTROLLER (VERIFY):", error);
+    console.error('🕵️ ERRO NO AUTHCONTROLLER (VERIFY):', error);
     res.status(500).json({ error: 'Erro interno ao verificar e-mail.' });
   }
 };
@@ -207,18 +232,23 @@ exports.forgotPassword = async (req, res) => {
       user.resetPasswordToken = token;
       user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hora
       await user.save();
-      
+
       try {
         await mailService.sendResetPasswordEmail(user.email, token);
       } catch (emailError) {
-        console.error(`📧 ERRO DETALHADO NO SERVIÇO DE E-MAIL (Recuperação - ${user.email}):`, emailError);
+        console.error(
+          `📧 ERRO DETALHADO NO SERVIÇO DE E-MAIL (Recuperação - ${user.email}):`,
+          emailError
+        );
         throw emailError;
       }
     }
 
-    res.json({ message: 'Se o e-mail estiver cadastrado, você receberá um link de recuperação em breve.' });
+    res.json({
+      message: 'Se o e-mail estiver cadastrado, você receberá um link de recuperação em breve.'
+    });
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHCONTROLLER (FORGOT):", error);
+    console.error('🕵️ ERRO NO AUTHCONTROLLER (FORGOT):', error);
     res.status(500).json({ error: 'Erro ao processar recuperação de senha.' });
   }
 };
@@ -247,7 +277,7 @@ exports.resetPassword = async (req, res) => {
 
     res.json({ message: 'Senha redefinida com sucesso!' });
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHCONTROLLER (RESET):", error);
+    console.error('🕵️ ERRO NO AUTHCONTROLLER (RESET):', error);
     res.status(500).json({ error: 'Erro ao redefinir a senha.' });
   }
 };

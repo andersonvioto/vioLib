@@ -12,12 +12,18 @@ const Collection = require('./Collection');
 const CollectionItem = require('./CollectionItem');
 
 // Relacionamentos 1:N (Listas autônomas e exclusivas do Usuário)
-User.hasMany(Book, { foreignKey: 'UserId', onDelete: 'CASCADE' }); Book.belongsTo(User, { foreignKey: 'UserId' });
-User.hasMany(Author, { foreignKey: 'UserId', onDelete: 'CASCADE' }); Author.belongsTo(User, { foreignKey: 'UserId' });
-User.hasMany(Translator, { foreignKey: 'UserId', onDelete: 'CASCADE' }); Translator.belongsTo(User, { foreignKey: 'UserId' });
-User.hasMany(Genre, { foreignKey: 'UserId', onDelete: 'CASCADE' }); Genre.belongsTo(User, { foreignKey: 'UserId' });
-User.hasMany(Tag, { foreignKey: 'UserId', onDelete: 'CASCADE' }); Tag.belongsTo(User, { foreignKey: 'UserId' });
-User.hasMany(Collection, { foreignKey: 'UserId', onDelete: 'CASCADE' }); Collection.belongsTo(User, { foreignKey: 'UserId' });
+User.hasMany(Book, { foreignKey: 'UserId', onDelete: 'CASCADE' });
+Book.belongsTo(User, { foreignKey: 'UserId' });
+User.hasMany(Author, { foreignKey: 'UserId', onDelete: 'CASCADE' });
+Author.belongsTo(User, { foreignKey: 'UserId' });
+User.hasMany(Translator, { foreignKey: 'UserId', onDelete: 'CASCADE' });
+Translator.belongsTo(User, { foreignKey: 'UserId' });
+User.hasMany(Genre, { foreignKey: 'UserId', onDelete: 'CASCADE' });
+Genre.belongsTo(User, { foreignKey: 'UserId' });
+User.hasMany(Tag, { foreignKey: 'UserId', onDelete: 'CASCADE' });
+Tag.belongsTo(User, { foreignKey: 'UserId' });
+User.hasMany(Collection, { foreignKey: 'UserId', onDelete: 'CASCADE' });
+Collection.belongsTo(User, { foreignKey: 'UserId' });
 
 // Relacionamento hierárquico Gênero -> Subgênero
 Genre.hasMany(Subgenre, { foreignKey: 'GenreId', onDelete: 'CASCADE' });
@@ -58,15 +64,15 @@ User.hasMany(LibraryAccess, { foreignKey: 'guestId', as: 'AccessibleLibraries' }
 LibraryAccess.belongsTo(User, { foreignKey: 'guestId', as: 'Guest' });
 
 module.exports = {
-  sequelize, 
-  User, 
-  Book, 
-  Author, 
-  Translator, 
-  Genre, 
-  Subgenre, 
-  Tag, 
-  Loan, 
+  sequelize,
+  User,
+  Book,
+  Author,
+  Translator,
+  Genre,
+  Subgenre,
+  Tag,
+  Loan,
   LibraryAccess,
   Collection,
   CollectionItem

@@ -3,20 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import api from '../services/api';
-import { AuthContext } from '../contexts/AuthContext'; 
+import { AuthContext } from '../contexts/AuthContext';
 
-import LegalModal from '../components/LegalModal'; // <-- Importação do Modal
-import './Auth.css'; 
+import LegalModal from '../components/LegalModal';
+import './Auth.css';
 import logoImg from '../assets/violib-logo-full2.png';
 
 const Auth = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  
-  const { login } = useContext(AuthContext); 
-  
+
+  const { login } = useContext(AuthContext);
+
   const [view, setView] = useState('login');
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -25,11 +30,11 @@ const Auth = () => {
 
   // Novos estados para os Termos Legais
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [activeModal, setActiveModal] = useState(null); // 'terms' | 'privacy' | null
+  const [activeModal, setActiveModal] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    
+
     if (message.type === 'error') {
       setMessage({ type: '', text: '' });
     }
@@ -43,7 +48,7 @@ const Auth = () => {
     setShowPassword(false);
     setShowConfirmPassword(false);
     setRememberMe(false);
-    setTermsAccepted(false); // Reseta o aceite ao trocar de view
+    setTermsAccepted(false);
     setIsLoading(false);
   };
 
@@ -51,13 +56,13 @@ const Auth = () => {
     if (isLoading) return;
     setIsLoading(true);
     setMessage({ type: '', text: '' });
-    
+
     try {
       const response = await api.post('/auth/google', { token: credentialResponse.credential });
-      // Login via Google já assume "manter conectado" para melhorar a UX
-      login(response.data.token, response.data.user, true); 
+      login(response.data.token, response.data.user, true);
       navigate('/biblioteca');
     } catch (error) {
+      console.error(error);
       setMessage({ type: 'error', text: 'Não foi possível fazer login com o Google.' });
       setIsLoading(false);
     }
@@ -72,12 +77,14 @@ const Auth = () => {
 
     try {
       if (view === 'register') {
-        // Validação dos Termos (Obrigatório para registro via Formulário)
         if (!termsAccepted) {
           setIsLoading(false);
-          return setMessage({ type: 'error', text: 'Você deve aceitar os Termos de Serviço e a Política de Privacidade para continuar.' });
+          return setMessage({
+            type: 'error',
+            text: 'Você deve aceitar os Termos de Serviço e a Política de Privacidade para continuar.'
+          });
         }
-        
+
         if (formData.password !== formData.confirmPassword) {
           setIsLoading(false);
           return setMessage({ type: 'error', text: 'As senhas não coincidem. Tente novamente.' });
@@ -90,9 +97,9 @@ const Auth = () => {
         const response = await api.post('/auth/register', {
           name: formData.name,
           email: formData.email,
-          password: formData.password,
+          password: formData.password
         });
-        
+
         setView('login');
         setFormData({ name: '', email: '', password: '', confirmPassword: '' });
         setShowPassword(false);
@@ -100,26 +107,25 @@ const Auth = () => {
         setTermsAccepted(false);
         setIsLoading(false);
         setMessage({ type: 'success', text: response.data.message });
-      } 
-      else if (view === 'login') {
+      } else if (view === 'login') {
         const response = await api.post('/auth/login', {
           email: formData.email,
           password: formData.password,
           rememberMe: rememberMe
         });
-        
+
         login(response.data.token, response.data.user, rememberMe);
         navigate('/biblioteca');
-      } 
-      else if (view === 'forgot') {
+      } else if (view === 'forgot') {
         const response = await api.post('/auth/forgot-password', { email: formData.email });
         setMessage({ type: 'success', text: response.data.message });
         setIsLoading(false);
       }
     } catch (error) {
-      setMessage({ 
-        type: 'error', 
-        text: error.response?.data?.error || 'Ocorreu um erro inesperado. Tente novamente.' 
+      console.error('Erro de autenticação:', error);
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.error || 'Ocorreu um erro inesperado. Tente novamente.'
       });
       setIsLoading(false);
     }
@@ -131,25 +137,30 @@ const Auth = () => {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <div className="auth-container">
         <div className="auth-card">
-          <img src={logoImg} alt="vioLib - Sua biblioteca virtual organizada" className="auth-logo-img" />
+          <img
+            src={logoImg}
+            alt="vioLib - Sua biblioteca virtual organizada"
+            className="auth-logo-img"
+          />
 
           {message.text && (
-            <div className={`auth-alert ${message.type === 'error' ? 'alert-error' : 'alert-success'}`} >
+            <div
+              className={`auth-alert ${message.type === 'error' ? 'alert-error' : 'alert-success'}`}
+            >
               {message.text}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="auth-form">
-            
             {view === 'register' && (
               <div className="input-group">
-                <input 
-                  type="text" 
-                  name="name" 
-                  placeholder="Seu Nome" 
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Seu Nome"
                   value={formData.name}
-                  onChange={handleChange} 
-                  required 
+                  onChange={handleChange}
+                  required
                   className="auth-input"
                   disabled={isLoading}
                 />
@@ -158,13 +169,13 @@ const Auth = () => {
             )}
 
             <div className="input-group">
-              <input 
-                type="email" 
-                name="email" 
-                placeholder={t('email')} 
+              <input
+                type="email"
+                name="email"
+                placeholder={t('email')}
                 value={formData.email}
-                onChange={handleChange} 
-                required 
+                onChange={handleChange}
+                required
                 className="auth-input"
                 disabled={isLoading}
               />
@@ -173,28 +184,28 @@ const Auth = () => {
 
             {(view === 'login' || view === 'register') && (
               <div className="input-group">
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  name="password" 
-                  placeholder={t('password')} 
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  placeholder={t('password')}
                   value={formData.password}
-                  onChange={handleChange} 
-                  required 
+                  onChange={handleChange}
+                  required
                   className="auth-input"
                   disabled={isLoading}
                 />
                 <span className="material-symbols-rounded input-icon">lock</span>
-                
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)} 
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
                   className="btn-toggle-password"
-                  title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                   disabled={isLoading}
                   tabIndex="-1"
                 >
                   <span className="material-symbols-rounded">
-                    {showPassword ? "visibility_off" : "visibility"}
+                    {showPassword ? 'visibility_off' : 'visibility'}
                   </span>
                 </button>
               </div>
@@ -202,40 +213,40 @@ const Auth = () => {
 
             {view === 'register' && (
               <div className="input-group">
-                <input 
-                  type={showConfirmPassword ? "text" : "password"} 
-                  name="confirmPassword" 
-                  placeholder="Confirme a senha" 
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  name="confirmPassword"
+                  placeholder="Confirme a senha"
                   value={formData.confirmPassword}
-                  onChange={handleChange} 
-                  required 
+                  onChange={handleChange}
+                  required
                   className="auth-input"
                   disabled={isLoading}
                 />
                 <span className="material-symbols-rounded input-icon">lock_reset</span>
-                
-                <button 
-                  type="button" 
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="btn-toggle-password"
-                  title={showConfirmPassword ? "Ocultar senha" : "Mostrar senha"}
+                  title={showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}
                   disabled={isLoading}
                   tabIndex="-1"
                 >
                   <span className="material-symbols-rounded">
-                    {showConfirmPassword ? "visibility_off" : "visibility"}
+                    {showConfirmPassword ? 'visibility_off' : 'visibility'}
                   </span>
                 </button>
               </div>
             )}
-            
+
             {view === 'login' && (
               <div className="remember-me-container">
                 <label className="remember-me-label">
-                  <input 
-                    type="checkbox" 
-                    checked={rememberMe} 
-                    onChange={(e) => setRememberMe(e.target.checked)} 
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                     disabled={isLoading}
                     className="remember-me-checkbox"
                   />
@@ -244,35 +255,46 @@ const Auth = () => {
               </div>
             )}
 
-            {/* Checkbox de Aceite Legal Obrigatório no Registro */}
             {view === 'register' && (
-              <div className="remember-me-container" style={{ alignItems: 'flex-start', marginTop: '5px' }}>
+              <div
+                className="remember-me-container"
+                style={{ alignItems: 'flex-start', marginTop: '5px' }}
+              >
                 <label className="remember-me-label" style={{ alignItems: 'flex-start' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={termsAccepted} 
-                    onChange={(e) => setTermsAccepted(e.target.checked)} 
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
                     disabled={isLoading}
                     className="remember-me-checkbox"
                     style={{ marginTop: '2px', flexShrink: 0 }}
                   />
-                  <span style={{ fontSize: '0.9em', lineHeight: '1.4', color: 'var(--text-secondary)' }}>
+                  <span
+                    style={{ fontSize: '0.9em', lineHeight: '1.4', color: 'var(--text-secondary)' }}
+                  >
                     Li e concordo com os{' '}
-                    <span 
-                      className="auth-link" 
-                      onClick={(e) => { e.preventDefault(); setActiveModal('terms'); }}
+                    <span
+                      className="auth-link"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setActiveModal('terms');
+                      }}
                       style={{ marginLeft: 0 }}
                     >
                       Termos de Serviço
                     </span>{' '}
                     e a{' '}
-                    <span 
-                      className="auth-link" 
-                      onClick={(e) => { e.preventDefault(); setActiveModal('privacy'); }}
+                    <span
+                      className="auth-link"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setActiveModal('privacy');
+                      }}
                       style={{ marginLeft: 0 }}
                     >
                       Política de Privacidade
-                    </span>.
+                    </span>
+                    .
                   </span>
                 </label>
               </div>
@@ -281,59 +303,108 @@ const Auth = () => {
             <button type="submit" className="btn-auth-submit" disabled={isLoading}>
               {isLoading ? (
                 <span className="auth-spinner"></span>
+              ) : view === 'login' ? (
+                t('login')
+              ) : view === 'register' ? (
+                t('register')
               ) : (
-                view === 'login' ? t('login') : view === 'register' ? t('register') : 'Enviar Link'
+                'Enviar Link'
               )}
             </button>
-            
-            {/* INJEÇÃO DO BOTÃO DO GOOGLE (Disponível no Login e Registro) */}
+
             {(view === 'login' || view === 'register') && (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', opacity: 0.6 }}>
-                  <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
-                  <span style={{ padding: '0 10px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>ou</span>
-                  <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', margin: '20px 0', opacity: 0.6 }}
+                >
+                  <div
+                    style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}
+                  ></div>
+                  <span
+                    style={{
+                      padding: '0 10px',
+                      fontSize: '0.9rem',
+                      color: 'var(--text-secondary)'
+                    }}
+                  >
+                    ou
+                  </span>
+                  <div
+                    style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}
+                  ></div>
                 </div>
-                
-                <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}
+                >
                   <GoogleLogin
                     onSuccess={handleGoogleSuccess}
-                    onError={() => setMessage({ type: 'error', text: 'Ocorreu um erro ao comunicar com o Google.' })}
-                    theme="filled_black" 
-                    text={view === 'login' ? "signin_with" : "signup_with"}
+                    onError={() =>
+                      setMessage({
+                        type: 'error',
+                        text: 'Ocorreu um erro ao comunicar com o Google.'
+                      })
+                    }
+                    theme="filled_black"
+                    text={view === 'login' ? 'signin_with' : 'signup_with'}
                     shape="pill"
                     width="100%"
                   />
-                  
-                  {/* Aviso sutil do Google no Registro */}
+
                   {view === 'register' && (
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '5px' }}>
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--text-muted)',
+                        textAlign: 'center',
+                        marginTop: '5px'
+                      }}
+                    >
                       Ao entrar com o Google, você aceita nossos{' '}
-                      <span className="auth-link" onClick={() => setActiveModal('terms')} style={{ marginLeft: 0, fontSize: 'inherit' }}>Termos</span> e{' '}
-                      <span className="auth-link" onClick={() => setActiveModal('privacy')} style={{ marginLeft: 0, fontSize: 'inherit' }}>Privacidade</span>.
+                      <span
+                        className="auth-link"
+                        onClick={() => setActiveModal('terms')}
+                        style={{ marginLeft: 0, fontSize: 'inherit' }}
+                      >
+                        Termos
+                      </span>{' '}
+                      e{' '}
+                      <span
+                        className="auth-link"
+                        onClick={() => setActiveModal('privacy')}
+                        style={{ marginLeft: 0, fontSize: 'inherit' }}
+                      >
+                        Privacidade
+                      </span>
+                      .
                     </span>
                   )}
                 </div>
               </>
             )}
-
           </form>
 
           <div className="auth-footer">
             {view === 'login' && (
               <>
-                <span 
-                  className={`auth-link ${isLoading ? 'disabled-link' : ''}`} 
-                  onClick={() => switchView('forgot')} 
+                <span
+                  className={`auth-link ${isLoading ? 'disabled-link' : ''}`}
+                  onClick={() => switchView('forgot')}
                   style={{ fontSize: '0.9em' }}
                 >
                   Esqueceu sua senha?
                 </span>
                 <div>
                   Não tem uma conta?{' '}
-                  <span 
-                    className={`auth-link ${isLoading ? 'disabled-link' : ''}`} 
-                    onClick={() => switchView('register')} 
+                  <span
+                    className={`auth-link ${isLoading ? 'disabled-link' : ''}`}
+                    onClick={() => switchView('register')}
                     style={{ fontWeight: 'bold' }}
                   >
                     Criar conta gratuita
@@ -345,9 +416,9 @@ const Auth = () => {
             {(view === 'register' || view === 'forgot') && (
               <div>
                 Lembrou da senha?{' '}
-                <span 
-                  className={`auth-link ${isLoading ? 'disabled-link' : ''}`} 
-                  onClick={() => switchView('login')} 
+                <span
+                  className={`auth-link ${isLoading ? 'disabled-link' : ''}`}
+                  onClick={() => switchView('login')}
                   style={{ fontWeight: 'bold' }}
                 >
                   Entrar no sistema
@@ -358,10 +429,7 @@ const Auth = () => {
         </div>
       </div>
 
-      {/* Renderização do Modal de Documentos Legais */}
-      {activeModal && (
-        <LegalModal type={activeModal} onClose={() => setActiveModal(null)} />
-      )}
+      {activeModal && <LegalModal type={activeModal} onClose={() => setActiveModal(null)} />}
     </GoogleOAuthProvider>
   );
 };

@@ -6,19 +6,33 @@ const TermsOfService = () => {
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px' }}>
-      <button 
-        onClick={() => navigate('/login')} 
-        className="btn-action" 
+      <button
+        onClick={() => navigate('/login')}
+        className="btn-action"
         style={{ marginBottom: '30px', border: 'none' }}
       >
         <span className="material-symbols-rounded">arrow_back</span> Voltar
       </button>
 
-      <h1 style={{ color: 'var(--accent-gold)', marginBottom: '30px', fontSize: '2.5em', fontFamily: 'serif' }}>
+      <h1
+        style={{
+          color: 'var(--accent-gold)',
+          marginBottom: '30px',
+          fontSize: '2.5em',
+          fontFamily: 'serif'
+        }}
+      >
         Termos de Serviço
       </h1>
-      
-      <div style={{ background: 'var(--bg-surface)', padding: '40px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+
+      <div
+        style={{
+          background: 'var(--bg-surface)',
+          padding: '40px',
+          borderRadius: '8px',
+          border: '1px solid var(--border-color)'
+        }}
+      >
         <TermsContent />
       </div>
     </div>

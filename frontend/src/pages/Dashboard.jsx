@@ -6,7 +6,7 @@ import api from '../services/api';
 import { LibraryContext } from '../contexts/LibraryContext';
 
 // Componentes
-import Header from '../components/Header'; 
+import Header from '../components/Header';
 import FilterDrawer from '../components/FilterDrawer';
 import Shelf from '../components/Shelf';
 import BookCard from '../components/BookCard';
@@ -38,7 +38,7 @@ const SkeletonCard = () => (
  */
 const Dashboard = () => {
   const navigate = useNavigate();
-  
+
   // Estado Global: Define de quem é a biblioteca que estamos visualizando
   const { currentLibrary } = useContext(LibraryContext);
 
@@ -52,16 +52,20 @@ const Dashboard = () => {
   // Estados dos Filtros Ativos (com persistência no localStorage)
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState(() => localStorage.getItem('violib_sortBy') || 'title');
-  const [sortOrder, setSortOrder] = useState(() => localStorage.getItem('violib_sortOrder') || 'ASC');
+  const [sortOrder, setSortOrder] = useState(
+    () => localStorage.getItem('violib_sortOrder') || 'ASC'
+  );
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedSubgenre, setSelectedSubgenre] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
-  const [showOnlyBorrowed, setShowOnlyBorrowed] = useState(() => localStorage.getItem('violib_showOnlyBorrowed') === 'true');
+  const [showOnlyBorrowed, setShowOnlyBorrowed] = useState(
+    () => localStorage.getItem('violib_showOnlyBorrowed') === 'true'
+  );
   const [showTagsOnCards, setShowTagsOnCards] = useState(() => {
     const saved = localStorage.getItem('violib_showTagsOnCards');
     return saved !== null ? saved === 'true' : true;
   });
-  
+
   // Estados de UI
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [availableGenres, setAvailableGenres] = useState([]);
@@ -84,9 +88,13 @@ const Dashboard = () => {
   // Busca as taxonomias dinamicamente com base na biblioteca atual
   useEffect(() => {
     // 1. Limpa os filtros anteriores para não buscar uma categoria que não existe no amigo
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchTerm('');
+
     setSelectedGenre('');
+
     setSelectedSubgenre('');
+
     setSelectedTag('');
 
     // 2. Monta os parâmetros de forma segura (Reativando o usedOnly)
@@ -96,104 +104,127 @@ const Dashboard = () => {
     if (currentLibrary) {
       params.append('ownerId', currentLibrary.ownerId);
     }
-    
-    api.get(`/attributes?${params.toString()}`)
-       .then(res => {
-         setAvailableGenres(res.data.genres || []);
-         setAvailableTags(res.data.tags || []);
-       })
-       .catch(console.error);
+
+    api
+      .get(`/attributes?${params.toString()}`)
+      .then((res) => {
+        setAvailableGenres(res.data.genres || []);
+        setAvailableTags(res.data.tags || []);
+      })
+      .catch(console.error);
   }, [currentLibrary]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedSubgenre('');
   }, [selectedGenre]);
 
   // ==========================================
   // LÓGICA DE BUSCA DA API (MOTOR CENTRAL)
   // ==========================================
-  
-  const fetchBooks = useCallback(async (targetPage, isReset = false) => {
-    setIsLoading(true);
 
-    if (isReset) {
-      setMyBooks([]);
-    }
-
-    try {
-      const params = new URLSearchParams({
-        page: targetPage,
-        limit: 20,
-        search: searchTerm,
-        sortBy: sortBy,
-        order: sortOrder,
-        genre: selectedGenre,
-        subgenre: selectedSubgenre,
-        tag: selectedTag,
-        borrowed: showOnlyBorrowed ? 'true' : 'false'
-      });
-
-      const endpoint = currentLibrary 
-        ? `/access/${currentLibrary.ownerId}/books?${params.toString()}` 
-        : `/books?${params.toString()}`;
-
-      const response = await api.get(endpoint);
-      
-      let fetchedBooks = [];
-      let totalItems = 0;
-      let totalPages = 1;
-
-      if (response.data.books) {
-        fetchedBooks = response.data.books;
-        totalItems = response.data.totalItems || 0;
-        totalPages = response.data.totalPages || 1;
-      } else if (Array.isArray(response.data)) {
-        fetchedBooks = response.data;
-        totalItems = response.data.length;
-        totalPages = 1;
-      }
+  const fetchBooks = useCallback(
+    async (targetPage, isReset = false) => {
+      setIsLoading(true);
 
       if (isReset) {
-        setMyBooks(fetchedBooks);
-      } else {
-        setMyBooks(prev => [...prev, ...fetchedBooks]);
+        setMyBooks([]);
       }
-      
-      setTotalBooks(totalItems);
-      setHasMore(targetPage < totalPages);
-      
-    } catch (error) {
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/login');
+
+      try {
+        const params = new URLSearchParams({
+          page: targetPage,
+          limit: 20,
+          search: searchTerm,
+          sortBy: sortBy,
+          order: sortOrder,
+          genre: selectedGenre,
+          subgenre: selectedSubgenre,
+          tag: selectedTag,
+          borrowed: showOnlyBorrowed ? 'true' : 'false'
+        });
+
+        const endpoint = currentLibrary
+          ? `/access/${currentLibrary.ownerId}/books?${params.toString()}`
+          : `/books?${params.toString()}`;
+
+        const response = await api.get(endpoint);
+
+        let fetchedBooks = [];
+        let totalItems = 0;
+        let totalPages = 1;
+
+        if (response.data.books) {
+          fetchedBooks = response.data.books;
+          totalItems = response.data.totalItems || 0;
+          totalPages = response.data.totalPages || 1;
+        } else if (Array.isArray(response.data)) {
+          fetchedBooks = response.data;
+          totalItems = response.data.length;
+          totalPages = 1;
+        }
+
+        if (isReset) {
+          setMyBooks(fetchedBooks);
+        } else {
+          setMyBooks((prev) => [...prev, ...fetchedBooks]);
+        }
+
+        setTotalBooks(totalItems);
+        setHasMore(targetPage < totalPages);
+      } catch (error) {
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/login');
+        }
+      } finally {
+        setIsLoading(false);
       }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [searchTerm, sortBy, sortOrder, selectedGenre, selectedSubgenre, selectedTag, showOnlyBorrowed, currentLibrary, navigate]);
+    },
+    [
+      searchTerm,
+      sortBy,
+      sortOrder,
+      selectedGenre,
+      selectedSubgenre,
+      selectedTag,
+      showOnlyBorrowed,
+      currentLibrary,
+      navigate
+    ]
+  );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
-    fetchBooks(1, true); 
-  }, [fetchBooks]); 
+
+    fetchBooks(1, true);
+  }, [fetchBooks]);
 
   // ==========================================
   // HANDLERS E VARIÁVEIS DE RENDERIZAÇÃO
   // ==========================================
-  
+
   const handleLoadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchBooks(nextPage, false); 
+    fetchBooks(nextPage, false);
   };
 
   // Comparação à prova de falhas: ignora case sensitive e espaços vazios acidentais
   const activeGenreObj = availableGenres.find(
-    g => g.name?.trim().toLowerCase() === selectedGenre?.trim().toLowerCase()
+    (g) => g.name?.trim().toLowerCase() === selectedGenre?.trim().toLowerCase()
   );
-  const activeSubgenres = activeGenreObj ? (activeGenreObj.Subgenres || activeGenreObj.subgenres || []) : [];
-  
-  const libraryOwnerName = currentLibrary ? (currentLibrary.ownerName || currentLibrary.Owner?.name || currentLibrary.User?.name || 'Convidado') : '';
+  const activeSubgenres = activeGenreObj
+    ? activeGenreObj.Subgenres || activeGenreObj.subgenres || []
+    : [];
+
+  const libraryOwnerName = currentLibrary
+    ? currentLibrary.ownerName ||
+      currentLibrary.Owner?.name ||
+      currentLibrary.User?.name ||
+      'Convidado'
+    : '';
 
   // ==========================================
   // RENDERIZAÇÃO
@@ -207,17 +238,17 @@ const Dashboard = () => {
       <div className="search-filter-bar">
         <div className="search-wrapper">
           <span className="material-symbols-rounded search-icon">search</span>
-          <input 
-            type="text" 
-            placeholder="Pesquisar por título ou autor..." 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
-            className="search-input" 
+          <input
+            type="text"
+            placeholder="Pesquisar por título ou autor..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
           />
         </div>
-        
-        <button 
-          onClick={() => setIsFilterDrawerOpen(!isFilterDrawerOpen)} 
+
+        <button
+          onClick={() => setIsFilterDrawerOpen(!isFilterDrawerOpen)}
           className={`btn-action btn-filter-trigger ${isFilterDrawerOpen ? 'active' : ''}`}
         >
           <span className="material-symbols-rounded">tune</span>
@@ -226,7 +257,7 @@ const Dashboard = () => {
       </div>
 
       {/* 3. GAVETA LATERAL DE FILTROS AVANÇADOS */}
-      <FilterDrawer 
+      <FilterDrawer
         isOpen={isFilterDrawerOpen}
         onClose={() => setIsFilterDrawerOpen(false)}
         sortBy={sortBy}
@@ -243,7 +274,7 @@ const Dashboard = () => {
       />
 
       {/* 4. PRATELEIRA PRINCIPAL (GÊNEROS) */}
-      <Shelf 
+      <Shelf
         items={availableGenres}
         activeItem={selectedGenre}
         onSelect={setSelectedGenre}
@@ -252,7 +283,7 @@ const Dashboard = () => {
 
       {/* 5. PRATELEIRA SECUNDÁRIA (SUBGÊNEROS) */}
       {activeSubgenres.length > 0 && (
-        <Shelf 
+        <Shelf
           items={activeSubgenres}
           activeItem={selectedSubgenre}
           onSelect={setSelectedSubgenre}
@@ -268,16 +299,19 @@ const Dashboard = () => {
             {selectedSubgenre || selectedGenre ? 'folder_open' : 'local_library'}
           </span>
           <h2 className="section-title">
-            {selectedSubgenre 
-              ? selectedSubgenre 
-              : selectedGenre 
-                ? selectedGenre 
-                : (currentLibrary ? `Acervo de ${libraryOwnerName}` : 'Minha Biblioteca')
-            }
-            <span className="title-count">({isLoading && myBooks.length === 0 ? '...' : totalBooks})</span>
+            {selectedSubgenre
+              ? selectedSubgenre
+              : selectedGenre
+                ? selectedGenre
+                : currentLibrary
+                  ? `Acervo de ${libraryOwnerName}`
+                  : 'Minha Biblioteca'}
+            <span className="title-count">
+              ({isLoading && myBooks.length === 0 ? '...' : totalBooks})
+            </span>
           </h2>
         </div>
-        
+
         {/* LÓGICA DE RENDERIZAÇÃO INTELIGENTE (SKELETONS VS DADOS) */}
         {isLoading && myBooks.length === 0 ? (
           <div className="book-grid">
@@ -290,28 +324,19 @@ const Dashboard = () => {
         ) : (
           <div className="book-grid">
             {myBooks.map((book) => (
-              <BookCard 
-                key={book.id} 
-                book={book} 
-                showTags={showTagsOnCards} 
-              />
+              <BookCard key={book.id} book={book} showTags={showTagsOnCards} />
             ))}
-            
-            {isLoading && myBooks.length > 0 && (
-              Array.from({ length: 5 }).map((_, idx) => (
-                <SkeletonCard key={`skel-more-${idx}`} />
-              ))
-            )}
+
+            {isLoading &&
+              myBooks.length > 0 &&
+              Array.from({ length: 5 }).map((_, idx) => <SkeletonCard key={`skel-more-${idx}`} />)}
           </div>
         )}
 
         {/* Paginação */}
         {hasMore && !isLoading && (
           <div className="pagination-trigger-zone">
-            <button 
-              onClick={handleLoadMore} 
-              className="btn-action btn-primary btn-load-more"
-            >
+            <button onClick={handleLoadMore} className="btn-action btn-primary btn-load-more">
               Carregar mais obras
             </button>
           </div>

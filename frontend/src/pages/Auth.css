@@ -78,8 +78,14 @@
 }
 
 @keyframes authFadeDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* --- BLOCOS DE STATUS (Telas de Verificação) --- */
@@ -227,7 +233,7 @@
 .btn-auth-submit:disabled {
   opacity: 0.8;
   cursor: not-allowed;
-  background-color: #b3942e; 
+  background-color: #b3942e;
 }
 
 .btn-security-action {
@@ -240,14 +246,16 @@
   display: inline-block;
   width: 22px;
   height: 22px;
-  border: 3px solid rgba(0, 0, 0, 0.2); 
+  border: 3px solid rgba(0, 0, 0, 0.2);
   border-radius: 50%;
-  border-top-color: #000000; 
+  border-top-color: #000000;
   animation: authSpin 0.8s ease-in-out infinite;
 }
 
 @keyframes authSpin {
-  to { transform: rotate(-360deg); }
+  to {
+    transform: rotate(-360deg);
+  }
 }
 
 /* --- OPÇÕES DE SESSÃO E RODAPÉ --- */
@@ -255,7 +263,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin-top: -5px; 
+  margin-top: -5px;
   margin-bottom: 5px;
 }
 
@@ -275,7 +283,7 @@
 }
 
 .remember-me-checkbox {
-  appearance: none; 
+  appearance: none;
   background-color: var(--bg-input);
   border: 1px solid var(--border-color);
   width: 18px;
@@ -300,7 +308,7 @@
 }
 
 .remember-me-checkbox:checked::before {
-  content: "✓";
+  content: '✓';
   color: #000000;
   font-weight: bold;
   font-size: 0.85em;
@@ -338,6 +346,6 @@
 .disabled-link {
   opacity: 0.5;
   cursor: not-allowed !important;
-  pointer-events: none; 
+  pointer-events: none;
   text-decoration: none !important;
 }

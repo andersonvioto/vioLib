@@ -12,18 +12,20 @@ const updateSW = registerSW({
   // Engatilhado quando o sistema percebe que há um código novo no servidor
   onNeedRefresh() {
     // Para uma usabilidade premium, evitamos forçar o reload do nada.
-    if (confirm('Nova atualização do vioLib disponível! Deseja recarregar o aplicativo para aplicar?')) {
+    if (
+      confirm('Nova atualização do vioLib disponível! Deseja recarregar o aplicativo para aplicar?')
+    ) {
       updateSW(true);
     }
   },
   // Engatilhado quando o cache inicial é concluído com sucesso
   onOfflineReady() {
     console.log('vioLib está pronto para uso offline (Modo PWA ativo).');
-  },
+  }
 });
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>,
+  </React.StrictMode>
 );

@@ -14,7 +14,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'violib_covers', // Nome da pasta que será criada lá no Cloudinary
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'], // Formatos aceites
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'] // Formatos aceites
     // Opcional: transformation: [{ width: 500, height: 750, crop: 'limit' }] // Pode otimizar o tamanho na hora do upload!
   }
 });

@@ -4,12 +4,12 @@ import ProfileSettings from '../components/settings/ProfileSettings';
 import ShareSettings from '../components/settings/ShareSettings';
 import TaxonomyManager from '../components/settings/TaxonomyManager';
 import GenreManager from '../components/settings/GenreManager';
-import AppearanceSettings from '../components/settings/AppearanceSettings'; 
+import AppearanceSettings from '../components/settings/AppearanceSettings';
 import './Settings.css';
 
 /**
  * Página principal de Configurações.
- * Orquestra a navegação lateral e gerencia o carregamento sob demanda (Lazy Fetching) 
+ * Orquestra a navegação lateral e gerencia o carregamento sob demanda (Lazy Fetching)
  * dos módulos internos.
  */
 const Settings = () => {
@@ -20,14 +20,20 @@ const Settings = () => {
     switch (activeTab) {
       case 'profile':
         return <ProfileSettings />;
-      case 'appearance': 
+      case 'appearance':
         return <AppearanceSettings />;
       case 'shares':
         return <ShareSettings />;
       case 'authors':
-        return <TaxonomyManager endpoint="authors" title="Gerenciar Autores" itemLabel="Autor" />
+        return <TaxonomyManager endpoint="authors" title="Gerenciar Autores" itemLabel="Autor" />;
       case 'translators':
-        return <TaxonomyManager endpoint="translators" title="Gerenciar Tradutores" itemLabel="Tradutor" />;
+        return (
+          <TaxonomyManager
+            endpoint="translators"
+            title="Gerenciar Tradutores"
+            itemLabel="Tradutor"
+          />
+        );
       case 'genres':
         return <GenreManager />;
       default:
@@ -37,26 +43,53 @@ const Settings = () => {
 
   return (
     <div className="settings-container">
-      
       <button onClick={() => navigate('/biblioteca')} className="btn-back">
         <span className="material-symbols-rounded">arrow_back</span> Voltar para a Biblioteca
       </button>
 
       <h1 className="settings-header">Configurações da Conta</h1>
-      
+
       <div className="settings-layout">
         <aside className="settings-sidebar">
-          <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}>Meu Perfil</button>
-          <button className={activeTab === 'appearance' ? 'active' : ''} onClick={() => setActiveTab('appearance')}>Aparência</button>
-          <button className={activeTab === 'shares' ? 'active' : ''} onClick={() => setActiveTab('shares')}>Compartilhamento</button>
-          <button className={activeTab === 'authors' ? 'active' : ''} onClick={() => setActiveTab('authors')}>Meus Autores</button>
-          <button className={activeTab === 'translators' ? 'active' : ''} onClick={() => setActiveTab('translators')}>Meus Tradutores</button>
-          <button className={activeTab === 'genres' ? 'active' : ''} onClick={() => setActiveTab('genres')}>Gêneros e Subgêneros</button>
+          <button
+            className={activeTab === 'profile' ? 'active' : ''}
+            onClick={() => setActiveTab('profile')}
+          >
+            Meu Perfil
+          </button>
+          <button
+            className={activeTab === 'appearance' ? 'active' : ''}
+            onClick={() => setActiveTab('appearance')}
+          >
+            Aparência
+          </button>
+          <button
+            className={activeTab === 'shares' ? 'active' : ''}
+            onClick={() => setActiveTab('shares')}
+          >
+            Compartilhamento
+          </button>
+          <button
+            className={activeTab === 'authors' ? 'active' : ''}
+            onClick={() => setActiveTab('authors')}
+          >
+            Meus Autores
+          </button>
+          <button
+            className={activeTab === 'translators' ? 'active' : ''}
+            onClick={() => setActiveTab('translators')}
+          >
+            Meus Tradutores
+          </button>
+          <button
+            className={activeTab === 'genres' ? 'active' : ''}
+            onClick={() => setActiveTab('genres')}
+          >
+            Gêneros e Subgêneros
+          </button>
         </aside>
 
-        <main className="settings-content">
-          {renderContent()}
-        </main>
+        <main className="settings-content">{renderContent()}</main>
       </div>
     </div>
   );

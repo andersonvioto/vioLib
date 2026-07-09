@@ -1,11 +1,11 @@
 const express = require('express');
 require('dotenv').config();
 const { sequelize } = require('./models');
-const cors = require('cors'); 
+const cors = require('cors');
 
 const app = express();
 app.use(cors());
-app.use(express.json()); 
+app.use(express.json());
 
 const path = require('path');
 const fs = require('fs');
@@ -21,7 +21,7 @@ const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const attributeRoutes = require('./routes/attributeRoutes');
 const loanRoutes = require('./routes/loanRoutes');
-const accessRoutes = require('./routes/accessRoutes'); 
+const accessRoutes = require('./routes/accessRoutes');
 const userRoutes = require('./routes/userRoutes');
 const collectionRoutes = require('./routes/collectionRoutes');
 
@@ -29,7 +29,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/attributes', attributeRoutes);
 app.use('/api/loans', loanRoutes);
-app.use('/api/access', accessRoutes); 
+app.use('/api/access', accessRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/collections', collectionRoutes);
 
@@ -40,7 +40,7 @@ async function startServer() {
     await sequelize.authenticate();
     console.log('✔ Conexão com o banco estabelecida com sucesso.');
 
-    await sequelize.sync(); 
+    await sequelize.sync();
     console.log('✔ Todos os modelos foram sincronizados.');
 
     app.listen(PORT, () => {

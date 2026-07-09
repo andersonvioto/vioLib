@@ -14,21 +14,23 @@ router.use(authMiddleware);
 /**
  * Rotas principais de Coleções (Álbuns)
  */
-router.route('/')
+router
+  .route('/')
   .get(CollectionController.getCollections)
   .post(upload.single('bannerImage'), CollectionController.createCollection);
 
-router.route('/:id')
+router
+  .route('/:id')
   .get(CollectionController.getCollectionById)
   .delete(CollectionController.deleteCollection);
 
 /**
  * Rotas auxiliares para Itens das Coleções (Figurinhas)
  */
-router.route('/:collectionId/items')
-  .post(CollectionController.addItem);
+router.route('/:collectionId/items').post(CollectionController.addItem);
 
-router.route('/items/:itemId')
+router
+  .route('/items/:itemId')
   .put(CollectionController.updateItem)
   .delete(CollectionController.deleteItem);
 

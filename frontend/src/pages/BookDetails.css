@@ -19,7 +19,7 @@
   max-width: 1000px;
   margin: 0 auto;
   /* Espaçamento leve, o BookDetailHeader provavelmente traz seu próprio padding */
-  padding: 10px 40px; 
+  padding: 10px 40px;
 }
 
 /* --- CONTAINER BASE DA PÁGINA --- */
@@ -42,14 +42,14 @@
 .cover-wrapper {
   position: sticky;
   /* A capa cola a 120px do topo da tela, evitando sumir sob o header fixo */
-  top: 120px; 
+  top: 120px;
 }
 
 .details-cover {
   width: 100%;
   height: auto;
   border-radius: var(--radius-md);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
   border: 1px solid var(--border-color);
 }
 
@@ -84,16 +84,16 @@
   .details-container {
     padding: 100px 20px 20px 20px;
   }
-  
+
   .fixed-detail-header-inner {
     padding: 10px 20px;
   }
 
   .editorial-layout {
-    grid-template-columns: 220px 1fr; 
+    grid-template-columns: 220px 1fr;
     gap: 30px;
   }
-  
+
   .book-main-title {
     font-size: 2.2em;
   }
@@ -109,24 +109,24 @@
     padding: 10px 15px;
   }
 
-  .editorial-layout { 
-    grid-template-columns: 1fr; 
-    gap: 20px; 
+  .editorial-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
-  
-  .cover-wrapper { 
-    position: static; 
-    max-width: 180px; 
-    margin: 0 auto 15px auto; 
+
+  .cover-wrapper {
+    position: static;
+    max-width: 180px;
+    margin: 0 auto 15px auto;
   }
-  
-  .book-main-title { 
-    font-size: 1.8em; 
-    text-align: center; 
+
+  .book-main-title {
+    font-size: 1.8em;
+    text-align: center;
   }
-  
-  .book-main-authors { 
-    font-size: 1.1em; 
-    text-align: center; 
+
+  .book-main-authors {
+    font-size: 1.1em;
+    text-align: center;
   }
 }

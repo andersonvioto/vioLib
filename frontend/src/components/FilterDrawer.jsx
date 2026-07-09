@@ -41,10 +41,9 @@ const FilterDrawer = ({
     <>
       {/* Fundo escuro clicável para fechar a gaveta */}
       <div className="filter-drawer-backdrop" onClick={onClose}></div>
-      
+
       {/* Contêiner principal da gaveta */}
       <div className="filter-drawer-container">
-        
         {/* Cabeçalho da gaveta */}
         <div className="filter-drawer-header">
           <h3>
@@ -57,17 +56,16 @@ const FilterDrawer = ({
 
         {/* Grade de Filtros */}
         <div className="filter-drawer-grid">
-          
           {/* Ordenação */}
           <div className="filter-field-group">
             <label className="form-label">
               <span className="material-symbols-rounded">sort</span> Ordenar por
             </label>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value)} 
-                className="form-select" 
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="form-select"
                 style={{ flex: 1 }}
               >
                 <option value="title">Título</option>
@@ -75,10 +73,10 @@ const FilterDrawer = ({
                 <option value="releaseYear">Ano de Lançamento</option>
                 <option value="createdAt">Data de Inclusão</option>
               </select>
-              
-              <select 
-                value={sortOrder} 
-                onChange={(e) => setSortOrder(e.target.value)} 
+
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
                 className="form-select"
               >
                 <option value="ASC">Crescente</option>
@@ -92,14 +90,16 @@ const FilterDrawer = ({
             <label className="form-label">
               <span className="material-symbols-rounded">style</span> Filtrar por Tag
             </label>
-            <select 
-              value={selectedTag} 
-              onChange={(e) => setSelectedTag(e.target.value)} 
+            <select
+              value={selectedTag}
+              onChange={(e) => setSelectedTag(e.target.value)}
               className="form-select"
             >
               <option value="">Todas as Tags</option>
-              {availableTags.map(t => (
-                <option key={t.id} value={t.name}>#{t.name}</option>
+              {availableTags.map((t) => (
+                <option key={t.id} value={t.name}>
+                  #{t.name}
+                </option>
               ))}
             </select>
           </div>
@@ -107,24 +107,23 @@ const FilterDrawer = ({
           {/* Toggles (Switches) */}
           <div className="filter-field-group full-width toggles-row">
             <label className="checkbox-toggle-label">
-              <input 
-                type="checkbox" 
-                checked={showOnlyBorrowed} 
-                onChange={(e) => setShowOnlyBorrowed(e.target.checked)} 
+              <input
+                type="checkbox"
+                checked={showOnlyBorrowed}
+                onChange={(e) => setShowOnlyBorrowed(e.target.checked)}
               />
               <span>Apenas Emprestados</span>
             </label>
-            
+
             <label className="checkbox-toggle-label">
-              <input 
-                type="checkbox" 
-                checked={showTagsOnCards} 
-                onChange={(e) => setShowTagsOnCards(e.target.checked)} 
+              <input
+                type="checkbox"
+                checked={showTagsOnCards}
+                onChange={(e) => setShowTagsOnCards(e.target.checked)}
               />
               <span>Exibir etiquetas (#tags)</span>
             </label>
           </div>
-          
         </div>
       </div>
     </>

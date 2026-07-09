@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import CreatableSelect from 'react-select/creatable'; 
-import BarcodeScanner from '../components/BarcodeScanner'; 
+import CreatableSelect from 'react-select/creatable';
+import BarcodeScanner from '../components/BarcodeScanner';
 import ImageCropperModal from '../components/ImageCropperModal'; // Importando o nosso novo modal
 import useBookFormLogic from '../hooks/useBookFormLogic';
-import './BookForm.css'; 
+import './BookForm.css';
 
 const customSelectStyles = {
   control: (provided, state) => ({
@@ -31,7 +31,7 @@ const customSelectStyles = {
   }),
   multiValue: (provided) => ({
     ...provided,
-    backgroundColor: 'var(--border-color)', 
+    backgroundColor: 'var(--border-color)',
     borderRadius: '4px'
   }),
   multiValueLabel: (provided) => ({
@@ -54,25 +54,44 @@ const customSelectStyles = {
   }),
   singleValue: (provided) => ({
     ...provided,
-    color: 'var(--text-primary)' 
+    color: 'var(--text-primary)'
   })
 };
 
 const BookForm = () => {
   const { t } = useTranslation();
-  
+
   const {
-    navigate, isEditMode, formData, setFormData, availableGenres, availableSubgenres, 
-    availableAuthors, availableTranslators, previewUrl, isLoadingIsbn, isSaving, 
-    feedback, isScannerOpen, setIsScannerOpen, handleChange, handleFileChange, 
-    handleScanSuccess, handleIsbnSearch, handleSubmit,
-    amazonUrl, setAmazonUrl, isLoadingAmazon, handleAmazonImport,
-    imageSrcForCrop, handleCropComplete, handleCropCancel // Recuperando as funções de crop do Hook
+    navigate,
+    isEditMode,
+    formData,
+    setFormData,
+    availableGenres,
+    availableSubgenres,
+    availableAuthors,
+    availableTranslators,
+    previewUrl,
+    isLoadingIsbn,
+    isSaving,
+    feedback,
+    isScannerOpen,
+    setIsScannerOpen,
+    handleChange,
+    handleFileChange,
+    handleScanSuccess,
+    handleIsbnSearch,
+    handleSubmit,
+    amazonUrl,
+    setAmazonUrl,
+    isLoadingAmazon,
+    handleAmazonImport,
+    imageSrcForCrop,
+    handleCropComplete,
+    handleCropCancel // Recuperando as funções de crop do Hook
   } = useBookFormLogic();
 
   return (
     <div className="form-container">
-      
       {/* RENDERIZAÇÃO DO MODAL DE CORTE DE IMAGEM */}
       {imageSrcForCrop && (
         <ImageCropperModal
@@ -83,7 +102,10 @@ const BookForm = () => {
       )}
 
       <header className="form-header">
-        <span className="material-symbols-rounded" style={{ fontSize: '2.5em', color: 'var(--accent-gold)' }}>
+        <span
+          className="material-symbols-rounded"
+          style={{ fontSize: '2.5em', color: 'var(--accent-gold)' }}
+        >
           {isEditMode ? 'edit_document' : 'library_add'}
         </span>
         <h1 className="form-title">{isEditMode ? 'Editar Livro' : t('add_book')}</h1>
@@ -99,14 +121,10 @@ const BookForm = () => {
       )}
 
       {isScannerOpen && (
-        <BarcodeScanner 
-          onScanSuccess={handleScanSuccess} 
-          onClose={() => setIsScannerOpen(false)} 
-        />
+        <BarcodeScanner onScanSuccess={handleScanSuccess} onClose={() => setIsScannerOpen(false)} />
       )}
 
       <form onSubmit={handleSubmit}>
-        
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">image</span> Capa do Livro
@@ -122,30 +140,30 @@ const BookForm = () => {
                 {previewUrl ? 'Deseja trocar a capa atual?' : 'Selecione uma opção abaixo'}
               </span>
             </div>
-            
+
             <div className="cover-actions">
               {/* Botão 1: Aciona diretamente a Câmera Traseira no Mobile */}
               <label className="btn-action btn-cover-option">
                 <span className="material-symbols-rounded">photo_camera</span>
                 Tirar Foto
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  capture="environment" 
-                  onChange={handleFileChange} 
-                  className="file-input-hidden" 
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleFileChange}
+                  className="file-input-hidden"
                 />
               </label>
-              
+
               {/* Botão 2: Abre o Seletor de Arquivos / Galeria */}
               <label className="btn-action btn-cover-option">
                 <span className="material-symbols-rounded">photo_library</span>
                 Galeria / Arquivo
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleFileChange} 
-                  className="file-input-hidden" 
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="file-input-hidden"
                 />
               </label>
             </div>
@@ -154,49 +172,55 @@ const BookForm = () => {
 
         <div className="form-section">
           <h2 className="section-title">
-            <span className="material-symbols-rounded">auto_stories</span> Importação e Dados Principais
+            <span className="material-symbols-rounded">auto_stories</span> Importação e Dados
+            Principais
           </h2>
           <div className="form-grid">
-            
             <div className="form-group full-width">
               <label className="form-label">
-                <span className="material-symbols-rounded">magic_button</span> Importação Inteligente
+                <span className="material-symbols-rounded">magic_button</span> Importação
+                Inteligente
               </label>
-              
+
               {/* Box 1: ISBN */}
               <div className="isbn-wrapper" style={{ marginBottom: '10px' }}>
-                <input 
-                  type="text" 
-                  name="isbn" 
-                  value={formData.isbn} 
-                  onChange={handleChange} 
+                <input
+                  type="text"
+                  name="isbn"
+                  value={formData.isbn}
+                  onChange={handleChange}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      e.preventDefault(); 
-                      handleIsbnSearch(); 
+                      e.preventDefault();
+                      handleIsbnSearch();
                     }
                   }}
-                  className="form-input" 
-                  placeholder="Pesquisar por código ISBN..." 
+                  className="form-input"
+                  placeholder="Pesquisar por código ISBN..."
                 />
-                
-                <button 
-                  type="button" 
-                  className="btn-action btn-camera-trigger" 
+
+                <button
+                  type="button"
+                  className="btn-action btn-camera-trigger"
                   onClick={() => setIsScannerOpen(true)}
                   title="Escanear Código de Barras"
                 >
                   <span className="material-symbols-rounded">photo_camera</span>
                 </button>
 
-                <button 
-                  type="button" 
-                  className="btn-action btn-primary btn-search-trigger" 
+                <button
+                  type="button"
+                  className="btn-action btn-primary btn-search-trigger"
                   onClick={() => handleIsbnSearch()}
                   disabled={isLoadingIsbn || !formData.isbn}
                 >
                   {isLoadingIsbn ? (
-                    <span className="material-symbols-rounded spinner-icon" style={{ animation: 'authSpin 1s linear infinite reverse' }}>sync</span>
+                    <span
+                      className="material-symbols-rounded spinner-icon"
+                      style={{ animation: 'authSpin 1s linear infinite reverse' }}
+                    >
+                      sync
+                    </span>
                   ) : (
                     <span className="material-symbols-rounded">search</span>
                   )}
@@ -206,30 +230,40 @@ const BookForm = () => {
 
               {/* Box 2: URL da Amazon */}
               <div className="isbn-wrapper">
-                <input 
-                  type="url" 
-                  value={amazonUrl} 
-                  onChange={(e) => setAmazonUrl(e.target.value)} 
+                <input
+                  type="url"
+                  value={amazonUrl}
+                  onChange={(e) => setAmazonUrl(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      e.preventDefault(); 
-                      handleAmazonImport(); 
+                      e.preventDefault();
+                      handleAmazonImport();
                     }
                   }}
-                  className="form-input" 
-                  placeholder="Ou cole a URL da Amazon (Ex: https://amazon.com.br/dp/...)" 
+                  className="form-input"
+                  placeholder="Ou cole a URL da Amazon (Ex: https://amazon.com.br/dp/...)"
                   style={{ borderLeft: '4px solid #ff9900' }}
                 />
 
-                <button 
-                  type="button" 
-                  className="btn-action btn-search-trigger" 
+                <button
+                  type="button"
+                  className="btn-action btn-search-trigger"
                   onClick={handleAmazonImport}
                   disabled={isLoadingAmazon || !amazonUrl}
-                  style={{ backgroundColor: '#ff9900', color: '#000', border: 'none', fontWeight: 'bold' }}
+                  style={{
+                    backgroundColor: '#ff9900',
+                    color: '#000',
+                    border: 'none',
+                    fontWeight: 'bold'
+                  }}
                 >
                   {isLoadingAmazon ? (
-                    <span className="material-symbols-rounded spinner-icon" style={{ animation: 'authSpin 1s linear infinite reverse' }}>sync</span>
+                    <span
+                      className="material-symbols-rounded spinner-icon"
+                      style={{ animation: 'authSpin 1s linear infinite reverse' }}
+                    >
+                      sync
+                    </span>
                   ) : (
                     <span className="material-symbols-rounded">shopping_cart</span>
                   )}
@@ -239,12 +273,23 @@ const BookForm = () => {
             </div>
 
             <div className="form-group full-width" style={{ marginTop: '10px' }}>
-              <label className="form-label"><span className="material-symbols-rounded">title</span> Título do Livro *</label>
-              <input type="text" name="title" value={formData.title} onChange={handleChange} required className="form-input" />
+              <label className="form-label">
+                <span className="material-symbols-rounded">title</span> Título do Livro *
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                className="form-input"
+              />
             </div>
-            
+
             <div className="form-group">
-              <label className="form-label"><span className="material-symbols-rounded">person</span> Autores *</label>
+              <label className="form-label">
+                <span className="material-symbols-rounded">person</span> Autores *
+              </label>
               <CreatableSelect
                 isMulti
                 options={availableAuthors}
@@ -253,12 +298,14 @@ const BookForm = () => {
                 styles={customSelectStyles}
                 placeholder="Selecione ou digite um novo..."
                 formatCreateLabel={(inputValue) => `Cadastrar novo: "${inputValue}"`}
-                noOptionsMessage={() => "Nenhum autor encontrado"}
+                noOptionsMessage={() => 'Nenhum autor encontrado'}
               />
             </div>
-            
+
             <div className="form-group">
-              <label className="form-label"><span className="material-symbols-rounded">translate</span> Tradutores</label>
+              <label className="form-label">
+                <span className="material-symbols-rounded">translate</span> Tradutores
+              </label>
               <CreatableSelect
                 isMulti
                 options={availableTranslators}
@@ -267,7 +314,7 @@ const BookForm = () => {
                 styles={customSelectStyles}
                 placeholder="Selecione ou digite um novo..."
                 formatCreateLabel={(inputValue) => `Cadastrar novo: "${inputValue}"`}
-                noOptionsMessage={() => "Nenhum tradutor encontrado"}
+                noOptionsMessage={() => 'Nenhum tradutor encontrado'}
               />
             </div>
           </div>
@@ -279,39 +326,60 @@ const BookForm = () => {
           </h2>
           <div className="form-grid">
             <div className="form-group">
-              <label className="form-label"><span className="material-symbols-rounded">sell</span> Gênero Principal</label>
+              <label className="form-label">
+                <span className="material-symbols-rounded">sell</span> Gênero Principal
+              </label>
               <CreatableSelect
                 isClearable
                 options={availableGenres}
                 value={formData.selectedGenre}
-                onChange={(newValue) => setFormData({ ...formData, selectedGenre: newValue, selectedSubgenre: null })}
+                onChange={(newValue) =>
+                  setFormData({ ...formData, selectedGenre: newValue, selectedSubgenre: null })
+                }
                 styles={customSelectStyles}
                 placeholder="Selecione ou digite um novo..."
                 formatCreateLabel={(inputValue) => `Criar gênero: "${inputValue}"`}
-                noOptionsMessage={() => "Nenhum gênero encontrado"}
+                noOptionsMessage={() => 'Nenhum gênero encontrado'}
               />
             </div>
-            
+
             <div className="form-group">
               <label className="form-label">
                 <span className="material-symbols-rounded">list</span> Subgênero
               </label>
               <CreatableSelect
-                isClearable 
+                isClearable
                 isDisabled={!formData.selectedGenre}
                 options={availableSubgenres}
                 value={formData.selectedSubgenre}
                 onChange={(newValue) => setFormData({ ...formData, selectedSubgenre: newValue })}
                 styles={customSelectStyles}
-                placeholder={formData.selectedGenre ? "Selecione ou digite..." : "Bloqueado (Selecione um Gênero)"}
+                placeholder={
+                  formData.selectedGenre
+                    ? 'Selecione ou digite...'
+                    : 'Bloqueado (Selecione um Gênero)'
+                }
                 formatCreateLabel={(inputValue) => `Criar subgênero: "${inputValue}"`}
-                noOptionsMessage={() => formData.selectedGenre ? "Nenhum subgênero cadastrado neste gênero" : "Selecione um Gênero Principal primeiro"}
+                noOptionsMessage={() =>
+                  formData.selectedGenre
+                    ? 'Nenhum subgênero cadastrado neste gênero'
+                    : 'Selecione um Gênero Principal primeiro'
+                }
               />
             </div>
 
             <div className="form-group full-width">
-              <label className="form-label"><span className="material-symbols-rounded">style</span> Tags</label>
-              <input type="text" name="tags" value={formData.tags} onChange={handleChange} className="form-input" placeholder="Separadas por vírgula" />
+              <label className="form-label">
+                <span className="material-symbols-rounded">style</span> Tags
+              </label>
+              <input
+                type="text"
+                name="tags"
+                value={formData.tags}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="Separadas por vírgula"
+              />
             </div>
           </div>
         </div>
@@ -322,24 +390,65 @@ const BookForm = () => {
           </h2>
           <div className="form-grid">
             <div className="form-group">
-              <label className="form-label"><span className="material-symbols-rounded">location_on</span> Local de Publicação</label>
-              <input type="text" name="publicationLocation" value={formData.publicationLocation} onChange={handleChange} className="form-input" placeholder="Ex: São Paulo, SP" />
+              <label className="form-label">
+                <span className="material-symbols-rounded">location_on</span> Local de Publicação
+              </label>
+              <input
+                type="text"
+                name="publicationLocation"
+                value={formData.publicationLocation}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="Ex: São Paulo, SP"
+              />
             </div>
             <div className="form-group">
-              <label className="form-label"><span className="material-symbols-rounded">business</span> Editora</label>
-              <input type="text" name="publisher" value={formData.publisher} onChange={handleChange} className="form-input" />
+              <label className="form-label">
+                <span className="material-symbols-rounded">business</span> Editora
+              </label>
+              <input
+                type="text"
+                name="publisher"
+                value={formData.publisher}
+                onChange={handleChange}
+                className="form-input"
+              />
             </div>
             <div className="form-group">
-              <label className="form-label"><span className="material-symbols-rounded">calendar_month</span> Ano</label>
-              <input type="number" name="releaseYear" value={formData.releaseYear} onChange={handleChange} className="form-input" />
+              <label className="form-label">
+                <span className="material-symbols-rounded">calendar_month</span> Ano
+              </label>
+              <input
+                type="number"
+                name="releaseYear"
+                value={formData.releaseYear}
+                onChange={handleChange}
+                className="form-input"
+              />
             </div>
             <div className="form-group">
-              <label className="form-label"><span className="material-symbols-rounded">format_list_numbered</span> Edição</label>
-              <input type="text" name="edition" value={formData.edition} onChange={handleChange} className="form-input" />
+              <label className="form-label">
+                <span className="material-symbols-rounded">format_list_numbered</span> Edição
+              </label>
+              <input
+                type="text"
+                name="edition"
+                value={formData.edition}
+                onChange={handleChange}
+                className="form-input"
+              />
             </div>
             <div className="form-group">
-              <label className="form-label"><span className="material-symbols-rounded">shopping_cart</span> Aquisição</label>
-              <input type="date" name="acquisitionDate" value={formData.acquisitionDate} onChange={handleChange} className="form-input" />
+              <label className="form-label">
+                <span className="material-symbols-rounded">shopping_cart</span> Aquisição
+              </label>
+              <input
+                type="date"
+                name="acquisitionDate"
+                value={formData.acquisitionDate}
+                onChange={handleChange}
+                className="form-input"
+              />
             </div>
           </div>
         </div>
@@ -349,31 +458,38 @@ const BookForm = () => {
             <span className="material-symbols-rounded">edit_note</span> Notas Pessoais
           </h2>
           <div className="form-group full-width">
-            <textarea name="notes" value={formData.notes} onChange={handleChange} className="form-textarea" placeholder="Suas considerações sobre o livro..."></textarea>
+            <textarea
+              name="notes"
+              value={formData.notes}
+              onChange={handleChange}
+              className="form-textarea"
+              placeholder="Suas considerações sobre o livro..."
+            ></textarea>
           </div>
         </div>
 
         <div className="form-actions">
-          <button 
-            type="button" 
-            onClick={() => navigate(-1)} 
-            className="btn-action" 
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="btn-action"
             style={{ border: 'none', color: 'var(--text-secondary)' }}
             disabled={isSaving}
           >
             Cancelar
           </button>
-          <button 
-            type="submit" 
-            className="btn-action btn-primary"
-            disabled={isSaving}
-          >
+          <button type="submit" className="btn-action btn-primary" disabled={isSaving}>
             {isSaving ? (
-              <span className="material-symbols-rounded spinner-icon" style={{ animation: 'authSpin 1s linear infinite reverse' }}>sync</span>
+              <span
+                className="material-symbols-rounded spinner-icon"
+                style={{ animation: 'authSpin 1s linear infinite reverse' }}
+              >
+                sync
+              </span>
             ) : (
               <span className="material-symbols-rounded">save</span>
             )}
-            {isSaving ? 'A guardar...' : (isEditMode ? 'Atualizar Livro' : 'Guardar Livro')}
+            {isSaving ? 'A guardar...' : isEditMode ? 'Atualizar Livro' : 'Guardar Livro'}
           </button>
         </div>
       </form>

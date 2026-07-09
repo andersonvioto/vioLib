@@ -16,11 +16,11 @@
 .shelf-nav-btn {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%); 
+  transform: translateY(-50%);
   z-index: 10;
   width: 30px;
   height: 44px; /* Mais alto, estilo controle de carrossel */
-  border-radius: 6px; 
+  border-radius: 6px;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
@@ -28,18 +28,22 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
   transition: var(--transition-smooth);
 }
 
 .shelf-nav-btn:hover {
   color: var(--accent-gold);
   border-color: var(--accent-gold);
-  transform: translateY(-50%) scale(1.05); 
+  transform: translateY(-50%) scale(1.05);
 }
 
-.shelf-nav-btn.left { left: -10px; }
-.shelf-nav-btn.right { right: -10px; }
+.shelf-nav-btn.left {
+  left: -10px;
+}
+.shelf-nav-btn.right {
+  right: -10px;
+}
 
 /* Setas menores para a prateleira de subgêneros */
 .shelf-nav-btn.sub-nav {
@@ -53,17 +57,17 @@
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  padding: 10px 25px; 
-  margin: 0; 
+  padding: 10px 25px;
+  margin: 0;
   width: 100%;
   scrollbar-width: none; /* Firefox */
   -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
-  cursor: grab; 
-  scroll-behavior: smooth; 
+  cursor: grab;
+  scroll-behavior: smooth;
 }
 
 .virtual-shelves-container.grabbing {
-  cursor: grabbing; 
+  cursor: grabbing;
   scroll-behavior: auto; /* Desativa a animação durante o arrasto manual */
 }
 
@@ -80,15 +84,15 @@
   padding: 10px 22px;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: 30px; 
+  border-radius: 30px;
   color: var(--text-secondary);
   font-family: var(--font-sans);
   font-size: 0.95em;
   font-weight: 500;
-  white-space: nowrap; 
+  white-space: nowrap;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  cursor: inherit; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  cursor: inherit;
 }
 
 .shelf-pill:hover {
@@ -110,7 +114,7 @@
   font-size: 0.85em;
   border-radius: 20px;
   border-color: transparent;
-  background: rgba(255, 255, 255, 0.05); 
+  background: rgba(255, 255, 255, 0.05);
   box-shadow: none;
 }
 
@@ -126,13 +130,13 @@
    ========================================================================== */
 @media (max-width: 900px) {
   /* Oculta as setas de navegação lateral, priorizando o toque no ecrã (swipe) */
-  .shelf-nav-btn { 
-    display: none; 
+  .shelf-nav-btn {
+    display: none;
   }
-  
+
   /* Remove o padding lateral para a prateleira colar nas bordas da tela */
-  .virtual-shelves-container { 
-    padding-left: 0; 
-    padding-right: 0; 
+  .virtual-shelves-container {
+    padding-left: 0;
+    padding-right: 0;
   }
 }

@@ -30,7 +30,8 @@
 }
 
 /* --- ESTADO VAZIO E CARREGAMENTO --- */
-.collections-loading, .empty-collections-state {
+.collections-loading,
+.empty-collections-state {
   text-align: center;
   padding: 60px 20px;
   background: var(--bg-surface);
@@ -75,7 +76,7 @@
 .collection-album-card:hover {
   transform: translateY(-5px);
   border-color: var(--accent-gold);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
 }
 
 /* --- HERO BANNER DO CARTÃO --- */
@@ -93,7 +94,7 @@
 .banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.8) 100%);
 }
 
 /* --- ANEL DE PROGRESSO (MÁGICA CSS) --- */
@@ -103,12 +104,12 @@
   height: 70px;
   border-radius: 50%;
   /* A variável --progress é injetada via style={{ '--progress': 'X%' }} no React */
-  background: conic-gradient(var(--accent-gold) var(--progress), rgba(255,255,255,0.1) 0deg);
+  background: conic-gradient(var(--accent-gold) var(--progress), rgba(255, 255, 255, 0.1) 0deg);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
 .progress-ring-inner {

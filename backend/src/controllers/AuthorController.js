@@ -5,13 +5,13 @@ const { Author } = require('../models');
  */
 exports.list = async (req, res) => {
   try {
-    const authors = await Author.findAll({ 
+    const authors = await Author.findAll({
       where: { UserId: req.userId },
-      order: [['name', 'ASC']] 
+      order: [['name', 'ASC']]
     });
     res.json(authors);
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHOR CONTROLLER (LIST):", error);
+    console.error('🕵️ ERRO NO AUTHOR CONTROLLER (LIST):', error);
     res.status(500).json({ error: 'Erro ao listar autores.' });
   }
 };
@@ -34,7 +34,7 @@ exports.store = async (req, res) => {
 
     res.status(201).json(author);
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHOR CONTROLLER (STORE):", error);
+    console.error('🕵️ ERRO NO AUTHOR CONTROLLER (STORE):', error);
     res.status(500).json({ error: 'Erro ao criar autor.' });
   }
 };
@@ -54,10 +54,10 @@ exports.update = async (req, res) => {
 
     author.name = name;
     await author.save();
-    
+
     res.json(author);
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHOR CONTROLLER (UPDATE):", error);
+    console.error('🕵️ ERRO NO AUTHOR CONTROLLER (UPDATE):', error);
     res.status(500).json({ error: 'Erro ao editar autor.' });
   }
 };
@@ -68,8 +68,8 @@ exports.update = async (req, res) => {
 exports.destroy = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const deletedCount = await Author.destroy({ 
+
+    const deletedCount = await Author.destroy({
       where: { id, UserId: req.userId }
     });
 
@@ -79,7 +79,7 @@ exports.destroy = async (req, res) => {
 
     res.json({ message: 'Autor removido com sucesso.' });
   } catch (error) {
-    console.error("🕵️ ERRO NO AUTHOR CONTROLLER (DESTROY):", error);
+    console.error('🕵️ ERRO NO AUTHOR CONTROLLER (DESTROY):', error);
     res.status(500).json({ error: 'Erro ao remover autor.' });
   }
 };

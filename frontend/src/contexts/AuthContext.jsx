@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
 /**
@@ -18,13 +19,13 @@ export const AuthProvider = ({ children }) => {
    */
   const login = useCallback((token, userData, rememberMe) => {
     localStorage.setItem('token', token);
-    
+
     if (rememberMe) {
       localStorage.setItem('rememberMe', 'true');
     } else {
       localStorage.removeItem('rememberMe');
     }
-    
+
     setUser(userData);
   }, []);
 
@@ -44,12 +45,13 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const hydrateSession = async () => {
       const token = localStorage.getItem('token');
-      
+
       if (token) {
         try {
           const response = await api.get('/users/profile');
           setUser(response.data);
         } catch (error) {
+          console.error(error);
           console.warn('Sessão expirada ou inválida. Limpando credenciais.');
           logout();
         }
@@ -65,7 +67,7 @@ export const AuthProvider = ({ children }) => {
   // ==========================================
   useEffect(() => {
     const rememberMe = localStorage.getItem('rememberMe') === 'true';
-    
+
     // Ignora o timer se a opção de manter conectado estiver ativa ou se não houver usuário
     if (rememberMe || !user) return;
 
@@ -94,27 +96,35 @@ export const AuthProvider = ({ children }) => {
     };
 
     // Anexa os ouvintes de evento à janela principal
-    events.forEach(event => window.addEventListener(event, handleInteraction));
+    events.forEach((event) => window.addEventListener(event, handleInteraction));
     resetTimer(); // Inicia a contagem assim que o componente é montado
 
     // Função de limpeza (cleanup) executada quando o componente é desmontado
     return () => {
       clearTimeout(timeoutId);
       clearTimeout(throttleTimer);
-      events.forEach(event => window.removeEventListener(event, handleInteraction));
+      events.forEach((event) => window.removeEventListener(event, handleInteraction));
     };
   }, [user, logout]);
 
   // ==========================================
   // RENDERIZAÇÃO
   // ==========================================
-  
+
   // Bloqueia a renderização dos componentes filhos até o token ser validado
   if (loadingInitial) {
     return (
-      <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)' }}>
-        <span 
-          className="material-symbols-rounded spinner-icon" 
+      <div
+        style={{
+          display: 'flex',
+          height: '100vh',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--accent-gold)'
+        }}
+      >
+        <span
+          className="material-symbols-rounded spinner-icon"
           style={{ fontSize: '3rem', animation: 'authSpin 1s linear infinite reverse' }}
         >
           sync
@@ -123,9 +133,5 @@ export const AuthProvider = ({ children }) => {
     );
   }
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
 };

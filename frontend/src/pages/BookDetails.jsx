@@ -7,7 +7,7 @@ import { getCoverUrl } from '../utils/bookHelpers';
 import BookDetailHeader from '../components/BookDetailHeader';
 import LoanManager from '../components/LoanManager';
 import BookMetadataGrid from '../components/BookMetadataGrid';
-import BookDetailSkeleton from '../components/BookDetailSkeleton'; 
+import BookDetailSkeleton from '../components/BookDetailSkeleton';
 
 import './BookDetails.css';
 
@@ -16,7 +16,7 @@ import './BookDetails.css';
  * Atua como orquestrador de estado global do livro e monta a estrutura visual da página.
  */
 const BookDetails = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const navigate = useNavigate();
   const [book, setBook] = useState(null);
 
@@ -32,6 +32,7 @@ const BookDetails = () => {
   }, [id, navigate]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBookDetails();
   }, [fetchBookDetails]);
 
@@ -41,6 +42,7 @@ const BookDetails = () => {
         await api.delete(`/books/${id}`);
         navigate('/biblioteca');
       } catch (error) {
+        console.error('Erro de exclusão:', error);
         alert('Erro ao excluir o livro.');
       }
     }
@@ -51,32 +53,29 @@ const BookDetails = () => {
     return <BookDetailSkeleton />;
   }
 
-  const activeLoan = book.Loans?.find(loan => !loan.returnDate);
+  const activeLoan = book.Loans?.find((loan) => !loan.returnDate);
 
   return (
     <div className="details-container">
-      
       {/* 1. Componente de Cabeçalho Envelopado em Barra Fixa */}
       <div className="fixed-detail-header">
         <div className="fixed-detail-header-inner">
           <BookDetailHeader book={book} onDelete={handleDelete} />
         </div>
       </div>
-      
+
       <div className="editorial-layout">
-        
         {/* 2. Capa da Obra */}
         <div className="cover-wrapper">
           <img src={getCoverUrl(book.coverImage)} alt={book.title} className="details-cover" />
         </div>
 
         <div className="details-content">
-          
           {/* 3. Título e Autores Principais */}
           <div>
             <h1 className="book-main-title">{book.title}</h1>
             <p className="book-main-authors">
-              {book.Authors?.map(a => a.name).join(', ') || 'Autor Desconhecido'}
+              {book.Authors?.map((a) => a.name).join(', ') || 'Autor Desconhecido'}
             </p>
           </div>
 
@@ -85,13 +84,8 @@ const BookDetails = () => {
 
           {/* 5. Gerenciador de Empréstimos (Movido para o final da ficha técnica) */}
           {book.isOwner && (
-            <LoanManager 
-              bookId={book.id} 
-              activeLoan={activeLoan} 
-              onUpdate={fetchBookDetails} 
-            />
+            <LoanManager bookId={book.id} activeLoan={activeLoan} onUpdate={fetchBookDetails} />
           )}
-
         </div>
       </div>
     </div>

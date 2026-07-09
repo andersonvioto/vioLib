@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import './BarcodeScanner.css';
 
@@ -12,6 +12,35 @@ const BarcodeScanner = ({ onScanSuccess, onClose }) => {
   const [error, setError] = useState('');
   const scannerRef = useRef(null);
 
+  // A função startCamera foi movida para cima e encapsulada em useCallback
+  // para evitar o erro "accessed before declared" e satisfazer o linter.
+  const startCamera = useCallback(
+    (scannerInstance, cameraId) => {
+      scannerInstance
+        .start(
+          cameraId,
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 150 }
+          },
+          (decodedText) => {
+            scannerInstance
+              .stop()
+              .then(() => onScanSuccess(decodedText))
+              .catch(() => onScanSuccess(decodedText));
+          },
+          () => {
+            // Ignora erros de varredura de frames vazios
+          }
+        )
+        .catch((err) => {
+          console.error(err);
+          setError('Falha ao iniciar o fluxo de vídeo da câmera.');
+        });
+    },
+    [onScanSuccess]
+  );
+
   useEffect(() => {
     const scanner = new Html5Qrcode('scanner-preview-zone');
     scannerRef.current = scanner;
@@ -20,13 +49,14 @@ const BarcodeScanner = ({ onScanSuccess, onClose }) => {
       .then((devices) => {
         if (devices && devices.length > 0) {
           setCameras(devices);
-          
-          const backCam = devices.find(d => 
-            d.label.toLowerCase().includes('back') || 
-            d.label.toLowerCase().includes('traseira') ||
-            d.label.toLowerCase().includes('ambiente')
+
+          const backCam = devices.find(
+            (d) =>
+              d.label.toLowerCase().includes('back') ||
+              d.label.toLowerCase().includes('traseira') ||
+              d.label.toLowerCase().includes('ambiente')
           );
-          
+
           const selectedId = backCam ? backCam.id : devices[0].id;
           setActiveCameraId(selectedId);
           startCamera(scanner, selectedId);
@@ -44,28 +74,7 @@ const BarcodeScanner = ({ onScanSuccess, onClose }) => {
         scannerRef.current.stop().catch(console.error);
       }
     };
-  }, []);
-
-  const startCamera = (scannerInstance, cameraId) => {
-    scannerInstance.start(
-      cameraId,
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 150 }
-      },
-      (decodedText) => {
-        scannerInstance.stop()
-          .then(() => onScanSuccess(decodedText))
-          .catch(() => onScanSuccess(decodedText));
-      },
-      () => {
-        // Ignora erros de varredura de frames vazios
-      }
-    ).catch((err) => {
-      console.error(err);
-      setError('Falha ao iniciar o fluxo de vídeo da câmera.');
-    });
-  };
+  }, [startCamera]); // startCamera agora é uma dependência válida
 
   const handleCameraChange = async (e) => {
     const id = e.target.value;
@@ -96,9 +105,9 @@ const BarcodeScanner = ({ onScanSuccess, onClose }) => {
         {cameras.length > 1 && (
           <div className="scanner-controls">
             <label htmlFor="camera-select">Câmera ativa:</label>
-            <select 
-              id="camera-select" 
-              value={activeCameraId} 
+            <select
+              id="camera-select"
+              value={activeCameraId}
               onChange={handleCameraChange}
               className="form-select"
             >

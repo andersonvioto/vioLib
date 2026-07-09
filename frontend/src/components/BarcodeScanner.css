@@ -97,9 +97,15 @@
 }
 
 @keyframes laserScan {
-  0% { transform: translateY(-70px); }
-  50% { transform: translateY(70px); }
-  100% { transform: translateY(-70px); }
+  0% {
+    transform: translateY(-70px);
+  }
+  50% {
+    transform: translateY(70px);
+  }
+  100% {
+    transform: translateY(-70px);
+  }
 }
 
 .scanner-controls {
@@ -152,17 +158,17 @@
   .isbn-responsive-wrapper {
     flex-wrap: wrap;
   }
-  
+
   .isbn-responsive-wrapper .form-input {
     flex: 1 1 calc(100% - 70px) !important;
   }
-  
+
   .isbn-responsive-wrapper .btn-camera-trigger {
     flex: 0 0 50px !important;
     padding: 0 !important;
     justify-content: center;
   }
-  
+
   .isbn-responsive-wrapper .btn-search-trigger {
     flex: 1 1 100% !important;
     width: 100%;

@@ -10,11 +10,12 @@ const ShareSettings = () => {
       const response = await api.get('/access/my-shares');
       setSharedWith(response.data);
     } catch (error) {
-      console.error("Erro ao buscar compartilhamentos.", error);
+      console.error('Erro ao buscar compartilhamentos.', error);
     }
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchShares();
   }, []);
 
@@ -24,7 +25,8 @@ const ShareSettings = () => {
       await api.delete(`/access/revoke/${guestId}`);
       fetchShares();
     } catch (error) {
-      alert("Erro ao revogar acesso.");
+      console.error(error);
+      alert('Erro ao revogar acesso.');
     }
   };
 
@@ -32,14 +34,29 @@ const ShareSettings = () => {
     <div className="settings-panel">
       <h2>Pessoas com Acesso</h2>
       <ul className="attribute-list">
-        {sharedWith.map(share => (
+        {sharedWith.map((share) => (
           <li key={share.id} className="attribute-item">
             <div>
-              <strong style={{ display: 'block', fontSize: '1.1rem', color: 'var(--text-primary)' }}>{share.Guest?.name}</strong>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{share.Guest?.email}</span>
+              <strong
+                style={{ display: 'block', fontSize: '1.1rem', color: 'var(--text-primary)' }}
+              >
+                {share.Guest?.name}
+              </strong>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                {share.Guest?.email}
+              </span>
             </div>
-            <button onClick={() => handleRevokeAccess(share.guestId, share.Guest?.name)} className="btn-disable">
-              <span className="material-symbols-rounded" style={{ fontSize: '18px', verticalAlign: 'middle', marginRight: '5px' }}>person_remove</span> Revogar
+            <button
+              onClick={() => handleRevokeAccess(share.guestId, share.Guest?.name)}
+              className="btn-disable"
+            >
+              <span
+                className="material-symbols-rounded"
+                style={{ fontSize: '18px', verticalAlign: 'middle', marginRight: '5px' }}
+              >
+                person_remove
+              </span>{' '}
+              Revogar
             </button>
           </li>
         ))}

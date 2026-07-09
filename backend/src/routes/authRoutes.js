@@ -20,6 +20,4 @@ router.post('/reset-password', authController.resetPassword);
 // Verificação de Conta
 router.get('/verify-email/:token', authController.verifyEmail);
 
-
-
 module.exports = router;

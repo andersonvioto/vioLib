@@ -13,10 +13,10 @@ exports.getProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'Usuário não encontrado.' });
     }
-    
+
     res.json(user);
   } catch (error) {
-    console.error("🕵️ ERRO NO USER CONTROLLER (GET PROFILE):", error);
+    console.error('🕵️ ERRO NO USER CONTROLLER (GET PROFILE):', error);
     res.status(500).json({ error: 'Erro interno ao buscar perfil.' });
   }
 };
@@ -36,7 +36,9 @@ exports.updateProfile = async (req, res) => {
 
     if (newPassword) {
       if (!currentPassword) {
-        return res.status(400).json({ error: 'Senha atual é obrigatória para autorizar a alteração.' });
+        return res
+          .status(400)
+          .json({ error: 'Senha atual é obrigatória para autorizar a alteração.' });
       }
 
       const isMatch = await bcrypt.compare(currentPassword, user.password);
@@ -57,12 +59,12 @@ exports.updateProfile = async (req, res) => {
 
     await user.save();
 
-    res.json({ 
-      message: 'Perfil atualizado com sucesso!', 
-      user: { name: user.name, email: user.email } 
+    res.json({
+      message: 'Perfil atualizado com sucesso!',
+      user: { name: user.name, email: user.email }
     });
   } catch (error) {
-    console.error("🕵️ ERRO NO USER CONTROLLER (UPDATE PROFILE):", error);
+    console.error('🕵️ ERRO NO USER CONTROLLER (UPDATE PROFILE):', error);
     res.status(500).json({ error: 'Erro ao atualizar perfil.' });
   }
 };
@@ -80,19 +82,23 @@ exports.deleteAccount = async (req, res) => {
     }
 
     if (!password) {
-      return res.status(400).json({ error: 'A senha é obrigatória para confirmar a exclusão da conta.' });
+      return res
+        .status(400)
+        .json({ error: 'A senha é obrigatória para confirmar a exclusão da conta.' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(403).json({ error: 'Senha incorreta. A exclusão foi cancelada por segurança.' });
+      return res
+        .status(403)
+        .json({ error: 'Senha incorreta. A exclusão foi cancelada por segurança.' });
     }
 
     await user.destroy();
 
     res.json({ message: 'Conta e dados associados foram excluídos com sucesso.' });
   } catch (error) {
-    console.error("🕵️ ERRO NO USER CONTROLLER (DELETE ACCOUNT):", error);
+    console.error('🕵️ ERRO NO USER CONTROLLER (DELETE ACCOUNT):', error);
     res.status(500).json({ error: 'Erro interno ao excluir a conta.' });
   }
 };

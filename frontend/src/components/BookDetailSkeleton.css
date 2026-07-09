@@ -4,16 +4,20 @@
    ========================================================================== */
 
 @keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
 }
 
 .skeleton-base {
   animation: shimmer 2s infinite linear;
   background: linear-gradient(
-    to right, 
-    var(--bg-input, #2a2a2a) 4%, 
-    var(--border-color, #3a3a3a) 25%, 
+    to right,
+    var(--bg-input, #2a2a2a) 4%,
+    var(--border-color, #3a3a3a) 25%,
     var(--bg-input, #2a2a2a) 36%
   );
   background-size: 1000px 100%;

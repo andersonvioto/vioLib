@@ -44,7 +44,7 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
   const handleToggleAspect = () => {
     const newAspectLocked = !isAspectLocked;
     setIsAspectLocked(newAspectLocked);
-    
+
     // Se o usuário reativar a trava, re-centralizamos e forçamos a proporção 3:4 perfeitamente
     if (newAspectLocked && imgRef.current) {
       const { width, height } = imgRef.current;
@@ -56,7 +56,7 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
 
   const handleConfirm = () => {
     const image = imgRef.current;
-    
+
     // Validação de segurança
     if (!image || !completedCrop || completedCrop.width <= 0 || completedCrop.height <= 0) {
       onCancel();
@@ -110,15 +110,15 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
           onCancel();
           return;
         }
-        
+
         // Transforma o Blob num Arquivo (File) legítimo para o backend aceitar o upload
         const file = new File([blob], 'capa_recortada_comprimida.jpg', { type: 'image/jpeg' });
         const previewUrl = URL.createObjectURL(file);
-        
+
         onComplete(file, previewUrl);
       },
       'image/jpeg',
-      0.8 
+      0.8
     );
   };
 
@@ -133,7 +133,7 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
             Arraste as bordas para cortar. A imagem será automaticamente otimizada e comprimida.
           </p>
         </div>
-        
+
         <div className="cropper-wrap">
           <ReactCrop
             crop={crop}
@@ -153,11 +153,7 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
 
         <div className="cropper-options">
           <label className="cropper-aspect-toggle">
-            <input 
-              type="checkbox" 
-              checked={isAspectLocked} 
-              onChange={handleToggleAspect} 
-            />
+            <input type="checkbox" checked={isAspectLocked} onChange={handleToggleAspect} />
             <span>Manter proporção de livro (3:4)</span>
           </label>
         </div>

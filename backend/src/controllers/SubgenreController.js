@@ -6,17 +6,19 @@ const { Subgenre, Genre } = require('../models');
 exports.list = async (req, res) => {
   try {
     const subgenres = await Subgenre.findAll({
-      include: [{
-        model: Genre,
-        where: { UserId: req.userId },
-        attributes: [] 
-      }],
+      include: [
+        {
+          model: Genre,
+          where: { UserId: req.userId },
+          attributes: []
+        }
+      ],
       order: [['name', 'ASC']]
     });
-    
+
     res.json(subgenres);
   } catch (error) {
-    console.error("🕵️ ERRO NO SUBGENRE CONTROLLER (LIST):", error);
+    console.error('🕵️ ERRO NO SUBGENRE CONTROLLER (LIST):', error);
     res.status(500).json({ error: 'Erro ao listar subgêneros.' });
   }
 };
@@ -44,7 +46,7 @@ exports.store = async (req, res) => {
 
     res.status(201).json(subgenre);
   } catch (error) {
-    console.error("🕵️ ERRO NO SUBGENRE CONTROLLER (STORE):", error);
+    console.error('🕵️ ERRO NO SUBGENRE CONTROLLER (STORE):', error);
     res.status(500).json({ error: 'Erro ao criar subgênero.' });
   }
 };
@@ -62,14 +64,15 @@ exports.update = async (req, res) => {
     });
 
     if (!subgenre) return res.status(404).json({ error: 'Subgênero não encontrado.' });
-    if (subgenre.Genre.UserId !== req.userId) return res.status(403).json({ error: 'Acesso negado.' });
+    if (subgenre.Genre.UserId !== req.userId)
+      return res.status(403).json({ error: 'Acesso negado.' });
 
     subgenre.name = name;
     await subgenre.save();
-    
+
     res.json(subgenre);
   } catch (error) {
-    console.error("🕵️ ERRO NO SUBGENRE CONTROLLER (UPDATE):", error);
+    console.error('🕵️ ERRO NO SUBGENRE CONTROLLER (UPDATE):', error);
     res.status(500).json({ error: 'Erro ao editar subgênero.' });
   }
 };
@@ -79,19 +82,20 @@ exports.update = async (req, res) => {
  */
 exports.destroy = async (req, res) => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
 
     const subgenre = await Subgenre.findByPk(id, {
       include: [{ model: Genre, attributes: ['UserId'] }]
     });
 
     if (!subgenre) return res.status(404).json({ error: 'Subgênero não encontrado.' });
-    if (subgenre.Genre.UserId !== req.userId) return res.status(403).json({ error: 'Acesso negado.' });
+    if (subgenre.Genre.UserId !== req.userId)
+      return res.status(403).json({ error: 'Acesso negado.' });
 
     await subgenre.destroy();
     res.json({ message: 'Subgênero removido com sucesso.' });
   } catch (error) {
-    console.error("🕵️ ERRO NO SUBGENRE CONTROLLER (DESTROY):", error);
+    console.error('🕵️ ERRO NO SUBGENRE CONTROLLER (DESTROY):', error);
     res.status(500).json({ error: 'Erro ao remover subgênero.' });
   }
 };

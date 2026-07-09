@@ -4,7 +4,6 @@ const bookController = require('../controllers/BookController');
 const AmazonController = require('../controllers/AmazonScraperController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
-
 // Configuração do Multer para upload de imagens
 const multer = require('multer');
 const multerConfig = require('../config/multer');
@@ -16,7 +15,8 @@ router.use(authMiddleware);
 /**
  * Rotas principais de Livros
  */
-router.route('/')
+router
+  .route('/')
   .get(bookController.getAllBooks)
   .post(upload.single('coverImage'), bookController.createBook);
 
@@ -28,7 +28,8 @@ router.get('/translators', bookController.getAllTranslators);
 
 router.post('/amazon-scrape', AmazonController.importFromAmazon);
 
-router.route('/:id')
+router
+  .route('/:id')
   .get(bookController.getBookById)
   .put(upload.single('coverImage'), bookController.updateBook)
   .delete(bookController.deleteBook);

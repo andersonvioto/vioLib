@@ -13,7 +13,7 @@ const Header = () => {
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
   const { currentLibrary, setCurrentLibrary, sharedLibraries } = useContext(LibraryContext);
-  
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // --- ESTADOS DO MODAL DE COMPARTILHAMENTO ---
@@ -26,7 +26,7 @@ const Header = () => {
     setShareMsg({ type: '', text: '' });
     setGuestEmail('');
     setShowShareModal(true);
-    setIsMenuOpen(false); 
+    setIsMenuOpen(false);
   };
 
   const handleShareSubmit = async (e) => {
@@ -35,17 +35,17 @@ const Header = () => {
 
     setIsSharing(true);
     setShareMsg({ type: '', text: '' });
-    
+
     try {
       const response = await api.post('/access/share', { guestEmail });
       setShareMsg({ type: 'success', text: response.data.message });
-      setGuestEmail(''); 
-      
+      setGuestEmail('');
+
       setTimeout(() => setShowShareModal(false), 2000);
     } catch (error) {
-      setShareMsg({ 
-        type: 'error', 
-        text: error.response?.data?.error || 'Não foi possível compartilhar a biblioteca.' 
+      setShareMsg({
+        type: 'error',
+        text: error.response?.data?.error || 'Não foi possível compartilhar a biblioteca.'
       });
     } finally {
       setIsSharing(false);
@@ -54,10 +54,10 @@ const Header = () => {
 
   const handleLibraryChange = (e) => {
     const selectedId = e.target.value;
-    if (selectedId === "mine") {
+    if (selectedId === 'mine') {
       setCurrentLibrary(null);
     } else {
-      const selectedLib = sharedLibraries.find(l => l.ownerId.toString() === selectedId);
+      const selectedLib = sharedLibraries.find((l) => l.ownerId.toString() === selectedId);
       setCurrentLibrary(selectedLib);
     }
   };
@@ -66,18 +66,27 @@ const Header = () => {
     <>
       <header className="dash-header">
         <div className="dash-header-inner">
-          <div className="brand-container" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div
+            className="brand-container"
+            style={{ display: 'flex', alignItems: 'center', gap: '15px' }}
+          >
             {/* O clique no logótipo leva sempre à página principal da biblioteca */}
-            <img src={miniLogo} alt="vioLib" className="brand-logo" onClick={() => navigate('/biblioteca')} style={{cursor: 'pointer'}} />
-            
+            <img
+              src={miniLogo}
+              alt="vioLib"
+              className="brand-logo"
+              onClick={() => navigate('/biblioteca')}
+              style={{ cursor: 'pointer' }}
+            />
+
             <div className="library-switcher-wrapper">
-              <select 
-                className="form-select library-select" 
-                style={{ 
-                  backgroundColor: 'var(--bg-input)', 
-                  color: 'var(--accent-gold)', 
-                  fontWeight: 'bold', 
-                  border: '1px solid var(--accent-gold)', 
+              <select
+                className="form-select library-select"
+                style={{
+                  backgroundColor: 'var(--bg-input)',
+                  color: 'var(--accent-gold)',
+                  fontWeight: 'bold',
+                  border: '1px solid var(--accent-gold)',
                   borderRadius: '8px',
                   padding: '10px 16px',
                   fontSize: '1rem',
@@ -86,15 +95,16 @@ const Header = () => {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis'
                 }}
-                value={currentLibrary ? currentLibrary.ownerId : "mine"}
+                value={currentLibrary ? currentLibrary.ownerId : 'mine'}
                 onChange={handleLibraryChange}
               >
                 <option value="mine">Minha Biblioteca</option>
-                
+
                 {sharedLibraries.length > 0 && (
                   <optgroup label="Compartilhadas Comigo">
-                    {sharedLibraries.map(lib => {
-                      const ownerName = lib.ownerName || lib.Owner?.name || lib.User?.name || 'Convidado';
+                    {sharedLibraries.map((lib) => {
+                      const ownerName =
+                        lib.ownerName || lib.Owner?.name || lib.User?.name || 'Convidado';
                       return (
                         <option key={lib.ownerId} value={lib.ownerId}>
                           Biblioteca de {ownerName}
@@ -106,41 +116,64 @@ const Header = () => {
               </select>
             </div>
           </div>
-          
+
           <div className="user-actions-container">
             <button className="mobile-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               <span className="material-symbols-rounded">{isMenuOpen ? 'close' : 'more_vert'}</span>
             </button>
 
             <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
-              
               {!currentLibrary && (
                 <>
-                  <button onClick={() => { navigate('/configuracoes'); setIsMenuOpen(false); }} className="btn-action">
-                    <span className="material-symbols-rounded">settings</span> 
+                  <button
+                    onClick={() => {
+                      navigate('/configuracoes');
+                      setIsMenuOpen(false);
+                    }}
+                    className="btn-action"
+                  >
+                    <span className="material-symbols-rounded">settings</span>
                     <span className="action-label">Ajustes</span>
                   </button>
-                  
+
                   {/* NOVO BOTÃO DE ACESSO ÀS COLEÇÕES */}
-                  <button onClick={() => { navigate('/colecoes'); setIsMenuOpen(false); }} className="btn-action">
-                    <span className="material-symbols-rounded">workspace_premium</span> 
+                  <button
+                    onClick={() => {
+                      navigate('/colecoes');
+                      setIsMenuOpen(false);
+                    }}
+                    className="btn-action"
+                  >
+                    <span className="material-symbols-rounded">workspace_premium</span>
                     <span className="action-label">Coleções</span>
                   </button>
-                  
+
                   <button onClick={openShareModal} className="btn-action">
-                    <span className="material-symbols-rounded">group_add</span> 
+                    <span className="material-symbols-rounded">group_add</span>
                     <span className="action-label">Convidar</span>
                   </button>
-                  
-                  <button onClick={() => { navigate('/novo-livro'); setIsMenuOpen(false); }} className="btn-action btn-primary">
-                    <span className="material-symbols-rounded">library_add</span> 
+
+                  <button
+                    onClick={() => {
+                      navigate('/novo-livro');
+                      setIsMenuOpen(false);
+                    }}
+                    className="btn-action btn-primary"
+                  >
+                    <span className="material-symbols-rounded">library_add</span>
                     <span className="action-label">Novo</span>
                   </button>
                 </>
               )}
 
-              <button onClick={() => { logout(); setIsMenuOpen(false); }} className="btn-action btn-logout">
-                <span className="material-symbols-rounded">logout</span> 
+              <button
+                onClick={() => {
+                  logout();
+                  setIsMenuOpen(false);
+                }}
+                className="btn-action btn-logout"
+              >
+                <span className="material-symbols-rounded">logout</span>
                 <span className="action-label">Sair</span>
               </button>
             </div>
@@ -150,74 +183,121 @@ const Header = () => {
 
       {/* --- MODAL DE CONVITE --- */}
       {showShareModal && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-          backdropFilter: 'blur(3px)',
-          display: 'flex', justifyContent: 'center', alignItems: 'center',
-          zIndex: 9999
-        }}>
-          <div style={{
-            backgroundColor: 'var(--bg-card, #2c2c2c)',
-            padding: '30px',
-            borderRadius: '12px',
-            border: '1px solid var(--accent-gold)',
-            width: '90%', maxWidth: '420px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
-          }}>
-            <h2 style={{ color: 'var(--accent-gold)', marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--bg-card, #2c2c2c)',
+              padding: '30px',
+              borderRadius: '12px',
+              border: '1px solid var(--accent-gold)',
+              width: '90%',
+              maxWidth: '420px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+            }}
+          >
+            <h2
+              style={{
+                color: 'var(--accent-gold)',
+                marginTop: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
               <span className="material-symbols-rounded">group_add</span>
               Compartilhar Biblioteca
             </h2>
-            <p style={{ color: 'var(--text-secondary, #aaa)', fontSize: '0.95rem', marginBottom: '20px' }}>
+            <p
+              style={{
+                color: 'var(--text-secondary, #aaa)',
+                fontSize: '0.95rem',
+                marginBottom: '20px'
+              }}
+            >
               Digite o e-mail do usuário que receberá acesso de leitura à sua biblioteca.
             </p>
 
             {shareMsg.text && (
-              <div style={{
-                padding: '10px', borderRadius: '6px', marginBottom: '20px', fontSize: '0.9rem',
-                backgroundColor: shareMsg.type === 'error' ? 'rgba(255, 77, 77, 0.1)' : 'rgba(77, 255, 77, 0.1)',
-                color: shareMsg.type === 'error' ? '#ff4d4d' : '#4dff4d',
-                border: `1px solid ${shareMsg.type === 'error' ? '#ff4d4d' : '#4dff4d'}`
-              }}>
+              <div
+                style={{
+                  padding: '10px',
+                  borderRadius: '6px',
+                  marginBottom: '20px',
+                  fontSize: '0.9rem',
+                  backgroundColor:
+                    shareMsg.type === 'error' ? 'rgba(255, 77, 77, 0.1)' : 'rgba(77, 255, 77, 0.1)',
+                  color: shareMsg.type === 'error' ? '#ff4d4d' : '#4dff4d',
+                  border: `1px solid ${shareMsg.type === 'error' ? '#ff4d4d' : '#4dff4d'}`
+                }}
+              >
                 {shareMsg.text}
               </div>
             )}
 
             <form onSubmit={handleShareSubmit}>
-              <input 
+              <input
                 autoFocus
-                type="email" 
+                type="email"
                 required
                 placeholder="exemplo@email.com"
                 value={guestEmail}
                 onChange={(e) => setGuestEmail(e.target.value)}
                 style={{
-                  width: '100%', padding: '12px 15px', borderRadius: '6px',
-                  backgroundColor: 'var(--bg-input, #1a1a1a)', color: '#fff',
-                  border: '1px solid var(--border-color, #444)', fontSize: '1rem',
-                  marginBottom: '20px', boxSizing: 'border-box'
+                  width: '100%',
+                  padding: '12px 15px',
+                  borderRadius: '6px',
+                  backgroundColor: 'var(--bg-input, #1a1a1a)',
+                  color: '#fff',
+                  border: '1px solid var(--border-color, #444)',
+                  fontSize: '1rem',
+                  marginBottom: '20px',
+                  boxSizing: 'border-box'
                 }}
               />
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowShareModal(false)}
                   style={{
-                    padding: '10px 20px', borderRadius: '6px', cursor: 'pointer',
-                    backgroundColor: 'transparent', color: '#aaa', border: '1px solid #aaa',
-                    fontWeight: 'bold', transition: '0.2s'
+                    padding: '10px 20px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    backgroundColor: 'transparent',
+                    color: '#aaa',
+                    border: '1px solid #aaa',
+                    fontWeight: 'bold',
+                    transition: '0.2s'
                   }}
                 >
                   Cancelar
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isSharing}
                   style={{
-                    padding: '10px 20px', borderRadius: '6px', cursor: isSharing ? 'not-allowed' : 'pointer',
-                    backgroundColor: 'var(--accent-gold)', color: '#000', border: 'none',
-                    fontWeight: 'bold', opacity: isSharing ? 0.7 : 1, transition: '0.2s'
+                    padding: '10px 20px',
+                    borderRadius: '6px',
+                    cursor: isSharing ? 'not-allowed' : 'pointer',
+                    backgroundColor: 'var(--accent-gold)',
+                    color: '#000',
+                    border: 'none',
+                    fontWeight: 'bold',
+                    opacity: isSharing ? 0.7 : 1,
+                    transition: '0.2s'
                   }}
                 >
                   {isSharing ? 'Enviando...' : 'Enviar Convite'}

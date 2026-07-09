@@ -1,18 +1,18 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from './contexts/ThemeContext'; 
+import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { LibraryProvider } from './contexts/LibraryContext';
 import Auth from './pages/Auth';
-import VerifyEmail from './pages/VerifyEmail';    
+import VerifyEmail from './pages/VerifyEmail';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
-import BookForm from './pages/BookForm'; 
+import BookForm from './pages/BookForm';
 import BookDetails from './pages/BookDetails';
 import SharedLibraries from './pages/SharedLibraries';
 import SharedLibraryView from './pages/SharedLibraryView';
-import Settings from './pages/Settings'; 
+import Settings from './pages/Settings';
 import DeleteAccountInfo from './pages/DeleteAccountInfo';
-import PrivacyPolicy from './pages/PrivacyPolicy'; 
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Collections from './pages/Collections';
 import CollectionForm from './pages/CollectionForm';
@@ -43,80 +43,111 @@ function App() {
         <LibraryProvider>
           <Router>
             <Routes>
-              
               <Route path="/" element={<Navigate to="/biblioteca" replace />} />
-              
+
               {/* ROTAS PÚBLICAS E POLÍTICAS */}
-              <Route path="/login" element={
-                <PublicRoute>
-                  <Auth />
-                </PublicRoute>
-              } />
-              
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Auth />
+                  </PublicRoute>
+                }
+              />
+
               <Route path="/excluir-conta" element={<DeleteAccountInfo />} />
               <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
               <Route path="/termos-de-servico" element={<TermsOfService />} />
-              
+
               <Route path="/verificar-email/:token" element={<VerifyEmail />} />
               <Route path="/redefinir-senha/:token" element={<ResetPassword />} />
-              
+
               {/* ROTAS PRIVADAS (Só acessa com Token) */}
-              <Route path="/biblioteca" element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              } />
-              <Route path="/novo-livro" element={
-                <PrivateRoute>
-                  <BookForm />
-                </PrivateRoute>
-              } /> 
-              <Route path="/livro/:id" element={
-                <PrivateRoute>
-                  <BookDetails />
-                </PrivateRoute>
-              } />
-              <Route path="/editar-livro/:id" element={
-                <PrivateRoute>
-                  <BookForm />
-                </PrivateRoute>
-              } />
-              <Route path="/bibliotecas-compartilhadas" element={
-                <PrivateRoute>
-                  <SharedLibraries />
-                </PrivateRoute>
-              } />
-              <Route path="/compartilhada/:ownerId" element={
-                <PrivateRoute>
-                  <SharedLibraryView />
-                </PrivateRoute>
-              } />
-              <Route path="/configuracoes" element={
-                <PrivateRoute>
-                  <Settings />
-                </PrivateRoute>
-              } />
-              
+              <Route
+                path="/biblioteca"
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/novo-livro"
+                element={
+                  <PrivateRoute>
+                    <BookForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/livro/:id"
+                element={
+                  <PrivateRoute>
+                    <BookDetails />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/editar-livro/:id"
+                element={
+                  <PrivateRoute>
+                    <BookForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/bibliotecas-compartilhadas"
+                element={
+                  <PrivateRoute>
+                    <SharedLibraries />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/compartilhada/:ownerId"
+                element={
+                  <PrivateRoute>
+                    <SharedLibraryView />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/configuracoes"
+                element={
+                  <PrivateRoute>
+                    <Settings />
+                  </PrivateRoute>
+                }
+              />
+
               {/* ROTAS DO MÓDULO DE COLEÇÕES (GAMIFICAÇÃO) */}
-              <Route path="/colecoes" element={
-                <PrivateRoute>
-                  <Collections />
-                </PrivateRoute>
-              } />
-              <Route path="/colecoes/nova" element={
-                <PrivateRoute>
-                  <CollectionForm />
-                </PrivateRoute>
-              } />
+              <Route
+                path="/colecoes"
+                element={
+                  <PrivateRoute>
+                    <Collections />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/colecoes/nova"
+                element={
+                  <PrivateRoute>
+                    <CollectionForm />
+                  </PrivateRoute>
+                }
+              />
               {/* NOVA ROTA DO DASHBOARD DA COLEÇÃO */}
-              <Route path="/colecoes/:id" element={
-                <PrivateRoute>
-                  <CollectionDashboard />
-                </PrivateRoute>
-              } />
+              <Route
+                path="/colecoes/:id"
+                element={
+                  <PrivateRoute>
+                    <CollectionDashboard />
+                  </PrivateRoute>
+                }
+              />
 
               <Route path="*" element={<Navigate to="/biblioteca" replace />} />
-              
             </Routes>
           </Router>
         </LibraryProvider>

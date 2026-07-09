@@ -85,7 +85,7 @@
    CONTEÚDO PRINCIPAL (Main Área)
    -------------------------------------------------------------------------- */
 .settings-content {
-  flex: 1; 
+  flex: 1;
   background-color: var(--bg-surface);
   padding: 30px;
   border-radius: var(--radius-md);
@@ -171,30 +171,30 @@
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .settings-sidebar {
     flex: none;
     width: 100%;
     flex-direction: row;
-    flex-wrap: nowrap; 
-    overflow-x: auto; 
-    -webkit-overflow-scrolling: touch; 
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 10px;
     border-radius: var(--radius-md);
-    scrollbar-width: none; 
+    scrollbar-width: none;
   }
 
   .settings-sidebar::-webkit-scrollbar {
-    display: none; 
+    display: none;
   }
 
   .settings-sidebar button {
-    flex: 0 0 auto; 
+    flex: 0 0 auto;
     text-align: center;
     border-left: none;
     border-bottom: 3px solid transparent;
     padding: 10px 20px;
-    white-space: nowrap; 
+    white-space: nowrap;
   }
 
   .settings-sidebar button.active {

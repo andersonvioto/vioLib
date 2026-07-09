@@ -5,13 +5,13 @@ const { Translator } = require('../models');
  */
 exports.list = async (req, res) => {
   try {
-    const translators = await Translator.findAll({ 
+    const translators = await Translator.findAll({
       where: { UserId: req.userId },
-      order: [['name', 'ASC']] 
+      order: [['name', 'ASC']]
     });
     res.json(translators);
   } catch (error) {
-    console.error("🕵️ ERRO NO TRANSLATOR CONTROLLER (LIST):", error);
+    console.error('🕵️ ERRO NO TRANSLATOR CONTROLLER (LIST):', error);
     res.status(500).json({ error: 'Erro ao listar tradutores.' });
   }
 };
@@ -23,7 +23,7 @@ exports.store = async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'O nome é obrigatório.' });
-    
+
     const [translator, created] = await Translator.findOrCreate({
       where: { name, UserId: req.userId }
     });
@@ -34,7 +34,7 @@ exports.store = async (req, res) => {
 
     res.status(201).json(translator);
   } catch (error) {
-    console.error("🕵️ ERRO NO TRANSLATOR CONTROLLER (STORE):", error);
+    console.error('🕵️ ERRO NO TRANSLATOR CONTROLLER (STORE):', error);
     res.status(500).json({ error: 'Erro ao criar tradutor.' });
   }
 };
@@ -54,10 +54,10 @@ exports.update = async (req, res) => {
 
     translator.name = name;
     await translator.save();
-    
+
     res.json(translator);
   } catch (error) {
-    console.error("🕵️ ERRO NO TRANSLATOR CONTROLLER (UPDATE):", error);
+    console.error('🕵️ ERRO NO TRANSLATOR CONTROLLER (UPDATE):', error);
     res.status(500).json({ error: 'Erro ao editar tradutor.' });
   }
 };
@@ -68,9 +68,9 @@ exports.update = async (req, res) => {
 exports.destroy = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const deletedCount = await Translator.destroy({ 
-      where: { id, UserId: req.userId } 
+
+    const deletedCount = await Translator.destroy({
+      where: { id, UserId: req.userId }
     });
 
     if (deletedCount === 0) {
@@ -79,7 +79,7 @@ exports.destroy = async (req, res) => {
 
     res.json({ message: 'Tradutor removido com sucesso.' });
   } catch (error) {
-    console.error("🕵️ ERRO NO TRANSLATOR CONTROLLER (DESTROY):", error);
+    console.error('🕵️ ERRO NO TRANSLATOR CONTROLLER (DESTROY):', error);
     res.status(500).json({ error: 'Erro ao remover tradutor.' });
   }
 };

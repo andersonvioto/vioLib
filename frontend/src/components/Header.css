@@ -31,16 +31,16 @@
   align-items: center;
   gap: 15px;
   /* Garante que o container não force um tamanho maior que o espaço disponível */
-  flex: 1 1 auto; 
-  min-width: 0; 
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .brand-logo {
   height: 45px;
   width: auto;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
   /* Impede que o logo encolha e fique distorcido */
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
 
 .library-switcher-wrapper {
@@ -58,9 +58,9 @@
 .user-actions-container {
   display: flex;
   align-items: center;
-  position: relative; 
+  position: relative;
   /* Garante que o menu nunca seja empurrado para fora da tela */
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
 
 .mobile-menu-toggle {
@@ -130,8 +130,8 @@
     padding: 15px;
   }
 
-  .brand-logo { 
-    height: 35px; 
+  .brand-logo {
+    height: 35px;
   }
 
   .mobile-menu-toggle {
@@ -145,8 +145,8 @@
     padding: 5px;
   }
 
-  .mobile-menu-toggle .material-symbols-rounded { 
-    font-size: 2.2em !important; 
+  .mobile-menu-toggle .material-symbols-rounded {
+    font-size: 2.2em !important;
   }
 
   .header-actions {
@@ -161,7 +161,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
@@ -169,24 +169,24 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .header-actions.open { 
-    opacity: 1; 
-    visibility: visible; 
-    transform: translateY(0); 
+  .header-actions.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
   }
-  
-  .header-actions .btn-action { 
-    width: 100%; 
-    justify-content: flex-start; 
-    padding: 12px 15px; 
-    background: transparent; 
-    border: none !important; 
-    box-shadow: none !important; 
+
+  .header-actions .btn-action {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 15px;
+    background: transparent;
+    border: none !important;
+    box-shadow: none !important;
   }
-  
-  .header-actions .btn-action:hover { 
-    background-color: rgba(255, 255, 255, 0.05) !important; 
-    transform: none; 
+
+  .header-actions .btn-action:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    transform: none;
   }
 
   .header-actions .btn-primary {

@@ -17,7 +17,6 @@ const SharedLibraries = () => {
     };
     fetchShared();
   }, []);
- 
 
   return (
     <div style={styles.container}>
@@ -35,9 +34,9 @@ const SharedLibraries = () => {
       ) : (
         <div style={styles.grid}>
           {accesses.map((access) => (
-            <div 
-              key={access.id} 
-              style={styles.card} 
+            <div
+              key={access.id}
+              style={styles.card}
               onClick={() => navigate(`/compartilhada/${access.ownerId}`)}
             >
               <h3 style={{ margin: '0 0 10px 0', color: 'var(--accent-gold)' }}>
@@ -54,10 +53,28 @@ const SharedLibraries = () => {
 
 const styles = {
   container: { padding: '40px', maxWidth: '1200px', margin: '0 auto' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '1px solid var(--accent-gold)', paddingBottom: '20px' },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '30px',
+    borderBottom: '1px solid var(--accent-gold)',
+    paddingBottom: '20px'
+  },
   emptyState: { textAlign: 'center', marginTop: '50px', color: '#888', fontStyle: 'italic' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' },
-  card: { background: 'var(--surface-color)', padding: '20px', borderRadius: '8px', borderLeft: '4px solid var(--accent-gold)', cursor: 'pointer', transition: 'transform 0.2s' }
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+    gap: '20px'
+  },
+  card: {
+    background: 'var(--surface-color)',
+    padding: '20px',
+    borderRadius: '8px',
+    borderLeft: '4px solid var(--accent-gold)',
+    cursor: 'pointer',
+    transition: 'transform 0.2s'
+  }
 };
 
 export default SharedLibraries;

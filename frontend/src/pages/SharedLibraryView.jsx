@@ -20,6 +20,7 @@ const SharedLibraryView = () => {
         const response = await api.get(`/access/${ownerId}/books`);
         setBooks(response.data);
       } catch (error) {
+        console.error(error);
         alert('Erro ao carregar a biblioteca ou acesso negado.');
         navigate('/bibliotecas-compartilhadas');
       }
@@ -37,11 +38,13 @@ const SharedLibraryView = () => {
       </header>
 
       {books.length === 0 ? (
-        <div style={styles.emptyState}><p>Esta biblioteca está vazia.</p></div>
+        <div style={styles.emptyState}>
+          <p>Esta biblioteca está vazia.</p>
+        </div>
       ) : (
         <div style={styles.grid}>
           {books.map((book) => {
-            const isBorrowed = book.Loans?.some(loan => !loan.returnDate);
+            const isBorrowed = book.Loans?.some((loan) => !loan.returnDate);
             return (
               <div key={book.id} style={styles.card}>
                 <img src={getCoverUrl(book.coverImage)} alt={book.title} style={styles.cover} />
@@ -61,13 +64,53 @@ const SharedLibraryView = () => {
 
 const styles = {
   container: { padding: '40px', maxWidth: '1200px', margin: '0 auto' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '1px solid var(--accent-gold)', paddingBottom: '20px' },
-  btnBack: { background: 'none', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '30px',
+    borderBottom: '1px solid var(--accent-gold)',
+    paddingBottom: '20px'
+  },
+  btnBack: {
+    background: 'none',
+    border: '1px solid var(--accent-gold)',
+    color: 'var(--accent-gold)',
+    padding: '10px 20px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontWeight: 'bold'
+  },
   emptyState: { textAlign: 'center', marginTop: '50px', color: '#888', fontStyle: 'italic' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' },
-  card: { background: 'var(--surface-color)', padding: '20px', borderRadius: '8px', borderLeft: '4px solid #555', position: 'relative' },
-  cover: { width: '100%', height: '200px', objectFit: 'cover', borderRadius: '4px', marginBottom: '10px' },
-  borrowedBadge: { position: 'absolute', top: '10px', right: '10px', background: '#444', color: '#fff', fontSize: '0.7em', padding: '3px 8px', borderRadius: '12px' }
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+    gap: '20px'
+  },
+  card: {
+    background: 'var(--surface-color)',
+    padding: '20px',
+    borderRadius: '8px',
+    borderLeft: '4px solid #555',
+    position: 'relative'
+  },
+  cover: {
+    width: '100%',
+    height: '200px',
+    objectFit: 'cover',
+    borderRadius: '4px',
+    marginBottom: '10px'
+  },
+  borrowedBadge: {
+    position: 'absolute',
+    top: '10px',
+    right: '10px',
+    background: '#444',
+    color: '#fff',
+    fontSize: '0.7em',
+    padding: '3px 8px',
+    borderRadius: '12px'
+  }
 };
 
 export default SharedLibraryView;

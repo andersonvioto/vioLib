@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
-import './GenreManager.css'; 
+import './GenreManager.css';
 
 const GenreManager = () => {
   const [genres, setGenres] = useState([]);
@@ -8,11 +8,11 @@ const GenreManager = () => {
 
   const [addingGenre, setAddingGenre] = useState(false);
   const [newGenreName, setNewGenreName] = useState('');
-  
-  const [addingSubFor, setAddingSubFor] = useState(null); 
+
+  const [addingSubFor, setAddingSubFor] = useState(null);
   const [newSubName, setNewSubName] = useState('');
 
-  const [editingMeta, setEditingMeta] = useState(null); 
+  const [editingMeta, setEditingMeta] = useState(null);
   const [editName, setEditName] = useState('');
 
   const fetchGenres = async () => {
@@ -24,11 +24,12 @@ const GenreManager = () => {
       setGenres(genresRes.data);
       setSubgenres(subRes.data);
     } catch (error) {
-      console.error("Erro ao buscar gêneros.", error);
+      console.error('Erro ao buscar gêneros.', error);
     }
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchGenres();
   }, []);
 
@@ -41,7 +42,8 @@ const GenreManager = () => {
       setNewGenreName('');
       fetchGenres();
     } catch (error) {
-      alert("Erro ao adicionar gênero.");
+      console.error(error);
+      alert('Erro ao adicionar gênero.');
     }
   };
 
@@ -54,7 +56,8 @@ const GenreManager = () => {
       setNewSubName('');
       fetchGenres();
     } catch (error) {
-      alert("Erro ao adicionar subgênero.");
+      console.error(error);
+      alert('Erro ao adicionar subgênero.');
     }
   };
 
@@ -66,14 +69,15 @@ const GenreManager = () => {
   const handleSubmitEdit = async (e) => {
     e.preventDefault();
     if (!editName.trim()) return;
-    
+
     try {
       await api.put(`/attributes/${editingMeta.type}/${editingMeta.id}`, { name: editName });
       setEditingMeta(null);
       setEditName('');
       fetchGenres();
     } catch (error) {
-      alert("Erro ao editar registro.");
+      console.error(error);
+      alert('Erro ao editar registro.');
     }
   };
 
@@ -81,18 +85,23 @@ const GenreManager = () => {
     if (!window.confirm(`Tem certeza que deseja excluir este item?`)) return;
     try {
       await api.delete(`/attributes/${type}/${id}`);
-      fetchGenres(); 
+      fetchGenres();
     } catch (error) {
-      alert("Erro ao excluir.");
+      console.error(error);
+      alert('Erro ao excluir.');
     }
   };
 
   return (
     <div className="settings-panel">
       <h2>Gerenciar Gêneros</h2>
-      
+
       {!addingGenre && (
-        <button onClick={() => setAddingGenre(true)} className="btn-action btn-primary" style={{ marginBottom: '20px' }}>
+        <button
+          onClick={() => setAddingGenre(true)}
+          className="btn-action btn-primary"
+          style={{ marginBottom: '20px' }}
+        >
           <span className="material-symbols-rounded">add</span> Novo Gênero Principal
         </button>
       )}
@@ -100,69 +109,182 @@ const GenreManager = () => {
       {addingGenre && (
         <div className="genre-card" style={{ borderColor: 'var(--accent-gold)' }}>
           <form onSubmit={handleSubmitNewGenre} style={{ display: 'flex', gap: '10px' }}>
-            <input 
-              autoFocus type="text" value={newGenreName} onChange={e => setNewGenreName(e.target.value)} 
-              className="auth-input" style={{ flex: 1 }} placeholder="Nome do gênero..."
+            <input
+              autoFocus
+              type="text"
+              value={newGenreName}
+              onChange={(e) => setNewGenreName(e.target.value)}
+              className="auth-input"
+              style={{ flex: 1 }}
+              placeholder="Nome do gênero..."
             />
-            <button type="submit" className="btn-action btn-primary" style={{ margin: 0, padding: '5px 15px' }}>Salvar</button>
-            <button type="button" onClick={() => setAddingGenre(false)} className="btn-disable" style={{ margin: 0 }}>Cancelar</button>
+            <button
+              type="submit"
+              className="btn-action btn-primary"
+              style={{ margin: 0, padding: '5px 15px' }}
+            >
+              Salvar
+            </button>
+            <button
+              type="button"
+              onClick={() => setAddingGenre(false)}
+              className="btn-disable"
+              style={{ margin: 0 }}
+            >
+              Cancelar
+            </button>
           </form>
         </div>
       )}
-      
+
       <div className="genres-container">
-        {genres.map(genre => (
+        {genres.map((genre) => (
           <div key={genre.id} className="genre-card">
-            
             <div className="genre-header">
               {editingMeta?.type === 'genres' && editingMeta?.id === genre.id ? (
-                <form onSubmit={handleSubmitEdit} style={{ display: 'flex', gap: '10px', width: '100%', alignItems: 'center' }}>
-                  <input autoFocus type="text" value={editName} onChange={e => setEditName(e.target.value)} className="auth-input" style={{ flex: 1, padding: '5px 10px' }} />
-                  <button type="submit" className="btn-edit" style={{ color: '#4dff4d', borderColor: '#4dff4d' }}>Salvar</button>
-                  <button type="button" onClick={() => setEditingMeta(null)} className="btn-disable-small">Cancelar</button>
+                <form
+                  onSubmit={handleSubmitEdit}
+                  style={{ display: 'flex', gap: '10px', width: '100%', alignItems: 'center' }}
+                >
+                  <input
+                    autoFocus
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="auth-input"
+                    style={{ flex: 1, padding: '5px 10px' }}
+                  />
+                  <button
+                    type="submit"
+                    className="btn-edit"
+                    style={{ color: '#4dff4d', borderColor: '#4dff4d' }}
+                  >
+                    Salvar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingMeta(null)}
+                    className="btn-disable-small"
+                  >
+                    Cancelar
+                  </button>
                 </form>
               ) : (
                 <>
                   <h3>{genre.name}</h3>
                   <div className="attribute-actions">
-                    <button onClick={() => startEditing('genres', genre.id, genre.name)} className="btn-edit">Editar</button>
-                    <button onClick={() => handleDisable('genres', genre.id)} className="btn-disable-small">Excluir</button>
+                    <button
+                      onClick={() => startEditing('genres', genre.id, genre.name)}
+                      className="btn-edit"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDisable('genres', genre.id)}
+                      className="btn-disable-small"
+                    >
+                      Excluir
+                    </button>
                   </div>
                 </>
               )}
             </div>
-            
+
             <ul className="subgenre-list">
-              {subgenres.filter(sub => sub.GenreId === genre.id).map(subgenre => (
-                <li key={subgenre.id} className="attribute-item sub-item">
-                  {editingMeta?.type === 'subgenres' && editingMeta?.id === subgenre.id ? (
-                    <form onSubmit={handleSubmitEdit} style={{ display: 'flex', gap: '10px', width: '100%' }}>
-                      <input autoFocus type="text" value={editName} onChange={e => setEditName(e.target.value)} className="auth-input" style={{ flex: 1, padding: '5px' }} />
-                      <button type="submit" className="btn-edit" style={{ color: '#4dff4d', borderColor: '#4dff4d' }}>Salvar</button>
-                      <button type="button" onClick={() => setEditingMeta(null)} className="btn-disable-small">Cancelar</button>
-                    </form>
-                  ) : (
-                    <>
-                      <span>{subgenre.name}</span>
-                      <div className="attribute-actions">
-                        <button onClick={() => startEditing('subgenres', subgenre.id, subgenre.name)} className="btn-edit">Editar</button>
-                        <button onClick={() => handleDisable('subgenres', subgenre.id)} className="btn-disable-small">Excluir</button>
-                      </div>
-                    </>
-                  )}
-                </li>
-              ))}
-              
+              {subgenres
+                .filter((sub) => sub.GenreId === genre.id)
+                .map((subgenre) => (
+                  <li key={subgenre.id} className="attribute-item sub-item">
+                    {editingMeta?.type === 'subgenres' && editingMeta?.id === subgenre.id ? (
+                      <form
+                        onSubmit={handleSubmitEdit}
+                        style={{ display: 'flex', gap: '10px', width: '100%' }}
+                      >
+                        <input
+                          autoFocus
+                          type="text"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="auth-input"
+                          style={{ flex: 1, padding: '5px' }}
+                        />
+                        <button
+                          type="submit"
+                          className="btn-edit"
+                          style={{ color: '#4dff4d', borderColor: '#4dff4d' }}
+                        >
+                          Salvar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingMeta(null)}
+                          className="btn-disable-small"
+                        >
+                          Cancelar
+                        </button>
+                      </form>
+                    ) : (
+                      <>
+                        <span>{subgenre.name}</span>
+                        <div className="attribute-actions">
+                          <button
+                            onClick={() => startEditing('subgenres', subgenre.id, subgenre.name)}
+                            className="btn-edit"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDisable('subgenres', subgenre.id)}
+                            className="btn-disable-small"
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </li>
+                ))}
+
               <li style={{ marginTop: '10px' }}>
                 {addingSubFor === genre.id ? (
-                  <form onSubmit={(e) => handleSubmitNewSubgenre(e, genre.id)} style={{ display: 'flex', gap: '10px' }}>
-                    <input autoFocus type="text" value={newSubName} onChange={e => setNewSubName(e.target.value)} className="auth-input" style={{ flex: 1, padding: '5px 10px', fontSize: '0.85rem' }} placeholder="Novo subgênero..." />
-                    <button type="submit" className="btn-edit" style={{ color: '#4dff4d', borderColor: '#4dff4d' }}>Salvar</button>
-                    <button type="button" onClick={() => setAddingSubFor(null)} className="btn-disable-small">Cancelar</button>
+                  <form
+                    onSubmit={(e) => handleSubmitNewSubgenre(e, genre.id)}
+                    style={{ display: 'flex', gap: '10px' }}
+                  >
+                    <input
+                      autoFocus
+                      type="text"
+                      value={newSubName}
+                      onChange={(e) => setNewSubName(e.target.value)}
+                      className="auth-input"
+                      style={{ flex: 1, padding: '5px 10px', fontSize: '0.85rem' }}
+                      placeholder="Novo subgênero..."
+                    />
+                    <button
+                      type="submit"
+                      className="btn-edit"
+                      style={{ color: '#4dff4d', borderColor: '#4dff4d' }}
+                    >
+                      Salvar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAddingSubFor(null)}
+                      className="btn-disable-small"
+                    >
+                      Cancelar
+                    </button>
                   </form>
                 ) : (
-                  <button onClick={() => setAddingSubFor(genre.id)} className="btn-action btn-primary" style={{ fontSize: '0.8rem', padding: '5px 10px', marginBottom: '0' }}>
-                    <span className="material-symbols-rounded" style={{ fontSize: '16px' }}>add</span> Subgênero
+                  <button
+                    onClick={() => setAddingSubFor(genre.id)}
+                    className="btn-action btn-primary"
+                    style={{ fontSize: '0.8rem', padding: '5px 10px', marginBottom: '0' }}
+                  >
+                    <span className="material-symbols-rounded" style={{ fontSize: '16px' }}>
+                      add
+                    </span>{' '}
+                    Subgênero
                   </button>
                 )}
               </li>

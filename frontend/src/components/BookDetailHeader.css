@@ -9,13 +9,13 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 15px;
-  
+
   /* EFEITO CABEÇALHO FIXO (APP BAR) */
   position: sticky;
   top: 0;
   z-index: 1000;
   background-color: var(--bg-main);
-  
+
   /* Truque mágico: o fundo expande para cobrir o scroll nas laterais */
   margin: -40px -40px -11px -40px;
   padding: 40px 40px 20px 40px;
@@ -122,13 +122,19 @@
 }
 
 @keyframes citationFadeDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 600px) {
   .details-header {
-    flex-direction: row; 
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     margin: -15px -15px -11px -15px;
@@ -163,7 +169,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
@@ -182,13 +188,13 @@
     justify-content: flex-start;
     padding: 12px 15px;
     background: transparent;
-    border: none !important; 
+    border: none !important;
     box-shadow: none !important;
   }
 
   .header-actions .btn-action:hover {
     background-color: rgba(255, 255, 255, 0.05) !important;
-    transform: none; 
+    transform: none;
   }
 
   .citation-container-dropdown {

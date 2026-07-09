@@ -42,7 +42,7 @@
 
 .btn-edit {
   background: transparent;
-  color: #4da6ff; 
+  color: #4da6ff;
   border: 1px solid #4da6ff;
   border-radius: 4px;
   cursor: pointer;
@@ -56,7 +56,8 @@
   color: #111;
 }
 
-.btn-disable, .btn-disable-small {
+.btn-disable,
+.btn-disable-small {
   background-color: transparent;
   color: var(--text-danger);
   border: 1px solid var(--text-danger);
@@ -75,7 +76,8 @@
   font-size: 0.85rem;
 }
 
-.btn-disable:hover, .btn-disable-small:hover {
+.btn-disable:hover,
+.btn-disable-small:hover {
   background-color: var(--text-danger);
   color: #ffffff;
 }

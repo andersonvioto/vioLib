@@ -11,7 +11,7 @@ const CollectionForm = () => {
   // Dados básicos
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  
+
   // Imagem de Banner
   const [bannerFile, setBannerFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -33,7 +33,7 @@ const CollectionForm = () => {
   const handleAddAxis = () => {
     const trimmed = newAxisInput.trim();
     if (!trimmed) return;
-    
+
     if (axes.includes(trimmed)) {
       setFeedback({ type: 'error', message: 'Este eixo já foi adicionado.' });
       return;
@@ -50,7 +50,7 @@ const CollectionForm = () => {
   };
 
   const handleRemoveAxis = (axisToRemove) => {
-    setAxes(axes.filter(a => a !== axisToRemove));
+    setAxes(axes.filter((a) => a !== axisToRemove));
   };
 
   const handleSubmit = async (e) => {
@@ -67,7 +67,7 @@ const CollectionForm = () => {
       payloadForm.append('title', title);
       payloadForm.append('description', description);
       payloadForm.append('customAxes', JSON.stringify(axes));
-      
+
       if (bannerFile) {
         payloadForm.append('bannerImage', bannerFile);
       }
@@ -75,7 +75,10 @@ const CollectionForm = () => {
       await api.post('/collections', payloadForm);
       navigate('/colecoes'); // Redireciona para o Mural de Troféus
     } catch (error) {
-      setFeedback({ type: 'error', message: error.response?.data?.error || 'Erro ao criar coleção.' });
+      setFeedback({
+        type: 'error',
+        message: error.response?.data?.error || 'Erro ao criar coleção.'
+      });
       setIsSaving(false);
     }
   };
@@ -83,7 +86,10 @@ const CollectionForm = () => {
   return (
     <div className="form-container">
       <header className="form-header">
-        <span className="material-symbols-rounded" style={{ fontSize: '2.5em', color: 'var(--accent-gold)' }}>
+        <span
+          className="material-symbols-rounded"
+          style={{ fontSize: '2.5em', color: 'var(--accent-gold)' }}
+        >
           library_books
         </span>
         <h1 className="form-title">Criar Nova Coleção</h1>
@@ -99,7 +105,6 @@ const CollectionForm = () => {
       )}
 
       <form onSubmit={handleSubmit}>
-        
         {/* SESSÃO 1: CAPA/BANNER */}
         <div className="form-section">
           <h2 className="section-title">
@@ -107,20 +112,26 @@ const CollectionForm = () => {
           </h2>
           <div className="cover-upload-area" style={{ padding: '20px' }}>
             {previewUrl && (
-              <img 
-                src={previewUrl} 
-                alt="Banner Preview" 
-                style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '8px', marginBottom: '15px' }} 
+              <img
+                src={previewUrl}
+                alt="Banner Preview"
+                style={{
+                  width: '100%',
+                  height: '180px',
+                  objectFit: 'cover',
+                  borderRadius: '8px',
+                  marginBottom: '15px'
+                }}
               />
             )}
             <label className="btn-action btn-cover-option">
               <span className="material-symbols-rounded">add_photo_alternate</span>
               {previewUrl ? 'Trocar Imagem' : 'Escolher Imagem (Recomendado: Paisagem)'}
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleFileChange} 
-                className="file-input-hidden" 
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="file-input-hidden"
               />
             </label>
           </div>
@@ -134,20 +145,20 @@ const CollectionForm = () => {
           <div className="form-grid">
             <div className="form-group full-width">
               <label className="form-label">Nome da Coleção (ex: L5R RPG) *</label>
-              <input 
-                type="text" 
-                value={title} 
-                onChange={e => setTitle(e.target.value)} 
-                className="form-input" 
-                required 
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="form-input"
+                required
               />
             </div>
             <div className="form-group full-width">
               <label className="form-label">Descrição (Opcional)</label>
-              <textarea 
-                value={description} 
-                onChange={e => setDescription(e.target.value)} 
-                className="form-textarea" 
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="form-textarea"
                 placeholder="O que está a colecionar?"
                 style={{ minHeight: '80px' }}
               />
@@ -160,23 +171,36 @@ const CollectionForm = () => {
           <h2 className="section-title" style={{ marginBottom: '5px' }}>
             <span className="material-symbols-rounded">category</span> Eixos de Agrupamento
           </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9em', marginBottom: '20px', lineHeight: '1.5' }}>
-            Como quer organizar e ver o progresso desta coleção? Crie até 4 categorias personalizadas (ex: Edição, Saga, Formato).
+          <p
+            style={{
+              color: 'var(--text-secondary)',
+              fontSize: '0.9em',
+              marginBottom: '20px',
+              lineHeight: '1.5'
+            }}
+          >
+            Como quer organizar e ver o progresso desta coleção? Crie até 4 categorias
+            personalizadas (ex: Edição, Saga, Formato).
           </p>
-          
+
           <div className="isbn-wrapper" style={{ marginBottom: '20px' }}>
-            <input 
-              type="text" 
-              value={newAxisInput} 
-              onChange={e => setNewAxisInput(e.target.value)} 
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAxis(); } }}
-              className="form-input" 
+            <input
+              type="text"
+              value={newAxisInput}
+              onChange={(e) => setNewAxisInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddAxis();
+                }
+              }}
+              className="form-input"
               placeholder="Nome da Categoria (ex: Edição)"
               disabled={axes.length >= 4}
             />
-            <button 
-              type="button" 
-              className="btn-action btn-primary" 
+            <button
+              type="button"
+              className="btn-action btn-primary"
               onClick={handleAddAxis}
               disabled={axes.length >= 4 || !newAxisInput.trim()}
             >
@@ -186,18 +210,22 @@ const CollectionForm = () => {
 
           {/* Área visual das Tags criadas */}
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            {axes.map(axis => (
-              <div 
-                key={axis} 
+            {axes.map((axis) => (
+              <div
+                key={axis}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  background: 'var(--bg-input)', padding: '8px 12px',
-                  borderRadius: '20px', border: '1px solid var(--accent-gold)'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'var(--bg-input)',
+                  padding: '8px 12px',
+                  borderRadius: '20px',
+                  border: '1px solid var(--accent-gold)'
                 }}
               >
                 <span style={{ fontWeight: '500' }}>{axis}</span>
-                <span 
-                  className="material-symbols-rounded" 
+                <span
+                  className="material-symbols-rounded"
                   style={{ fontSize: '1.2em', cursor: 'pointer', color: 'var(--text-danger)' }}
                   onClick={() => handleRemoveAxis(axis)}
                   title="Remover"
@@ -215,10 +243,10 @@ const CollectionForm = () => {
         </div>
 
         <div className="form-actions">
-          <button 
-            type="button" 
-            onClick={() => navigate(-1)} 
-            className="btn-action" 
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="btn-action"
             style={{ border: 'none', color: 'var(--text-secondary)' }}
             disabled={isSaving}
           >

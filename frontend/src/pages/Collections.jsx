@@ -16,7 +16,7 @@ const Collections = () => {
         const response = await api.get('/collections');
         setCollections(response.data);
       } catch (error) {
-        console.error("Erro ao carregar coleções:", error);
+        console.error('Erro ao carregar coleções:', error);
       } finally {
         setIsLoading(false);
       }
@@ -27,15 +27,17 @@ const Collections = () => {
   return (
     <div className="dashboard-container">
       <Header />
-      
+
       <div className="collections-header-bar">
         <div>
           <h1 className="collections-main-title">
             <span className="material-symbols-rounded">workspace_premium</span> Minhas Coleções
           </h1>
-          <p className="collections-subtitle">Acompanhe o seu progresso e complete os seus objetivos de leitura e colecionismo.</p>
+          <p className="collections-subtitle">
+            Acompanhe o seu progresso e complete os seus objetivos de leitura e colecionismo.
+          </p>
         </div>
-        
+
         <button className="btn-action btn-primary" onClick={() => navigate('/colecoes/nova')}>
           <span className="material-symbols-rounded">add_circle</span> Criar Coleção
         </button>
@@ -43,7 +45,8 @@ const Collections = () => {
 
       {isLoading ? (
         <div className="collections-loading">
-          <span className="material-symbols-rounded spinner-icon">sync</span> Carregando os seus álbuns...
+          <span className="material-symbols-rounded spinner-icon">sync</span> Carregando os seus
+          álbuns...
         </div>
       ) : collections.length === 0 ? (
         <div className="empty-collections-state">
@@ -56,26 +59,28 @@ const Collections = () => {
         </div>
       ) : (
         <div className="collections-grid">
-          {collections.map(col => {
+          {collections.map((col) => {
             const { stats } = col;
             // Cria a variável CSS customizada para o anel de progresso (0 a 100%)
             const progressStyle = { '--progress': `${stats.progress}%` };
 
             return (
-              <div 
-                key={col.id} 
+              <div
+                key={col.id}
                 className="collection-album-card"
                 onClick={() => navigate(`/colecoes/${col.id}`)}
               >
                 {/* O Banner de Fundo */}
-                <div 
+                <div
                   className="collection-banner"
-                  style={{ 
-                    backgroundImage: col.bannerImage ? `url(${getCoverUrl(col.bannerImage)})` : 'none',
+                  style={{
+                    backgroundImage: col.bannerImage
+                      ? `url(${getCoverUrl(col.bannerImage)})`
+                      : 'none'
                   }}
                 >
                   <div className="banner-overlay"></div>
-                  
+
                   {/* O Anel de Progresso Gamificado em CSS Puro */}
                   <div className="progress-ring-container" style={progressStyle}>
                     <div className="progress-ring-inner">
@@ -86,17 +91,15 @@ const Collections = () => {
 
                 <div className="collection-info">
                   <h3 className="collection-title">{col.title}</h3>
-                  
+
                   <div className="collection-stats-bar">
                     <span className="stat-pill">
                       <span className="material-symbols-rounded">book</span>
                       {stats.ownedItems} / {stats.totalItems} Possuídos
                     </span>
                   </div>
-                  
-                  {col.description && (
-                    <p className="collection-desc">{col.description}</p>
-                  )}
+
+                  {col.description && <p className="collection-desc">{col.description}</p>}
                 </div>
               </div>
             );

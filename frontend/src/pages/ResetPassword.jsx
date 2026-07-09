@@ -7,7 +7,7 @@ import './Auth.css'; // Atualizado para apontar para o CSS Mestre de Autenticaç
 const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
-  
+
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -33,13 +33,13 @@ const ResetPassword = () => {
     try {
       const response = await api.post('/auth/reset-password', { token, newPassword: password });
       setMessage({ type: 'success', text: response.data.message });
-      
+
       // Redireciona suavemente após o sucesso
       setTimeout(() => navigate('/login'), 3000);
     } catch (error) {
-      setMessage({ 
-        type: 'error', 
-        text: error.response?.data?.error || 'Link de recuperação inválido ou expirado.' 
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.error || 'Link de recuperação inválido ou expirado.'
       });
       setIsLoading(false);
     }
@@ -49,23 +49,25 @@ const ResetPassword = () => {
     <div className="auth-container">
       <div className="auth-card">
         <img src={logoImg} alt="vioLib" className="auth-logo-img security-logo" />
-        
+
         <h2 className="security-title">Criar Nova Senha</h2>
 
         {message.text && (
-          <div className={`auth-alert ${message.type === 'error' ? 'alert-error' : 'alert-success'}`}>
+          <div
+            className={`auth-alert ${message.type === 'error' ? 'alert-error' : 'alert-success'}`}
+          >
             {message.text}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="input-group">
-            <input 
-              type={showPassword ? "text" : "password"} 
-              placeholder="Nova senha" 
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Nova senha"
               value={password}
-              onChange={e => setPassword(e.target.value)} 
-              required 
+              onChange={(e) => setPassword(e.target.value)}
+              required
               className="auth-input"
               disabled={isLoading}
             />
@@ -73,40 +75,36 @@ const ResetPassword = () => {
           </div>
 
           <div className="input-group">
-            <input 
-              type={showPassword ? "text" : "password"} 
-              placeholder="Confirme a nova senha" 
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Confirme a nova senha"
               value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)} 
-              required 
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
               className="auth-input"
               disabled={isLoading}
             />
             <span className="material-symbols-rounded input-icon">lock_reset</span>
-            
-            <button 
-              type="button" 
-              onClick={() => setShowPassword(!showPassword)} 
+
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
               className="btn-toggle-password"
               disabled={isLoading}
               tabIndex="-1"
             >
               <span className="material-symbols-rounded">
-                {showPassword ? "visibility_off" : "visibility"}
+                {showPassword ? 'visibility_off' : 'visibility'}
               </span>
             </button>
           </div>
 
-          <button 
-            type="submit" 
-            className="btn-auth-submit btn-security-action" 
+          <button
+            type="submit"
+            className="btn-auth-submit btn-security-action"
             disabled={isLoading || message.type === 'success'}
           >
-            {isLoading ? (
-              <span className="auth-spinner"></span>
-            ) : (
-              'Salvar Senha'
-            )}
+            {isLoading ? <span className="auth-spinner"></span> : 'Salvar Senha'}
           </button>
         </form>
       </div>

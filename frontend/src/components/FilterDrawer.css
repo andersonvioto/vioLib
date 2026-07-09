@@ -40,8 +40,8 @@
   cursor: pointer;
 }
 
-.close-drawer-btn:hover { 
-  color: var(--text-primary); 
+.close-drawer-btn:hover {
+  color: var(--text-primary);
 }
 
 .filter-drawer-grid {
@@ -85,22 +85,28 @@
 }
 
 @keyframes filterFadeDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ==========================================================================
    RESPONSIVIDADE - FilterDrawer (Mobile Bottom Sheet)
    ========================================================================== */
 @media (max-width: 900px) {
-  .filter-drawer-container { 
-    left: 20px; 
-    right: 20px; 
-    top: 115px; 
+  .filter-drawer-container {
+    left: 20px;
+    right: 20px;
+    top: 115px;
   }
-  
-  .filter-drawer-grid { 
-    grid-template-columns: repeat(2, 1fr); 
+
+  .filter-drawer-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -123,7 +129,7 @@
     top: auto;
     left: 0;
     right: 0;
-    bottom: 0; 
+    bottom: 0;
     width: 100%;
     max-height: 80vh;
     overflow-y: auto;
@@ -147,11 +153,15 @@
 
   .form-select {
     padding: 14px 15px;
-    font-size: 16px; 
+    font-size: 16px;
   }
 
   @keyframes bottomSheetSlideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
   }
 }

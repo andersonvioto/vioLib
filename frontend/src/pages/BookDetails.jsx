@@ -80,7 +80,10 @@ const BookDetails = () => {
             </p>
           </div>
 
-          {/* 4. Gerenciador de Empréstimos (Visível apenas para o Dono) */}
+          {/* 4. Metadados e Notas (Posicionado abaixo do título para melhor fluxo de leitura) */}
+          <BookMetadataGrid book={book} />
+
+          {/* 5. Gerenciador de Empréstimos (Movido para o final da ficha técnica) */}
           {book.isOwner && (
             <LoanManager 
               bookId={book.id} 
@@ -88,9 +91,6 @@ const BookDetails = () => {
               onUpdate={fetchBookDetails} 
             />
           )}
-
-          {/* 5. Metadados e Notas (Dumb Component) */}
-          <BookMetadataGrid book={book} />
 
         </div>
       </div>

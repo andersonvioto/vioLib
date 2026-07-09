@@ -2,9 +2,7 @@ const { Author, Translator, Genre, Subgenre, Tag, Book, LibraryAccess } = requir
 
 /**
  * Busca os atributos de metadados do sistema.
- * Agora suporta filtros dinâmicos de contexto:
- * @query {boolean} usedOnly - Se 'true', retorna APENAS atributos vinculados a algum livro.
- * @query {number} ownerId - ID do dono da biblioteca (para visualizar acervos compartilhados).
+ * Otimizado com montagem de árvore em memória para evitar Explosão Cartesiana no SQL.
  */
 exports.getAllAttributes = async (req, res) => {
   try {
@@ -24,49 +22,34 @@ exports.getAllAttributes = async (req, res) => {
 
     const isUsedOnly = usedOnly === 'true';
 
-    // 2. Estratégia de Joins Seguros (Prevenção de Colapso SQL)
-    // Para tabelas primárias (Autores, Gêneros, Tags), exigimos que tenham livros
-    const requiredBookInclude = isUsedOnly ? [{ model: Book, attributes: ['id'], required: true }] : [];
-    
-    // Para sub-tabelas (Subgêneros), NÃO podemos exigir na query SQL, senão o banco 
-    // transforma o LEFT JOIN em INNER JOIN, ocultando Gêneros inteiros.
-    const optionalBookInclude = isUsedOnly ? [{ model: Book, attributes: ['id'], required: false }] : [];
+    // 2. Estratégia de Join Otimizado (MÁXIMA PERFORMANCE)
+    // Se "usedOnly" for true, fazemos o INNER JOIN (required: true), mas 
+    // PROIBIMOS o banco de transferir os dados do livro ou da tabela de ligação.
+    const includeOptions = isUsedOnly ? [{
+      model: Book,
+      attributes: [], // NENHUM dado do livro é trafegado pela rede
+      through: { attributes: [] }, // NENHUM dado da tabela de ligação é trafegado
+      required: true // INNER JOIN: Retorna apenas se existir relação
+    }] : [];
 
-    // 3. Execução em paralelo
-    const [authors, translators, tags, genres] = await Promise.all([
-      Author.findAll({ 
-        where: { UserId: targetUserId }, 
-        include: requiredBookInclude,
-        order: [['name', 'ASC']] 
-      }),
-      Translator.findAll({ 
-        where: { UserId: targetUserId }, 
-        include: requiredBookInclude,
-        order: [['name', 'ASC']] 
-      }),
-      Tag.findAll({ 
-        where: { UserId: targetUserId }, 
-        include: requiredBookInclude,
-        order: [['name', 'ASC']] 
-      }),
-      Genre.findAll({
-        where: { UserId: targetUserId },
+    // 3. Execução das Consultas em Paralelo
+    const [authors, translators, tags, genres, subgenres] = await Promise.all([
+      Author.findAll({ where: { UserId: targetUserId }, include: includeOptions, attributes: ['id', 'name'], order: [['name', 'ASC']] }),
+      Translator.findAll({ where: { UserId: targetUserId }, include: includeOptions, attributes: ['id', 'name'], order: [['name', 'ASC']] }),
+      Tag.findAll({ where: { UserId: targetUserId }, include: includeOptions, attributes: ['id', 'name'], order: [['name', 'ASC']] }),
+      Genre.findAll({ where: { UserId: targetUserId }, include: includeOptions, attributes: ['id', 'name'], order: [['name', 'ASC']] }),
+      Subgenre.findAll({
         include: [
-          ...requiredBookInclude,
-          { 
-            model: Subgenre,
-            include: optionalBookInclude,
-            required: false // Garante que o Gênero venha mesmo sem Subgênero
-          }
+          // Filtro para garantir que o subgênero pertence a um Gênero deste usuário
+          { model: Genre, where: { UserId: targetUserId }, attributes: [] },
+          ...includeOptions
         ],
-        order: [
-          ['name', 'ASC'],
-          [Subgenre, 'name', 'ASC']
-        ]
+        attributes: ['id', 'name', 'GenreId'], // Trazemos o GenreId para montar a árvore no JS
+        order: [['name', 'ASC']]
       })
     ]);
 
-    // 4. Limpeza e Filtro Inteligente (Pós-Processamento Node.js)
+    // 4. Pós-Processamento Rápido na Memória (O(N))
     const unique = (arr) => {
       if (!arr) return [];
       const seen = new Set();
@@ -78,33 +61,36 @@ exports.getAllAttributes = async (req, res) => {
       });
     };
 
-    // Função auxiliar para limpar o objeto "Books" do payload JSON, mantendo a API rápida
     const cleanPayload = (items) => {
       return unique(items).map(item => {
         const obj = typeof item.toJSON === 'function' ? item.toJSON() : item;
-        delete obj.Books; 
+        delete obj.Books; // Limpeza de segurança caso o Sequelize insira arrays vazios
         return obj;
       });
     };
 
-    const cleanGenres = unique(genres).map(g => {
-      const genreObj = typeof g.toJSON === 'function' ? g.toJSON() : g;
-      delete genreObj.Books; // Limpa livros do Gênero
+    // 5. Montagem da Árvore de Gêneros e Subgêneros (Evitando N+1 e Produtos Cartesianos)
+    const genresMap = {};
+    const cleanGenres = [];
 
-      if (genreObj.Subgenres) {
-        let subgenresList = unique(genreObj.Subgenres);
+    // Inicializa o dicionário (Hash Map)
+    unique(genres).forEach(g => {
+      const genreData = typeof g.toJSON === 'function' ? g.toJSON() : g;
+      delete genreData.Books;
+      genreData.Subgenres = [];
+      genresMap[genreData.id] = genreData;
+      cleanGenres.push(genreData);
+    });
 
-        // Se for usedOnly, filtramos pelo JS os subgêneros que efetivamente trouxeram livros
-        if (isUsedOnly) {
-          subgenresList = subgenresList.filter(sub => sub.Books && sub.Books.length > 0);
-        }
-
-        genreObj.Subgenres = subgenresList.map(sub => {
-          delete sub.Books; // Limpa livros do Subgênero para não pesar a rede
-          return sub;
-        });
+    // Anexa os subgêneros instantaneamente através da chave do dicionário
+    unique(subgenres).forEach(s => {
+      const subData = typeof s.toJSON === 'function' ? s.toJSON() : s;
+      delete subData.Books;
+      delete subData.Genre; 
+      
+      if (genresMap[subData.GenreId]) {
+        genresMap[subData.GenreId].Subgenres.push(subData);
       }
-      return genreObj;
     });
 
     res.json({

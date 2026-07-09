@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
 
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
 
@@ -15,7 +15,27 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
-        navigateFallback: '/index.html'
+        navigateFallback: '/index.html',
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf}'],
+
+        // NOVO: Estratégia de Cache para Imagens Externas (Cloudinary, Backend, Amazon)
+        runtimeCaching: [
+          {
+            // Intercepta qualquer requisição cujo destino seja uma imagem
+            urlPattern: ({ request }) => request.destination === 'image',
+            handler: 'CacheFirst', // Tenta pegar do cache primeiro. Se não tiver, vai pra rede e depois faz o cache.
+            options: {
+              cacheName: 'violib-images-cache',
+              expiration: {
+                maxEntries: 500, // Limite de 500 capas para não lotar a memória do celular
+                maxAgeSeconds: 30 * 24 * 60 * 60 // Mantém no cache por 30 dias
+              },
+              cacheableResponse: {
+                statuses: [0, 200] // O status '0' é crucial para salvar imagens de domínios de terceiros (CORS opaco)
+              }
+            }
+          }
+        ]
       },
 
       manifest: {

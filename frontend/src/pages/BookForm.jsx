@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import CreatableSelect from 'react-select/creatable';
 import BarcodeScanner from '../components/BarcodeScanner';
-import ImageCropperModal from '../components/ImageCropperModal'; // Importando o nosso novo modal
+import ImageCropperModal from '../components/ImageCropperModal';
 import useBookFormLogic from '../hooks/useBookFormLogic';
+import useNetworkStatus from '../hooks/useNetworkStatus';
 import './BookForm.css';
 
 const customSelectStyles = {
@@ -60,6 +61,7 @@ const customSelectStyles = {
 
 const BookForm = () => {
   const { t } = useTranslation();
+  const isOnline = useNetworkStatus();
 
   const {
     navigate,
@@ -87,12 +89,11 @@ const BookForm = () => {
     handleAmazonImport,
     imageSrcForCrop,
     handleCropComplete,
-    handleCropCancel // Recuperando as funções de crop do Hook
+    handleCropCancel
   } = useBookFormLogic();
 
   return (
     <div className="form-container">
-      {/* RENDERIZAÇÃO DO MODAL DE CORTE DE IMAGEM */}
       {imageSrcForCrop && (
         <ImageCropperModal
           imageSrc={imageSrcForCrop}
@@ -111,6 +112,7 @@ const BookForm = () => {
         <h1 className="form-title">{isEditMode ? 'Editar Livro' : t('add_book')}</h1>
       </header>
 
+      {}
       {feedback.message && (
         <div className={`feedback-banner ${feedback.type}`}>
           <span className="material-symbols-rounded">
@@ -124,6 +126,7 @@ const BookForm = () => {
         <BarcodeScanner onScanSuccess={handleScanSuccess} onClose={() => setIsScannerOpen(false)} />
       )}
 
+      {}
       <form onSubmit={handleSubmit}>
         <div className="form-section">
           <h2 className="section-title">
@@ -142,7 +145,6 @@ const BookForm = () => {
             </div>
 
             <div className="cover-actions">
-              {/* Botão 1: Aciona diretamente a Câmera Traseira no Mobile */}
               <label className="btn-action btn-cover-option">
                 <span className="material-symbols-rounded">photo_camera</span>
                 Tirar Foto
@@ -155,7 +157,6 @@ const BookForm = () => {
                 />
               </label>
 
-              {/* Botão 2: Abre o Seletor de Arquivos / Galeria */}
               <label className="btn-action btn-cover-option">
                 <span className="material-symbols-rounded">photo_library</span>
                 Galeria / Arquivo
@@ -170,6 +171,7 @@ const BookForm = () => {
           </div>
         </div>
 
+        {}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">auto_stories</span> Importação e Dados
@@ -182,7 +184,31 @@ const BookForm = () => {
                 Inteligente
               </label>
 
-              {/* Box 1: ISBN */}
+              {!isOnline && (
+                <div
+                  style={{
+                    padding: '10px',
+                    backgroundColor: 'rgba(255, 153, 0, 0.1)',
+                    color: '#ff9900',
+                    border: '1px solid #ff9900',
+                    borderRadius: '4px',
+                    marginBottom: '15px',
+                    fontSize: '0.9em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <span className="material-symbols-rounded" style={{ fontSize: '1.2em' }}>
+                    wifi_off
+                  </span>
+                  <span>
+                    <strong>Modo Offline:</strong> A importação automática está desativada. Preencha
+                    os dados manualmente.
+                  </span>
+                </div>
+              )}
+
               <div className="isbn-wrapper" style={{ marginBottom: '10px' }}>
                 <input
                   type="text"
@@ -192,11 +218,14 @@ const BookForm = () => {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      handleIsbnSearch();
+                      if (isOnline) handleIsbnSearch();
                     }
                   }}
                   className="form-input"
-                  placeholder="Pesquisar por código ISBN..."
+                  placeholder={
+                    !isOnline ? 'Desativado sem internet' : 'Pesquisar por código ISBN...'
+                  }
+                  disabled={!isOnline}
                 />
 
                 <button
@@ -204,6 +233,7 @@ const BookForm = () => {
                   className="btn-action btn-camera-trigger"
                   onClick={() => setIsScannerOpen(true)}
                   title="Escanear Código de Barras"
+                  disabled={!isOnline}
                 >
                   <span className="material-symbols-rounded">photo_camera</span>
                 </button>
@@ -212,7 +242,7 @@ const BookForm = () => {
                   type="button"
                   className="btn-action btn-primary btn-search-trigger"
                   onClick={() => handleIsbnSearch()}
-                  disabled={isLoadingIsbn || !formData.isbn}
+                  disabled={isLoadingIsbn || !formData.isbn || !isOnline}
                 >
                   {isLoadingIsbn ? (
                     <span
@@ -228,7 +258,7 @@ const BookForm = () => {
                 </button>
               </div>
 
-              {/* Box 2: URL da Amazon */}
+              {}
               <div className="isbn-wrapper">
                 <input
                   type="url"
@@ -237,22 +267,27 @@ const BookForm = () => {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      handleAmazonImport();
+                      if (isOnline) handleAmazonImport();
                     }
                   }}
                   className="form-input"
-                  placeholder="Ou cole a URL da Amazon (Ex: https://amazon.com.br/dp/...)"
+                  placeholder={
+                    !isOnline
+                      ? 'Desativado sem internet'
+                      : 'Ou cole a URL da Amazon (Ex: https://amazon.com.br/dp/...)'
+                  }
                   style={{ borderLeft: '4px solid #ff9900' }}
+                  disabled={!isOnline}
                 />
 
                 <button
                   type="button"
                   className="btn-action btn-search-trigger"
                   onClick={handleAmazonImport}
-                  disabled={isLoadingAmazon || !amazonUrl}
+                  disabled={isLoadingAmazon || !amazonUrl || !isOnline}
                   style={{
-                    backgroundColor: '#ff9900',
-                    color: '#000',
+                    backgroundColor: isOnline ? '#ff9900' : 'var(--bg-input)',
+                    color: isOnline ? '#000' : 'var(--text-muted)',
                     border: 'none',
                     fontWeight: 'bold'
                   }}
@@ -272,6 +307,7 @@ const BookForm = () => {
               </div>
             </div>
 
+            {}
             <div className="form-group full-width" style={{ marginTop: '10px' }}>
               <label className="form-label">
                 <span className="material-symbols-rounded">title</span> Título do Livro *
@@ -320,6 +356,7 @@ const BookForm = () => {
           </div>
         </div>
 
+        {}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">category</span> Classificação
@@ -384,6 +421,7 @@ const BookForm = () => {
           </div>
         </div>
 
+        {}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">domain</span> Detalhes Editoriais
@@ -453,6 +491,7 @@ const BookForm = () => {
           </div>
         </div>
 
+        {}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">edit_note</span> Notas Pessoais

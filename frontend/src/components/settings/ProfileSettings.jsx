@@ -1,12 +1,17 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import useNetworkStatus from '../../hooks/useNetworkStatus';
 import './ProfileSettings.css';
 
+/**
+ * Componente de configurações do perfil do usuário.
+ * Integrado com sensor de rede para bloquear ações sensíveis quando offline.
+ */
 const ProfileSettings = () => {
   const { logout } = useContext(AuthContext);
+  const isOnline = useNetworkStatus();
 
-  // --- ESTADOS DE ATUALIZAÇÃO DO PERFIL ---
   const [profileData, setProfileData] = useState({
     name: '',
     currentPassword: '',
@@ -16,7 +21,6 @@ const ProfileSettings = () => {
   const [profileMsg, setProfileMsg] = useState({ type: '', text: '' });
   const [showPassword, setShowPassword] = useState(false);
 
-  // --- ESTADOS DA ZONA DE PERIGO (Exclusão) ---
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -34,9 +38,10 @@ const ProfileSettings = () => {
     fetchProfile();
   }, []);
 
-  // --- LÓGICA DE ATUALIZAÇÃO DE PERFIL E SENHA ---
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
+    if (!isOnline) return;
+
     setProfileMsg({ type: '', text: '' });
 
     if (profileData.newPassword && profileData.newPassword !== profileData.confirmNewPassword) {
@@ -63,8 +68,8 @@ const ProfileSettings = () => {
     }
   };
 
-  // --- LÓGICA DA ZONA DE PERIGO ---
   const handleDeleteClick = () => {
+    if (!isOnline) return;
     setShowConfirmDelete(true);
     setDeleteMsg({ type: '', text: '' });
   };
@@ -76,6 +81,8 @@ const ProfileSettings = () => {
   };
 
   const handleConfirmDelete = async () => {
+    if (!isOnline) return;
+
     if (!deletePassword) {
       return setDeleteMsg({ type: 'error', text: 'Por favor, informe sua senha.' });
     }
@@ -104,6 +111,32 @@ const ProfileSettings = () => {
     <div className="settings-panel">
       <h2>Editar Perfil</h2>
 
+      {!isOnline && (
+        <div
+          style={{
+            padding: '12px',
+            backgroundColor: 'rgba(255, 153, 0, 0.1)',
+            color: '#ff9900',
+            border: '1px solid #ff9900',
+            borderRadius: '4px',
+            marginBottom: '15px',
+            fontSize: '0.9em',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <span className="material-symbols-rounded" style={{ fontSize: '1.4em' }}>
+            security
+          </span>
+          <span>
+            ⚠️ <strong>Modo Offline:</strong> A alteração de dados sensíveis (nome, senha e exclusão
+            da conta) foi temporariamente desativada. Reconecte-se à internet para realizar estas
+            ações.
+          </span>
+        </div>
+      )}
+
       {profileMsg.text && (
         <div
           style={{
@@ -129,6 +162,7 @@ const ProfileSettings = () => {
             onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
             className="auth-input"
             required
+            disabled={!isOnline}
           />
         </div>
 
@@ -150,11 +184,13 @@ const ProfileSettings = () => {
               type={showPassword ? 'text' : 'password'}
               value={profileData.currentPassword}
               onChange={(e) => setProfileData({ ...profileData, currentPassword: e.target.value })}
-              placeholder="Digite a senha atual"
+              placeholder={!isOnline ? 'Indisponível offline' : 'Digite a senha atual'}
+              disabled={!isOnline}
             />
             <span
               className="material-symbols-rounded"
               onClick={() => setShowPassword(!showPassword)}
+              style={{ opacity: !isOnline ? 0.5 : 1 }}
             >
               {showPassword ? 'visibility_off' : 'visibility'}
             </span>
@@ -168,11 +204,13 @@ const ProfileSettings = () => {
               type={showPassword ? 'text' : 'password'}
               value={profileData.newPassword}
               onChange={(e) => setProfileData({ ...profileData, newPassword: e.target.value })}
-              placeholder="Sua nova senha"
+              placeholder={!isOnline ? 'Indisponível offline' : 'Sua nova senha'}
+              disabled={!isOnline}
             />
             <span
               className="material-symbols-rounded"
               onClick={() => setShowPassword(!showPassword)}
+              style={{ opacity: !isOnline ? 0.5 : 1 }}
             >
               {showPassword ? 'visibility_off' : 'visibility'}
             </span>
@@ -191,6 +229,7 @@ const ProfileSettings = () => {
                 }
                 placeholder="Repita a nova senha"
                 required
+                disabled={!isOnline}
               />
               <span
                 className="material-symbols-rounded"
@@ -202,14 +241,15 @@ const ProfileSettings = () => {
           </div>
         )}
 
-        <button type="submit" className="btn-action btn-primary" style={{ marginTop: '15px' }}>
+        <button
+          type="submit"
+          className="btn-action btn-primary"
+          style={{ marginTop: '15px' }}
+          disabled={!isOnline || isDeleting}
+        >
           Salvar Alterações
         </button>
       </form>
-
-      {/* ========================================================= */}
-      {/* ZONA DE PERIGO (Exclusão da Conta)                        */}
-      {/* ========================================================= */}
 
       <hr
         style={{
@@ -220,7 +260,13 @@ const ProfileSettings = () => {
       />
 
       <div className="danger-zone">
-        <h3 style={{ color: '#ff4d4d', marginBottom: '10px', fontSize: '1.2rem' }}>
+        <h3
+          style={{
+            color: !isOnline ? 'var(--text-muted)' : '#ff4d4d',
+            marginBottom: '10px',
+            fontSize: '1.2rem'
+          }}
+        >
           Excluir Conta Permanentemente
         </h3>
         <p className="settings-hint" style={{ marginBottom: '15px' }}>
@@ -249,8 +295,12 @@ const ProfileSettings = () => {
           <button
             type="button"
             className="btn-action"
-            style={{ color: '#ff4d4d', borderColor: '#ff4d4d' }}
+            style={{
+              color: !isOnline ? 'var(--text-muted)' : '#ff4d4d',
+              borderColor: !isOnline ? 'var(--text-muted)' : '#ff4d4d'
+            }}
             onClick={handleDeleteClick}
+            disabled={!isOnline}
           >
             Desejo excluir minha conta
           </button>
@@ -283,7 +333,7 @@ const ProfileSettings = () => {
                 background: 'var(--bg-surface)',
                 color: 'var(--text-primary)'
               }}
-              disabled={isDeleting}
+              disabled={isDeleting || !isOnline}
             />
             <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
               <button
@@ -296,7 +346,7 @@ const ProfileSettings = () => {
                   fontWeight: 'bold'
                 }}
                 onClick={handleConfirmDelete}
-                disabled={isDeleting}
+                disabled={isDeleting || !isOnline}
               >
                 {isDeleting ? 'Excluindo...' : 'Confirmar Exclusão'}
               </button>

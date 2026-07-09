@@ -8,7 +8,6 @@ import './Header.css';
 
 /**
  * Componente do cabeçalho principal da aplicação.
- * Renderiza o logotipo, o seletor de bibliotecas e o menu de ações do usuário.
  */
 const Header = () => {
   const navigate = useNavigate();
@@ -23,7 +22,6 @@ const Header = () => {
   const [isSharing, setIsSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState({ type: '', text: '' });
 
-  // --- HANDLER: ABRIR MODAL ---
   const openShareModal = () => {
     setShareMsg({ type: '', text: '' });
     setGuestEmail('');
@@ -31,7 +29,6 @@ const Header = () => {
     setIsMenuOpen(false); 
   };
 
-  // --- HANDLER: ENVIAR CONVITE ---
   const handleShareSubmit = async (e) => {
     e.preventDefault();
     if (!guestEmail.trim()) return;
@@ -70,7 +67,8 @@ const Header = () => {
       <header className="dash-header">
         <div className="dash-header-inner">
           <div className="brand-container" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <img src={miniLogo} alt="vioLib" className="brand-logo" />
+            {/* O clique no logótipo leva sempre à página principal da biblioteca */}
+            <img src={miniLogo} alt="vioLib" className="brand-logo" onClick={() => navigate('/biblioteca')} style={{cursor: 'pointer'}} />
             
             <div className="library-switcher-wrapper">
               <select 
@@ -84,7 +82,6 @@ const Header = () => {
                   padding: '10px 16px',
                   fontSize: '1rem',
                   cursor: 'pointer',
-                  // Truncamento Inteligente para evitar quebra de layout mobile
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis'
@@ -98,7 +95,6 @@ const Header = () => {
                   <optgroup label="Compartilhadas Comigo">
                     {sharedLibraries.map(lib => {
                       const ownerName = lib.ownerName || lib.Owner?.name || lib.User?.name || 'Convidado';
-                      
                       return (
                         <option key={lib.ownerId} value={lib.ownerId}>
                           Biblioteca de {ownerName}
@@ -125,6 +121,12 @@ const Header = () => {
                     <span className="action-label">Ajustes</span>
                   </button>
                   
+                  {/* NOVO BOTÃO DE ACESSO ÀS COLEÇÕES */}
+                  <button onClick={() => { navigate('/colecoes'); setIsMenuOpen(false); }} className="btn-action">
+                    <span className="material-symbols-rounded">workspace_premium</span> 
+                    <span className="action-label">Coleções</span>
+                  </button>
+                  
                   <button onClick={openShareModal} className="btn-action">
                     <span className="material-symbols-rounded">group_add</span> 
                     <span className="action-label">Convidar</span>
@@ -146,7 +148,7 @@ const Header = () => {
         </div>
       </header>
 
-      {/* --- MODAL DE CONVITE (OVERLAY) --- */}
+      {/* --- MODAL DE CONVITE --- */}
       {showShareModal && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,

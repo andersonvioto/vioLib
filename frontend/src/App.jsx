@@ -13,7 +13,10 @@ import SharedLibraryView from './pages/SharedLibraryView';
 import Settings from './pages/Settings'; 
 import DeleteAccountInfo from './pages/DeleteAccountInfo';
 import PrivacyPolicy from './pages/PrivacyPolicy'; 
-import TermsOfService from './pages/TermsOfService'; // <-- Nova Importação
+import TermsOfService from './pages/TermsOfService';
+import Collections from './pages/Collections';
+import CollectionForm from './pages/CollectionForm';
+import CollectionDashboard from './pages/CollectionDashboard'; // <-- NOVA IMPORTAÇÃO AQUI
 
 // ==========================================
 // GUARDAS DE ROTA (ROUTE GUARDS)
@@ -50,7 +53,6 @@ function App() {
                 </PublicRoute>
               } />
               
-              {/* Rotas Exigidas pela Google Play Store e para os usuários */}
               <Route path="/excluir-conta" element={<DeleteAccountInfo />} />
               <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
               <Route path="/termos-de-servico" element={<TermsOfService />} />
@@ -92,6 +94,24 @@ function App() {
               <Route path="/configuracoes" element={
                 <PrivateRoute>
                   <Settings />
+                </PrivateRoute>
+              } />
+              
+              {/* ROTAS DO MÓDULO DE COLEÇÕES (GAMIFICAÇÃO) */}
+              <Route path="/colecoes" element={
+                <PrivateRoute>
+                  <Collections />
+                </PrivateRoute>
+              } />
+              <Route path="/colecoes/nova" element={
+                <PrivateRoute>
+                  <CollectionForm />
+                </PrivateRoute>
+              } />
+              {/* NOVA ROTA DO DASHBOARD DA COLEÇÃO */}
+              <Route path="/colecoes/:id" element={
+                <PrivateRoute>
+                  <CollectionDashboard />
                 </PrivateRoute>
               } />
 

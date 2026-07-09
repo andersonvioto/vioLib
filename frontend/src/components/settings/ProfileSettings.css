@@ -3,13 +3,25 @@
    Formulários de atualização de dados e segurança da conta.
    ========================================================================== */
 
+.settings-section {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
 .settings-form {
+  width: 100%;
   max-width: 500px;
   margin-top: 20px;
+  box-sizing: border-box;
 }
 
 .input-group {
   margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input-group label {
@@ -19,18 +31,17 @@
   font-size: 0.9rem;
 }
 
-/* Estilo base compartilhado entre o input comum e o wrapper da senha */
 .auth-input,
 .settings-input-wrapper {
   background-color: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
   transition: border-color 0.2s ease;
 }
 
-/* Input comum (Ex: Nome de Usuário) */
 .auth-input {
   color: var(--text-primary);
   padding: 12px 15px;
@@ -42,7 +53,6 @@
   border-color: var(--accent-gold);
 }
 
-/* Wrapper da Senha: Alinha o input de texto e o ícone do olho lado a lado */
 .settings-input-wrapper {
   display: flex;
   align-items: center;
@@ -61,6 +71,7 @@
   padding: 12px 15px;
   font-size: 1rem;
   outline: none;
+  min-width: 0; /* Previne que o input flex estoure a largura do pai */
 }
 
 .settings-input-wrapper .material-symbols-rounded {
@@ -69,6 +80,7 @@
   font-size: 1.2rem;
   user-select: none;
   transition: color 0.2s;
+  flex-shrink: 0;
 }
 
 .settings-input-wrapper .material-symbols-rounded:hover {
@@ -91,12 +103,12 @@
     max-width: 100%;
   }
 
-  /* Garante que os botões (salvar, alterar senha, excluir conta) sejam fáceis de tocar */
   .settings-form .btn-action,
   .settings-section .btn-action {
     width: 100%;
     justify-content: center;
     padding: 14px;
     margin-bottom: 10px;
+    box-sizing: border-box;
   }
 }

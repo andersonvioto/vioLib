@@ -178,7 +178,7 @@ const ProfileSettings = () => {
         </h3>
 
         <div className="input-group">
-          <label>Senha Atual (obrigatória apenas se for trocar de senha)</label>
+          <label>Senha Atual (apenas p/ trocar de senha)</label>
           <div className="settings-input-wrapper">
             <input
               type={showPassword ? 'text' : 'password'}

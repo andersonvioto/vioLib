@@ -15,7 +15,7 @@ A vioLib é uma aplicação Full-Stack (PWA) desenvolvida para a gestão moderna
 
 A vioLib possui uma Extensão de Navegador Oficial (Chrome / Firefox) projetada para contornar bloqueios de bots e sistemas anti-scraping de grandes retalhistas.
 
-- \*\_🔗 Repositório da Extensão: [/andersonvioto/violib-extension](/andersonvioto/violib-extension)
+- \*\_🔗 Repositório da Extensão: [/andersonvioto/violib-extension](https://github.com/andersonvioto/violib-extension)
 
 ### Como funciona a integração?
 

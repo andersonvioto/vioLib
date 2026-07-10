@@ -6,7 +6,6 @@ import Header from '../components/Header';
 import { getCoverUrl } from '../utils/bookHelpers';
 import './CollectionDashboard.css';
 
-// Estilos personalizados para o Select de pesquisa
 const customSelectStyles = {
   control: (provided, state) => ({
     ...provided,
@@ -14,7 +13,8 @@ const customSelectStyles = {
     borderColor: state.isFocused ? 'var(--accent-gold)' : 'var(--border-color)',
     boxShadow: state.isFocused ? '0 0 0 2px var(--accent-gold-glow)' : 'none',
     '&:hover': { borderColor: 'var(--accent-gold)' },
-    padding: '2px',
+    padding: '0px',
+    minHeight: '38px',
     borderRadius: 'var(--radius-sm)',
     cursor: 'text'
   }),
@@ -30,6 +30,24 @@ const customSelectStyles = {
     color: state.isFocused ? 'var(--accent-gold)' : 'var(--text-primary)',
     cursor: 'pointer',
     '&:active': { backgroundColor: 'var(--accent-gold)', color: '#000' }
+  }),
+  multiValue: (provided) => ({
+    ...provided,
+    backgroundColor: 'var(--bg-surface)',
+    border: '1px solid var(--border-color)',
+    borderRadius: '4px'
+  }),
+  multiValueLabel: (provided) => ({
+    ...provided,
+    color: 'var(--text-primary)',
+    fontSize: '0.85em',
+    fontWeight: '500'
+  }),
+  multiValueRemove: (provided) => ({
+    ...provided,
+    color: 'var(--text-secondary)',
+    cursor: 'pointer',
+    '&:hover': { backgroundColor: 'var(--text-danger)', color: 'white' }
   }),
   singleValue: (provided) => ({
     ...provided,
@@ -51,11 +69,8 @@ const CollectionDashboard = () => {
 
   const [collection, setCollection] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Lista de livros da biblioteca do usuário para o Dropdown de Vínculo
   const [libraryBooks, setLibraryBooks] = useState([]);
 
-  // Estados do Modal de Item
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isCreatingBook, setIsCreatingBook] = useState(false);
@@ -67,8 +82,31 @@ const CollectionDashboard = () => {
     BookId: null
   });
 
-  // NOVO: Estado para gerir o Filtro Interativo do Mural
   const [activeFilter, setActiveFilter] = useState(null);
+
+  // Estados separados para o Debounce da pesquisa
+  const [searchInput, setSearchInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [hideMissing, setHideMissing] = useState(() => {
+    return localStorage.getItem(`violib_col_hide_missing_${id}`) === 'true';
+  });
+
+  const [userSortBy, setUserSortBy] = useState(() => {
+    const saved = localStorage.getItem(`violib_col_sort_multi_${id}`);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [{ value: 'title', label: 'Título' }];
+  });
+
+  const [sortOrder, setSortOrder] = useState(
+    () => localStorage.getItem(`violib_col_order_${id}`) || 'ASC'
+  );
 
   const fetchCollection = useCallback(async () => {
     try {
@@ -92,11 +130,25 @@ const CollectionDashboard = () => {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCollection();
-
     fetchLibraryBooks();
   }, [fetchCollection, fetchLibraryBooks]);
+
+  // Persistência das preferências do usuário
+  useEffect(() => {
+    localStorage.setItem(`violib_col_sort_multi_${id}`, JSON.stringify(userSortBy));
+    localStorage.setItem(`violib_col_order_${id}`, sortOrder);
+    localStorage.setItem(`violib_col_hide_missing_${id}`, hideMissing);
+  }, [userSortBy, sortOrder, hideMissing, id]);
+
+  // Lógica de Debounce para a pesquisa em memória (evita travamentos na interface)
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchInput]);
 
   const openItemModal = (item = null) => {
     if (item) {
@@ -203,16 +255,54 @@ const CollectionDashboard = () => {
   const { stats, CollectionItems, customAxes } = collection;
   const progressStyle = { '--progress': `${stats.progress}%` };
 
-  // NOVO: Aplica o filtro aos itens do Mural
-  const filteredItems = activeFilter
-    ? CollectionItems.filter((item) => item.axisValues[activeFilter.axis] === activeFilter.value)
-    : CollectionItems;
+  const filteredItems = CollectionItems.filter((item) => {
+    if (activeFilter && item.axisValues[activeFilter.axis] !== activeFilter.value) return false;
+    if (hideMissing && item.status === 'missing') return false;
+    if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
+
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    const collator = new Intl.Collator('pt-BR', { numeric: true, sensitivity: 'base' });
+
+    for (const sortOption of userSortBy) {
+      const criteria = sortOption.value;
+      let valA, valB;
+
+      if (criteria === 'title') {
+        valA = a.title;
+        valB = b.title;
+      } else if (criteria === 'status') {
+        const statusWeight = { both: 3, physical: 2, digital: 1, missing: 0 };
+        valA = (statusWeight[a.status] || 0).toString();
+        valB = (statusWeight[b.status] || 0).toString();
+      } else {
+        valA = a.axisValues[criteria] || '';
+        valB = b.axisValues[criteria] || '';
+      }
+
+      const comparisonResult = collator.compare(valA, valB);
+      if (comparisonResult !== 0) {
+        return sortOrder === 'ASC' ? comparisonResult : -comparisonResult;
+      }
+    }
+
+    if (!userSortBy.some((opt) => opt.value === 'title')) {
+      return collator.compare(a.title, b.title);
+    }
+    return 0;
+  });
+
+  const sortOptions = [
+    { value: 'title', label: 'Título' },
+    { value: 'status', label: 'Status de Posse' },
+    ...(customAxes || []).map((axis) => ({ value: axis, label: axis }))
+  ];
 
   return (
     <div className="dashboard-container">
       <Header />
 
-      {/* 1. HERO BANNER GIGANTE */}
       <div
         className="collection-hero-banner"
         style={{
@@ -238,7 +328,6 @@ const CollectionDashboard = () => {
             </div>
           </div>
 
-          {/* O Grande Anel de Maestria */}
           <div className="hero-progress-ring" style={progressStyle}>
             <div className="hero-progress-inner">
               <span className="hero-progress-value">{stats.progress}%</span>
@@ -248,21 +337,11 @@ const CollectionDashboard = () => {
         </div>
       </div>
 
-      {/* 2. BARRAS DE EXPERIÊNCIA (XP BARS) DOS EIXOS DINÂMICOS */}
       {customAxes && customAxes.length > 0 && stats.totalItems > 0 && (
         <div className="xp-section">
-          <h2 className="section-title">
+          <h2 className="section-title mural-title-wrapper">
             <span className="material-symbols-rounded">analytics</span> Desempenho por Categoria
-            <span
-              style={{
-                fontSize: '0.6em',
-                color: 'var(--text-muted)',
-                marginLeft: '10px',
-                fontWeight: 'normal'
-              }}
-            >
-              (Clique numa barra para filtrar o mural)
-            </span>
+            <span className="mural-hint-text">(Clique numa barra para filtrar o mural)</span>
           </h2>
           <div className="xp-grid">
             {customAxes.map((axis) => (
@@ -305,57 +384,75 @@ const CollectionDashboard = () => {
         </div>
       )}
 
-      {/* 3. MURAL DE TROFÉUS (GRELHA DE ITENS) */}
       <div className="mural-section">
-        <div
-          className="mural-header"
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            flexWrap: 'wrap',
-            gap: '15px'
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <h2 className="section-title" style={{ margin: 0 }}>
-              <span className="material-symbols-rounded">grid_view</span> Mural de Coleção
-            </h2>
-
-            {/* NOVO: Badge visual indicando o filtro ativo */}
-            {activeFilter && (
-              <span
-                style={{
-                  fontSize: '0.85em',
-                  color: 'var(--accent-gold)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '4px 12px',
-                  background: 'var(--accent-gold-glow)',
-                  borderRadius: '20px',
-                  border: '1px solid var(--accent-gold)'
-                }}
-              >
-                Filtrado por:{' '}
-                <strong>
-                  {activeFilter.axis} = {activeFilter.value}
-                </strong>
-                <span
-                  className="material-symbols-rounded"
-                  style={{ fontSize: '1.2em', cursor: 'pointer' }}
-                  onClick={() => setActiveFilter(null)}
-                  title="Remover filtro"
-                >
-                  cancel
+        <div className="mural-header">
+          <div className="mural-header-top">
+            <div className="mural-title-wrapper">
+              <h2 className="section-title" style={{ margin: 0 }}>
+                <span className="material-symbols-rounded">grid_view</span> Mural de Coleção
+              </h2>
+              {activeFilter && (
+                <span className="mural-active-filter">
+                  Filtro XP: {activeFilter.value}
+                  <span className="material-symbols-rounded" onClick={() => setActiveFilter(null)}>
+                    cancel
+                  </span>
                 </span>
-              </span>
-            )}
+              )}
+            </div>
+
+            <button className="btn-action btn-primary" onClick={() => openItemModal()}>
+              <span className="material-symbols-rounded">add</span> Adicionar Item
+            </button>
           </div>
 
-          <button className="btn-action btn-primary" onClick={() => openItemModal()}>
-            <span className="material-symbols-rounded">add</span> Adicionar Item
-          </button>
+          {CollectionItems.length > 0 && (
+            <div className="mural-toolbar">
+              <div className="mural-search">
+                <span className="material-symbols-rounded">search</span>
+                <input
+                  type="text"
+                  placeholder="Buscar pelo nome..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="mural-search-input"
+                />
+              </div>
+
+              <label className="mural-checkbox">
+                <input
+                  type="checkbox"
+                  checked={hideMissing}
+                  onChange={(e) => setHideMissing(e.target.checked)}
+                />
+                Ocultar Faltantes
+              </label>
+
+              <div className="mural-sort">
+                <span className="material-symbols-rounded">sort</span>
+                <div className="mural-sort-select">
+                  <Select
+                    isMulti
+                    options={sortOptions}
+                    value={userSortBy}
+                    onChange={(selected) => setUserSortBy(selected || [])}
+                    styles={customSelectStyles}
+                    placeholder="Regras de ordem..."
+                    noOptionsMessage={() => 'Sem mais regras'}
+                  />
+                </div>
+                <button
+                  className="btn-action mural-sort-btn"
+                  onClick={() => setSortOrder((prev) => (prev === 'ASC' ? 'DESC' : 'ASC'))}
+                  title={sortOrder === 'ASC' ? 'Ordem Crescente' : 'Ordem Decrescente'}
+                >
+                  <span className="material-symbols-rounded">
+                    {sortOrder === 'ASC' ? 'arrow_downward' : 'arrow_upward'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {CollectionItems.length === 0 ? (
@@ -367,29 +464,26 @@ const CollectionDashboard = () => {
               progresso.
             </p>
           </div>
-        ) : filteredItems.length === 0 ? (
-          // NOVO: Mensagem de erro amigável se o filtro não retornar resultados
+        ) : sortedItems.length === 0 ? (
           <div className="empty-collections-state">
             <span className="material-symbols-rounded empty-icon">filter_list_off</span>
             <h2>Nenhum item encontrado</h2>
-            <p>
-              Não existem itens nesta coleção com o filtro{' '}
-              <strong>
-                {activeFilter.axis}: {activeFilter.value}
-              </strong>
-              .
-            </p>
+            <p>Tente limpar o campo de busca ou remover os filtros ativos para ver mais itens.</p>
             <button
-              className="btn-action"
-              onClick={() => setActiveFilter(null)}
-              style={{ margin: '0 auto' }}
+              className="btn-action btn-empty-clear"
+              onClick={() => {
+                setActiveFilter(null);
+                setSearchInput('');
+                setSearchQuery('');
+                setHideMissing(false);
+              }}
             >
-              Remover Filtro
+              Limpar Filtros
             </button>
           </div>
         ) : (
           <div className="items-grid">
-            {filteredItems.map((item) => {
+            {sortedItems.map((item) => {
               const isMissing = item.status === 'missing';
               return (
                 <div
@@ -400,22 +494,15 @@ const CollectionDashboard = () => {
                   <div className="item-card-header">
                     <h4 className="item-card-title">{item.title}</h4>
 
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div className="item-card-actions">
                       {item.BookId && (
                         <span
-                          className="material-symbols-rounded"
-                          style={{
-                            color: 'var(--text-secondary)',
-                            cursor: 'pointer',
-                            transition: '0.2s'
-                          }}
+                          className="material-symbols-rounded item-link-icon"
                           title="Ir para o Livro na Biblioteca"
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/livro/${item.BookId}`);
                           }}
-                          onMouseOver={(e) => (e.target.style.color = 'var(--accent-gold)')}
-                          onMouseOut={(e) => (e.target.style.color = 'var(--text-secondary)')}
                         >
                           auto_stories
                         </span>
@@ -453,12 +540,10 @@ const CollectionDashboard = () => {
         )}
       </div>
 
-      {/* 4. MODAL DE CRIAÇÃO/EDIÇÃO DE ITEM */}
       {isModalOpen && (
         <div className="legal-modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div
-            className="legal-modal-box"
-            style={{ maxWidth: '550px' }}
+            className="legal-modal-box collection-item-modal"
             onClick={(e) => e.stopPropagation()}
           >
             <header className="legal-modal-header">
@@ -477,14 +562,8 @@ const CollectionDashboard = () => {
               </button>
             </header>
 
-            <form
-              onSubmit={saveItem}
-              style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
-            >
-              <div
-                className="legal-modal-content"
-                style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
-              >
+            <form onSubmit={saveItem} className="modal-form-layout">
+              <div className="legal-modal-content">
                 <div className="form-group full-width">
                   <label className="form-label">Nome do Livro/Item *</label>
                   <input
@@ -512,40 +591,16 @@ const CollectionDashboard = () => {
                 </div>
 
                 {itemForm.status !== 'missing' && (
-                  <div
-                    style={{
-                      padding: '15px',
-                      background: 'var(--accent-gold-glow)',
-                      borderRadius: '8px',
-                      border: '1px solid var(--accent-gold)'
-                    }}
-                  >
-                    <h4
-                      style={{
-                        margin: '0 0 10px 0',
-                        fontSize: '0.9em',
-                        color: 'var(--accent-gold)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px'
-                      }}
-                    >
-                      <span className="material-symbols-rounded" style={{ fontSize: '1.2em' }}>
-                        menu_book
-                      </span>{' '}
-                      Vínculo com a Biblioteca (Opcional)
+                  <div className="modal-link-block">
+                    <h4 className="modal-link-header">
+                      <span className="material-symbols-rounded">menu_book</span> Vínculo com a
+                      Biblioteca (Opcional)
                     </h4>
-                    <p
-                      style={{
-                        fontSize: '0.85em',
-                        color: 'var(--text-secondary)',
-                        marginBottom: '12px'
-                      }}
-                    >
+                    <p className="modal-link-desc">
                       Conecte este item a um livro real do seu acervo principal para acesso rápido.
                     </p>
 
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div className="modal-link-actions">
                       <div style={{ flex: 1 }}>
                         <Select
                           options={libraryBooks.map((b) => ({ value: b.id, label: b.title }))}
@@ -570,19 +625,13 @@ const CollectionDashboard = () => {
                       {!itemForm.BookId && (
                         <button
                           type="button"
-                          className="btn-action"
+                          className="btn-action btn-modal-create"
                           onClick={handleSilentBookCreate}
                           disabled={isCreatingBook || !itemForm.title.trim()}
                           title="Cria automaticamente um livro com este nome na sua biblioteca"
-                          style={{ whiteSpace: 'nowrap', padding: '8px 12px', fontSize: '0.9em' }}
                         >
                           {isCreatingBook ? (
-                            <span
-                              className="material-symbols-rounded spinner-icon"
-                              style={{ animation: 'authSpin 1s linear infinite reverse' }}
-                            >
-                              sync
-                            </span>
+                            <span className="material-symbols-rounded spinner-icon">sync</span>
                           ) : (
                             'Criar Novo'
                           )}
@@ -593,39 +642,12 @@ const CollectionDashboard = () => {
                 )}
 
                 {customAxes.length > 0 && (
-                  <div
-                    style={{
-                      padding: '15px',
-                      background: 'var(--bg-input)',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color)',
-                      marginTop: '5px'
-                    }}
-                  >
-                    <h4
-                      style={{
-                        margin: '0 0 10px 0',
-                        fontSize: '0.9em',
-                        color: 'var(--text-primary)'
-                      }}
-                    >
-                      Categorização do Item
-                    </h4>
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                        gap: '10px'
-                      }}
-                    >
+                  <div className="modal-category-block">
+                    <h4 className="modal-category-header">Categorização do Item</h4>
+                    <div className="modal-category-grid">
                       {customAxes.map((axis) => (
                         <div key={axis} className="form-group full-width">
-                          <label
-                            className="form-label"
-                            style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}
-                          >
-                            {axis}
-                          </label>
+                          <label className="form-label">{axis}</label>
                           <input
                             type="text"
                             className="form-input"
@@ -640,15 +662,11 @@ const CollectionDashboard = () => {
                 )}
               </div>
 
-              <footer
-                className="legal-modal-footer"
-                style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px' }}
-              >
+              <footer className="legal-modal-footer">
                 {itemForm.id ? (
                   <button
                     type="button"
-                    className="btn-action"
-                    style={{ color: 'var(--text-danger)', borderColor: 'var(--text-danger)' }}
+                    className="btn-action btn-danger-outline"
                     onClick={deleteItem}
                     disabled={isSaving}
                   >
@@ -658,7 +676,7 @@ const CollectionDashboard = () => {
                   <div></div>
                 )}
 
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="modal-footer-actions">
                   <button
                     type="button"
                     className="btn-action"

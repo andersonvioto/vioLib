@@ -50,7 +50,9 @@ const Dashboard = () => {
   const [totalBooks, setTotalBooks] = useState(0);
 
   // Estados dos Filtros Ativos (com persistência no localStorage)
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // O que o usuário vê na tela enquanto digita
+  const [searchTerm, setSearchTerm] = useState(''); // O que de fato vai para a API (após o atraso)
+
   const [sortBy, setSortBy] = useState(() => localStorage.getItem('violib_sortBy') || 'title');
   const [sortOrder, setSortOrder] = useState(
     () => localStorage.getItem('violib_sortOrder') || 'ASC'
@@ -72,6 +74,18 @@ const Dashboard = () => {
   const [availableTags, setAvailableTags] = useState([]);
 
   // ==========================================
+  // DEBOUNCE (LAZY SEARCH) - Otimização de Performance
+  // ==========================================
+  useEffect(() => {
+    // Aguarda 600ms após o usuário parar de digitar para acionar a busca real
+    const delayDebounceFn = setTimeout(() => {
+      setSearchTerm(searchInput);
+    }, 600);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchInput]);
+
+  // ==========================================
   // PERSISTÊNCIA DAS PREFERÊNCIAS DO USUÁRIO
   // ==========================================
   useEffect(() => {
@@ -89,6 +103,8 @@ const Dashboard = () => {
   useEffect(() => {
     // 1. Limpa os filtros anteriores para não buscar uma categoria que não existe no amigo
     // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSearchInput('');
+
     setSearchTerm('');
 
     setSelectedGenre('');
@@ -97,9 +113,9 @@ const Dashboard = () => {
 
     setSelectedTag('');
 
-    // 2. Monta os parâmetros de forma segura (Reativando o usedOnly)
+    // 2. Monta os parâmetros de forma segura
     const params = new URLSearchParams();
-    params.append('usedOnly', 'true'); // <-- Filtro reativado!
+    params.append('usedOnly', 'true');
 
     if (currentLibrary) {
       params.append('ownerId', currentLibrary.ownerId);
@@ -231,18 +247,16 @@ const Dashboard = () => {
   // ==========================================
   return (
     <div className="dashboard-container">
-      {/* 1. CABEÇALHO */}
       <Header />
 
-      {/* 2. BARRA DE PESQUISA E BOTÃO DE FILTRO */}
       <div className="search-filter-bar">
         <div className="search-wrapper">
           <span className="material-symbols-rounded search-icon">search</span>
           <input
             type="text"
             placeholder="Pesquisar por título ou autor..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="search-input"
           />
         </div>
@@ -256,7 +270,6 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {/* 3. GAVETA LATERAL DE FILTROS AVANÇADOS */}
       <FilterDrawer
         isOpen={isFilterDrawerOpen}
         onClose={() => setIsFilterDrawerOpen(false)}
@@ -273,7 +286,6 @@ const Dashboard = () => {
         setShowTagsOnCards={setShowTagsOnCards}
       />
 
-      {/* 4. PRATELEIRA PRINCIPAL (GÊNEROS) */}
       <Shelf
         items={availableGenres}
         activeItem={selectedGenre}
@@ -281,7 +293,6 @@ const Dashboard = () => {
         defaultLabel="Toda a Biblioteca"
       />
 
-      {/* 5. PRATELEIRA SECUNDÁRIA (SUBGÊNEROS) */}
       {activeSubgenres.length > 0 && (
         <Shelf
           items={activeSubgenres}
@@ -292,7 +303,6 @@ const Dashboard = () => {
         />
       )}
 
-      {/* 6. ÁREA DE EXIBIÇÃO DA BIBLIOTECA */}
       <div className="library-section">
         <div className="section-header">
           <span className="material-symbols-rounded section-icon">
@@ -312,7 +322,6 @@ const Dashboard = () => {
           </h2>
         </div>
 
-        {/* LÓGICA DE RENDERIZAÇÃO INTELIGENTE (SKELETONS VS DADOS) */}
         {isLoading && myBooks.length === 0 ? (
           <div className="book-grid">
             {Array.from({ length: 10 }).map((_, idx) => (
@@ -333,7 +342,6 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Paginação */}
         {hasMore && !isLoading && (
           <div className="pagination-trigger-zone">
             <button onClick={handleLoadMore} className="btn-action btn-primary btn-load-more">

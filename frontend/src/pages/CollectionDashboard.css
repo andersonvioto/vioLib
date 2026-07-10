@@ -37,7 +37,6 @@ HERO BANNER (Capa e Resumo da Coleção)
   );
 }
 
-/* STREAMING_CHUNK: Estilizando o botão de voltar e tipografia do topo... */
 .btn-back-hero {
   position: absolute;
   top: 20px;
@@ -75,7 +74,6 @@ HERO BANNER (Capa e Resumo da Coleção)
   gap: 40px;
 }
 
-/* STREAMING_CHUNK: Ajustando os textos e estatísticas do Hero... */
 .hero-text-area {
   flex: 1;
 }
@@ -102,7 +100,6 @@ HERO BANNER (Capa e Resumo da Coleção)
   gap: 15px;
 }
 
-/* STREAMING_CHUNK: Construindo o Grande Anel de Progresso... */
 .hero-progress-ring {
   position: relative;
   width: 160px;
@@ -132,7 +129,6 @@ HERO BANNER (Capa e Resumo da Coleção)
   box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
-/* STREAMING_CHUNK: Definindo fontes e seções da Grade de XP... */
 .hero-progress-value {
   font-size: 2.2em;
   font-weight: 700;
@@ -162,7 +158,6 @@ PAINEL DE BARRAS DE EXPERIÊNCIA (XP BARS)
   gap: 25px;
 }
 
-/* STREAMING_CHUNK: Estilizando os cartões de XP e contêineres de interação... */
 .xp-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -184,16 +179,35 @@ PAINEL DE BARRAS DE EXPERIÊNCIA (XP BARS)
 .xp-bars-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 2px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 5px;
+  overscroll-behavior: contain;
 }
 
-/* STREAMING_CHUNK: Implementando o filtro visual ativo nas Barras de XP... */
+.xp-bars-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.xp-bars-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.xp-bars-list::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 4px;
+}
+
+.xp-bars-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-gold);
+}
+
 .xp-bar-container {
   display: flex;
   flex-direction: column;
   gap: 5px;
   padding: 8px;
-  margin: -8px; /* Compensa o padding para manter alinhado com o texto superior */
   border-radius: 6px;
   cursor: pointer;
   border: 1px solid transparent;
@@ -213,7 +227,6 @@ PAINEL DE BARRAS DE EXPERIÊNCIA (XP BARS)
   border-color: var(--accent-gold);
 }
 
-/* STREAMING_CHUNK: Renderizando os trilhos e preenchimentos da barra... */
 .xp-bar-header {
   display: flex;
   justify-content: space-between;
@@ -246,7 +259,7 @@ PAINEL DE BARRAS DE EXPERIÊNCIA (XP BARS)
   transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/*==========================================================================
+/* ==========================================================================
 MURAL DE ITENS (Figurinhas / Cartas)
 ========================================================================== */
 .mural-section {
@@ -278,7 +291,6 @@ MURAL DE ITENS (Figurinhas / Cartas)
   transition: var(--transition-smooth);
 }
 
-/* STREAMING_CHUNK: Aplicando estilos de posse (Ausente vs Adquirido)... */
 .status-owned {
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -317,7 +329,6 @@ MURAL DE ITENS (Figurinhas / Cartas)
   transition: var(--transition-smooth);
 }
 
-/* STREAMING_CHUNK: Detalhes das cartas e chips de Eixos... */
 [data-theme='light'] .item-missing-overlay {
   background: rgba(255, 255, 255, 0.4);
   color: #000;
@@ -353,7 +364,6 @@ MURAL DE ITENS (Figurinhas / Cartas)
   margin-top: auto;
 }
 
-/* STREAMING_CHUNK: Chips individuais e adaptação Responsiva (Mobile)... */
 .axis-chip {
   background: var(--bg-input);
   padding: 4px 10px;
@@ -392,7 +402,7 @@ RESPONSIVIDADE (Mobile e Tablets)
   .collection-hero-banner {
     min-height: auto;
     border-radius: 0;
-    margin: -15px -15px 30px -15px; /* Compensa o padding do dashboard container para tela cheia */
+    margin: -15px -15px 30px -15px;
   }
 
   .hero-title {

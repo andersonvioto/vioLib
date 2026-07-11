@@ -1,11 +1,24 @@
-const { Subgenre, Genre } = require('../models');
+const { Subgenre, Genre, sequelize } = require('../models');
 
 /**
  * Lista todos os subgêneros do usuário logado através da relação com o gênero pai.
+ * Inclui a contagem de livros vinculados a cada subgênero.
  */
 exports.list = async (req, res) => {
   try {
     const subgenres = await Subgenre.findAll({
+      attributes: {
+        include: [
+          [
+            sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM "Book_Subgenres"
+              WHERE "Book_Subgenres"."SubgenreId" = "Subgenre"."id"
+            )`),
+            'bookCount'
+          ]
+        ]
+      },
       include: [
         {
           model: Genre,

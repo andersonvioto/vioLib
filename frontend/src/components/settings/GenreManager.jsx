@@ -171,7 +171,18 @@ const GenreManager = () => {
                 </form>
               ) : (
                 <>
-                  <h3>{genre.name}</h3>
+                  <h3>
+                    {genre.name}{' '}
+                    <span
+                      style={{
+                        fontSize: '0.8em',
+                        color: 'var(--text-muted)',
+                        fontWeight: 'normal'
+                      }}
+                    >
+                      ({genre.bookCount || 0})
+                    </span>
+                  </h3>
                   <div className="attribute-actions">
                     <button
                       onClick={() => startEditing('genres', genre.id, genre.name)}
@@ -225,7 +236,12 @@ const GenreManager = () => {
                       </form>
                     ) : (
                       <>
-                        <span>{subgenre.name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>{subgenre.name}</span>
+                          <span style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>
+                            ({subgenre.bookCount || 0})
+                          </span>
+                        </div>
                         <div className="attribute-actions">
                           <button
                             onClick={() => startEditing('subgenres', subgenre.id, subgenre.name)}

@@ -1,12 +1,25 @@
-const { Genre } = require('../models');
+const { Genre, sequelize } = require('../models');
 
 /**
  * Lista todos os gêneros do usuário logado, ordenados alfabeticamente.
+ * Inclui a contagem de livros associados a cada gênero.
  */
 exports.list = async (req, res) => {
   try {
     const genres = await Genre.findAll({
       where: { UserId: req.userId },
+      attributes: {
+        include: [
+          [
+            sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM "Book_Genres"
+              WHERE "Book_Genres"."GenreId" = "Genre"."id"
+            )`),
+            'bookCount'
+          ]
+        ]
+      },
       order: [['name', 'ASC']]
     });
     res.json(genres);

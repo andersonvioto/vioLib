@@ -17,10 +17,19 @@
   border-radius: var(--radius-md);
   width: 100%;
   max-width: 500px;
+  /* Trava de Segurança: Modal nunca passa de 90% da altura da tela */
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
   overflow: hidden;
+}
+
+.cropper-header,
+.cropper-options,
+.cropper-actions {
+  /* Impede que as barras espremam quando a imagem for muito alta */
+  flex-shrink: 0;
 }
 
 .cropper-header {
@@ -48,28 +57,30 @@
 .cropper-wrap {
   padding: 15px;
   background-color: #000;
-  /* Retorna o limite de altura seguro para caber na tela no Desktop */
-  max-height: 55vh;
-  /* Retorna o scroll como rota de fuga */
-  overflow: auto;
-  /* Centraliza sem usar flex, mantendo as proporções naturais da imagem intactas */
-  text-align: center;
+  /* A Mágica do Flexbox: Ocupa todo o espaço livre, mas respeita os limites do pai */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Removemos o scroll para forçar a imagem a encolher e caber inteira */
+  overflow: hidden;
 }
 
 /* Trava o contêiner gerado pela biblioteca react-image-crop */
 .ReactCrop {
-  /* O segredo: inline-block faz a caixa do cropper "vestir" a imagem perfeitamente */
-  display: inline-block;
   max-width: 100%;
-  vertical-align: middle;
+  max-height: 100%;
+  display: flex; /* Remove espaços em branco do inline-block clássico */
+  align-items: center;
+  justify-content: center;
 }
 
 .cropper-image {
-  /* Força imagens gigantes a encolherem para caber na tela no Desktop */
-  max-height: 45vh;
+  /* Força a imagem a encolher horizontal e verticalmente sem perder a proporção */
   max-width: 100%;
-  width: auto;
-  height: auto;
+  max-height: 100%;
+  object-fit: contain;
   display: block;
   margin: 0 auto;
 }
@@ -139,29 +150,20 @@
 }
 
 /* ==========================================
-   AJUSTES EXCLUSIVOS PARA MOBILE
-   ========================================== */
+AJUSTES EXCLUSIVOS PARA MOBILE
+========================================== */
 @media (max-width: 600px) {
   .cropper-overlay {
     padding: 10px;
   }
 
   .cropper-card {
-    /* Trava de Segurança: O modal não pode ultrapassar a tela do celular */
+    /* No mobile, podemos usar quase toda a tela */
     max-height: 95vh;
   }
 
   .cropper-wrap {
-    /* Mágica Flexbox: Ocupa só o que sobra da tela, gerando scroll interno se precisar */
-    flex: 1;
-    min-height: 0;
-    max-height: none;
     padding: 10px;
-  }
-
-  .cropper-image {
-    /* Encolhe a imagem agressivamente no mobile para garantir que caiba com os botões empilhados */
-    max-height: 40vh;
   }
 
   .cropper-actions {

@@ -130,6 +130,7 @@ const CollectionDashboard = () => {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCollection();
     fetchLibraryBooks();
   }, [fetchCollection, fetchLibraryBooks]);

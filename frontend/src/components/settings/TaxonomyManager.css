@@ -1,7 +1,7 @@
 /* ==========================================================================
-   COMPONENT CSS - TaxonomyManager / Atributos
-   Listagem e edição inline de Autores, Tradutores, Compartilhamentos.
-   ========================================================================== */
+COMPONENT CSS - TaxonomyManager / Atributos
+Listagem e edição inline de Autores, Tradutores, Compartilhamentos.
+========================================================================== */
 
 .attribute-list {
   list-style: none;
@@ -19,6 +19,7 @@
   border-radius: var(--radius-sm);
   margin-bottom: 10px;
   transition: background-color 0.2s;
+  gap: 15px;
 }
 
 .attribute-item:hover {
@@ -34,10 +35,43 @@
   border-radius: var(--radius-sm);
 }
 
+/* --- ESTRUTURA DE INFORMAÇÃO (Textos e Badges) --- */
+.attribute-info {
+  display: flex;
+  align-items: center;
+  flex: 1; /* Mágica do Flexbox: Faz o container ocupar todo o espaço vazio disponível */
+  min-width: 0; /* Trava de segurança para garantir que o texto longo quebre a linha */
+}
+
+.attribute-name-text {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 1.05rem;
+  /* Garante que o texto quebre a linha em telas apertadas em vez de vazar */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.attribute-badge {
+  font-size: 0.75rem;
+  background-color: var(--bg-surface);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  white-space: nowrap;
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
 /* --- BOTÕES DE AÇÃO DOS ATRIBUTOS --- */
 .attribute-actions {
   display: flex;
   gap: 10px;
+  flex-shrink: 0; /* Impede que os botões sejam amassados caso o texto seja muito grande */
 }
 
 .btn-edit {
@@ -80,4 +114,20 @@
 .btn-disable-small:hover {
   background-color: var(--text-danger);
   color: #ffffff;
+}
+
+/* ==========================================================================
+RESPONSIVIDADE (Mobile)
+========================================================================== */
+@media (max-width: 600px) {
+  .attribute-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .attribute-actions {
+    width: 100%;
+    justify-content: flex-end;
+    padding-top: 5px;
+  }
 }

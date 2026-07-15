@@ -1,12 +1,25 @@
-const { Author } = require('../models');
+const { Author, sequelize } = require('../models');
 
 /**
  * Lista todos os autores vinculados ao usuário logado, ordenados alfabeticamente.
+ * Inclui a contagem de livros vinculados a cada autor.
  */
 exports.list = async (req, res) => {
   try {
     const authors = await Author.findAll({
       where: { UserId: req.userId },
+      attributes: {
+        include: [
+          [
+            sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM "Book_Authors"
+              WHERE "Book_Authors"."AuthorId" = "Author"."id"
+            )`),
+            'bookCount'
+          ]
+        ]
+      },
       order: [['name', 'ASC']]
     });
     res.json(authors);

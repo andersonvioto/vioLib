@@ -1,12 +1,25 @@
-const { Translator } = require('../models');
+const { Translator, sequelize } = require('../models');
 
 /**
  * Lista todos os tradutores do usuário logado, ordenados alfabeticamente.
+ * Inclui a contagem de livros vinculados a cada tradutor.
  */
 exports.list = async (req, res) => {
   try {
     const translators = await Translator.findAll({
       where: { UserId: req.userId },
+      attributes: {
+        include: [
+          [
+            sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM "Book_Translators"
+              WHERE "Book_Translators"."TranslatorId" = "Translator"."id"
+            )`),
+            'bookCount'
+          ]
+        ]
+      },
       order: [['name', 'ASC']]
     });
     res.json(translators);

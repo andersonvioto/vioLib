@@ -1,7 +1,7 @@
 /* ==========================================================================
-   COMPONENT CSS - GenreManager
-   Grade de Cartões de Gêneros e listagem aninhada de Subgêneros.
-   ========================================================================== */
+COMPONENT CSS - GenreManager
+Grade de Cartões de Gêneros e listagem aninhada de Subgêneros.
+========================================================================== */
 
 .genres-container {
   display: grid;
@@ -24,12 +24,7 @@
   margin-bottom: 15px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border-color);
-}
-
-.genre-header h3 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 1.2rem;
+  gap: 15px;
 }
 
 .subgenre-list {
@@ -40,14 +35,80 @@
 }
 
 .sub-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 10px;
   margin-bottom: 8px;
   background-color: transparent;
   border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  gap: 10px;
 }
+
+/* --- Estrutura de Informação (Textos e Badges) --- */
+.attribute-info {
+  display: flex;
+  align-items: center;
+  flex: 1; /* Ocupa todo o espaço que sobrar */
+  min-width: 0; /* Trava de segurança: permite que textos internos quebrem a linha */
+}
+
+.attribute-name-text {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 500;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.genre-header .attribute-name-text {
+  font-size: 1.2rem;
+}
+
+.attribute-badge {
+  font-size: 0.75rem;
+  background-color: var(--bg-surface);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  white-space: nowrap; /* Impede o número de quebrar ao meio */
+  display: inline-block; /* Mágica: Permite que seja tratado como um "bloco" que flui com o texto */
+  margin-left: 8px; /* Espaço seguro entre a última letra do nome e a badge */
+  vertical-align: middle; /* Alinha o centro da badge com o meio das letras */
+}
+
+/* --- Grupo de Botões (Editar / Excluir) --- */
+.attribute-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0; /* Garante que os botões nunca diminuam de tamanho */
+}
+
+/* ==========================================================================
+RESPONSIVIDADE (Tablets e Mobile)
+========================================================================== */
 
 @media (max-width: 900px) {
   .genres-container {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  /* No celular, quebramos as linhas de texto e botões para evitar espremer o layout */
+  .genre-header,
+  .sub-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Os botões descem e alinham à direita para facilitar o clique com o polegar */
+  .attribute-actions {
+    width: 100%;
+    justify-content: flex-end;
+    padding-top: 5px;
   }
 }

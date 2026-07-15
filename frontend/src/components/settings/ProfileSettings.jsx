@@ -123,10 +123,11 @@ const ProfileSettings = () => {
             fontSize: '0.9em',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            width: '100%'
           }}
         >
-          <span className="material-symbols-rounded" style={{ fontSize: '1.4em' }}>
+          <span className="material-symbols-rounded" style={{ fontSize: '1.4em', flexShrink: 0 }}>
             security
           </span>
           <span>
@@ -146,7 +147,8 @@ const ProfileSettings = () => {
             backgroundColor:
               profileMsg.type === 'error' ? 'rgba(255,77,77,0.1)' : 'rgba(77,255,77,0.1)',
             color: profileMsg.type === 'error' ? '#ff4d4d' : '#4dff4d',
-            border: `1px solid ${profileMsg.type === 'error' ? '#ff4d4d' : '#4dff4d'}`
+            border: `1px solid ${profileMsg.type === 'error' ? '#ff4d4d' : '#4dff4d'}`,
+            width: '100%'
           }}
         >
           {profileMsg.text}
@@ -255,11 +257,12 @@ const ProfileSettings = () => {
         style={{
           margin: '40px 0 30px 0',
           border: 'none',
-          borderTop: '1px solid var(--border-color)'
+          borderTop: '1px solid var(--border-color)',
+          width: '100%'
         }}
       />
 
-      <div className="danger-zone">
+      <div className="danger-zone" style={{ width: '100%' }}>
         <h3
           style={{
             color: !isOnline ? 'var(--text-muted)' : '#ff4d4d',
@@ -284,7 +287,8 @@ const ProfileSettings = () => {
               backgroundColor:
                 deleteMsg.type === 'error' ? 'rgba(255, 77, 77, 0.1)' : 'rgba(77, 255, 136, 0.1)',
               color: deleteMsg.type === 'error' ? '#ff4d4d' : '#4dff88',
-              border: `1px solid ${deleteMsg.type === 'error' ? '#ff4d4d' : '#4dff88'}`
+              border: `1px solid ${deleteMsg.type === 'error' ? '#ff4d4d' : '#4dff88'}`,
+              width: '100%'
             }}
           >
             {deleteMsg.text}
@@ -311,7 +315,8 @@ const ProfileSettings = () => {
               background: 'var(--bg-input)',
               padding: '20px',
               borderRadius: 'var(--radius-md)',
-              border: '1px solid #ff4d4d'
+              border: '1px solid #ff4d4d',
+              width: '100%'
             }}
           >
             <p style={{ color: '#ff4d4d', fontWeight: 'bold', marginBottom: '10px', marginTop: 0 }}>
@@ -325,6 +330,7 @@ const ProfileSettings = () => {
               className="auth-input"
               style={{
                 marginBottom: '15px',
+                width: '100%',
                 maxWidth: '300px',
                 display: 'block',
                 padding: '10px',

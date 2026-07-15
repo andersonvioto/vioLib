@@ -1,34 +1,43 @@
 /* ==========================================================================
-   COMPONENT CSS - ProfileSettings
-   Formulários de atualização de dados e segurança da conta.
-   ========================================================================== */
+COMPONENT CSS - ProfileSettings
+Formulários de atualização de dados e segurança da conta.
+========================================================================== */
 
-.settings-section {
-  width: 100%;
+/* Regra de Ouro: Garante que NENHUM elemento dentro do painel cause overflow horizontal */
+.settings-panel,
+.settings-panel * {
   box-sizing: border-box;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  word-break: break-word;
+}
+
+.settings-panel {
+  width: 100%;
+  max-width: 100%; /* Mais seguro que 100vw, evita scroll extra */
+  overflow-x: hidden;
 }
 
 .settings-form {
   width: 100%;
   max-width: 500px;
   margin-top: 20px;
-  box-sizing: border-box;
 }
 
+/* Garante que o Label fique sempre acima do Input de forma absoluta */
 .input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin-bottom: 20px;
   width: 100%;
-  box-sizing: border-box;
 }
 
 .input-group label {
-  display: block;
   margin-bottom: 8px;
   color: var(--text-secondary);
   font-size: 0.9rem;
+  width: 100%;
+  /* Permite a quebra natural das palavras, mas nunca quebra no meio da letra */
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .auth-input,
@@ -37,8 +46,6 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
   transition: border-color 0.2s ease;
 }
 
@@ -88,8 +95,8 @@
 }
 
 /* ==========================================================================
-   RESPONSIVIDADE (Tablets e Mobile)
-   ========================================================================== */
+RESPONSIVIDADE (Tablets e Mobile)
+========================================================================== */
 
 @media (max-width: 900px) {
   .auth-input,
@@ -104,11 +111,10 @@
   }
 
   .settings-form .btn-action,
-  .settings-section .btn-action {
+  .settings-panel .btn-action {
     width: 100%;
     justify-content: center;
     padding: 14px;
     margin-bottom: 10px;
-    box-sizing: border-box;
   }
 }

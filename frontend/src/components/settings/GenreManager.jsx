@@ -108,31 +108,36 @@ const GenreManager = () => {
 
       {addingGenre && (
         <div className="genre-card" style={{ borderColor: 'var(--accent-gold)' }}>
-          <form onSubmit={handleSubmitNewGenre} style={{ display: 'flex', gap: '10px' }}>
+          <form
+            onSubmit={handleSubmitNewGenre}
+            style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}
+          >
             <input
               autoFocus
               type="text"
               value={newGenreName}
               onChange={(e) => setNewGenreName(e.target.value)}
               className="auth-input"
-              style={{ flex: 1 }}
+              style={{ flex: 1, minWidth: '200px' }}
               placeholder="Nome do gênero..."
             />
-            <button
-              type="submit"
-              className="btn-action btn-primary"
-              style={{ margin: 0, padding: '5px 15px' }}
-            >
-              Salvar
-            </button>
-            <button
-              type="button"
-              onClick={() => setAddingGenre(false)}
-              className="btn-disable"
-              style={{ margin: 0 }}
-            >
-              Cancelar
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="submit"
+                className="btn-action btn-primary"
+                style={{ margin: 0, padding: '5px 15px' }}
+              >
+                Salvar
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddingGenre(false)}
+                className="btn-disable"
+                style={{ margin: 0 }}
+              >
+                Cancelar
+              </button>
+            </div>
           </form>
         </div>
       )}
@@ -144,7 +149,13 @@ const GenreManager = () => {
               {editingMeta?.type === 'genres' && editingMeta?.id === genre.id ? (
                 <form
                   onSubmit={handleSubmitEdit}
-                  style={{ display: 'flex', gap: '10px', width: '100%', alignItems: 'center' }}
+                  style={{
+                    display: 'flex',
+                    gap: '10px',
+                    width: '100%',
+                    alignItems: 'center',
+                    flexWrap: 'wrap'
+                  }}
                 >
                   <input
                     autoFocus
@@ -152,37 +163,39 @@ const GenreManager = () => {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     className="auth-input"
-                    style={{ flex: 1, padding: '5px 10px' }}
+                    style={{ flex: 1, padding: '5px 10px', minWidth: '150px' }}
                   />
-                  <button
-                    type="submit"
-                    className="btn-edit"
-                    style={{ color: '#4dff4d', borderColor: '#4dff4d' }}
-                  >
-                    Salvar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditingMeta(null)}
-                    className="btn-disable-small"
-                  >
-                    Cancelar
-                  </button>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="submit"
+                      className="btn-edit"
+                      style={{ color: '#4dff4d', borderColor: '#4dff4d' }}
+                    >
+                      Salvar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingMeta(null)}
+                      className="btn-disable-small"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
                 </form>
               ) : (
                 <>
-                  <h3>
-                    {genre.name}{' '}
-                    <span
-                      style={{
-                        fontSize: '0.8em',
-                        color: 'var(--text-muted)',
-                        fontWeight: 'normal'
-                      }}
-                    >
-                      ({genre.bookCount || 0})
-                    </span>
-                  </h3>
+                  {/* Container Estrutural para o Texto e a Badge */}
+                  <div className="attribute-info">
+                    <h3 className="attribute-name-text">
+                      {genre.name}
+                      {/* Badge embutida no texto para fluir ao lado */}
+                      <span className="attribute-badge" title="Livros vinculados">
+                        ({genre.bookCount || 0})
+                      </span>
+                    </h3>
+                  </div>
+
+                  {/* Container de Botões */}
                   <div className="attribute-actions">
                     <button
                       onClick={() => startEditing('genres', genre.id, genre.name)}
@@ -209,7 +222,7 @@ const GenreManager = () => {
                     {editingMeta?.type === 'subgenres' && editingMeta?.id === subgenre.id ? (
                       <form
                         onSubmit={handleSubmitEdit}
-                        style={{ display: 'flex', gap: '10px', width: '100%' }}
+                        style={{ display: 'flex', gap: '10px', width: '100%', flexWrap: 'wrap' }}
                       >
                         <input
                           autoFocus
@@ -217,31 +230,37 @@ const GenreManager = () => {
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
                           className="auth-input"
-                          style={{ flex: 1, padding: '5px' }}
+                          style={{ flex: 1, padding: '5px', minWidth: '150px' }}
                         />
-                        <button
-                          type="submit"
-                          className="btn-edit"
-                          style={{ color: '#4dff4d', borderColor: '#4dff4d' }}
-                        >
-                          Salvar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setEditingMeta(null)}
-                          className="btn-disable-small"
-                        >
-                          Cancelar
-                        </button>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button
+                            type="submit"
+                            className="btn-edit"
+                            style={{ color: '#4dff4d', borderColor: '#4dff4d' }}
+                          >
+                            Salvar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingMeta(null)}
+                            className="btn-disable-small"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
                       </form>
                     ) : (
                       <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span>{subgenre.name}</span>
-                          <span style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>
-                            ({subgenre.bookCount || 0})
+                        {/* Estrutura Segura para o Subgênero */}
+                        <div className="attribute-info">
+                          <span className="attribute-name-text">
+                            {subgenre.name}
+                            <span className="attribute-badge" title="Livros vinculados">
+                              ({subgenre.bookCount || 0})
+                            </span>
                           </span>
                         </div>
+
                         <div className="attribute-actions">
                           <button
                             onClick={() => startEditing('subgenres', subgenre.id, subgenre.name)}
@@ -265,7 +284,7 @@ const GenreManager = () => {
                 {addingSubFor === genre.id ? (
                   <form
                     onSubmit={(e) => handleSubmitNewSubgenre(e, genre.id)}
-                    style={{ display: 'flex', gap: '10px' }}
+                    style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}
                   >
                     <input
                       autoFocus
@@ -273,23 +292,30 @@ const GenreManager = () => {
                       value={newSubName}
                       onChange={(e) => setNewSubName(e.target.value)}
                       className="auth-input"
-                      style={{ flex: 1, padding: '5px 10px', fontSize: '0.85rem' }}
+                      style={{
+                        flex: 1,
+                        padding: '5px 10px',
+                        fontSize: '0.85rem',
+                        minWidth: '150px'
+                      }}
                       placeholder="Novo subgênero..."
                     />
-                    <button
-                      type="submit"
-                      className="btn-edit"
-                      style={{ color: '#4dff4d', borderColor: '#4dff4d' }}
-                    >
-                      Salvar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAddingSubFor(null)}
-                      className="btn-disable-small"
-                    >
-                      Cancelar
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        type="submit"
+                        className="btn-edit"
+                        style={{ color: '#4dff4d', borderColor: '#4dff4d' }}
+                      >
+                        Salvar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAddingSubFor(null)}
+                        className="btn-disable-small"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
                   </form>
                 ) : (
                   <button

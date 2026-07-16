@@ -1,3 +1,8 @@
+/* ==========================================================================
+COMPONENT CSS - ImageCropperModal
+Estilos para o modal de recorte inteligente de capas de livros.
+========================================================================== */
+
 .cropper-overlay {
   position: fixed;
   inset: 0;
@@ -17,7 +22,7 @@
   border-radius: var(--radius-md);
   width: 100%;
   max-width: 500px;
-  /* Trava de Segurança: Modal nunca passa de 90% da altura da tela */
+  /* Trava de Segurança: Modal nunca passa de 90% da altura da tela no PC */
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -57,32 +62,37 @@
 .cropper-wrap {
   padding: 15px;
   background-color: #000;
-  /* A Mágica do Flexbox: Ocupa todo o espaço livre, mas respeita os limites do pai */
-  flex: 1;
+  flex: 1; /* Ocupa todo o espaço restante do card */
   min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Removemos o scroll para forçar a imagem a encolher e caber inteira */
   overflow: hidden;
 }
 
-/* Trava o contêiner gerado pela biblioteca react-image-crop */
+/* Container criado pela biblioteca do React Crop */
 .ReactCrop {
   max-width: 100%;
   max-height: 100%;
-  display: flex; /* Remove espaços em branco do inline-block clássico */
-  align-items: center;
-  justify-content: center;
+  /* Mantém o comportamento contido para as margens de recorte funcionarem */
+  display: inline-flex;
 }
 
 .cropper-image {
-  /* Força a imagem a encolher horizontal e verticalmente sem perder a proporção */
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
   display: block;
   margin: 0 auto;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+
+  /* =======================================================================
+A SOLUÇÃO DEFINITIVA (O Muro Matemático):
+Modal = 90vh. Cabeçalho + Rodapé + Margens = ~260px.
+Isso garante que a imagem NUNCA estoure o container preto e
+esteja 100% visível, resolvendo o bug do cálculo de percentagem do CSS!
+======================================================================= */
+  max-height: calc(90vh - 260px) !important;
 }
 
 .cropper-options {
@@ -160,6 +170,11 @@ AJUSTES EXCLUSIVOS PARA MOBILE
   .cropper-card {
     /* No mobile, podemos usar quase toda a tela */
     max-height: 95vh;
+  }
+
+  .cropper-image {
+    /* Ajuste fino matemático para a altura do mobile */
+    max-height: calc(95vh - 240px) !important;
   }
 
   .cropper-wrap {

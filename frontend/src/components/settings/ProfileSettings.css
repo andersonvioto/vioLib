@@ -21,89 +21,78 @@ Formulários de atualização de dados e segurança da conta.
   margin-top: 20px;
 }
 
-/* Garante que o Label fique sempre acima do Input de forma absoluta */
-.input-group {
+/* ==========================================================================
+MÁGICA DO ESCOPO & "BOX INCEPTION":
+Aproveitamos a caixa externa do .input-group (vinda do Auth.css)
+e removemos as caixas internas para tudo ficar limpo e uniforme.
+========================================================================== */
+.settings-panel .input-group {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   margin-bottom: 20px;
   width: 100%;
+  /* Adiciona respiro no topo e rodapé da caixa externa para abraçar o Label e o Input */
+  padding: 12px 15px;
 }
 
-.input-group label {
-  margin-bottom: 8px;
+.settings-panel .input-group label {
+  margin-bottom: 4px;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   width: 100%;
-  /* Permite a quebra natural das palavras, mas nunca quebra no meio da letra */
   word-break: normal;
   overflow-wrap: break-word;
 }
 
-.auth-input,
-.settings-input-wrapper {
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+.settings-panel .auth-input,
+.settings-panel .settings-input-wrapper {
+  background: transparent;
+  border: none;
   width: 100%;
-  transition: border-color 0.2s ease;
+  padding: 0; /* Remove paddings extras, a caixa pai já tem */
 }
 
-.auth-input {
+.settings-panel .auth-input {
   color: var(--text-primary);
-  padding: 12px 15px;
+  padding: 6px 0 2px 0;
   font-size: 1rem;
   outline: none;
 }
 
-.auth-input:focus {
-  border-color: var(--accent-gold);
-}
-
-.settings-input-wrapper {
+.settings-panel .settings-input-wrapper {
   display: flex;
   align-items: center;
-  padding-right: 15px;
 }
 
-.settings-input-wrapper:focus-within {
-  border-color: var(--accent-gold);
-}
-
-.settings-input-wrapper input {
+.settings-panel .settings-input-wrapper input {
   flex: 1;
   background: transparent;
   border: none;
   color: var(--text-primary);
-  padding: 12px 15px;
+  padding: 6px 0 2px 0;
   font-size: 1rem;
   outline: none;
   min-width: 0; /* Previne que o input flex estoure a largura do pai */
 }
 
-.settings-input-wrapper .material-symbols-rounded {
+.settings-panel .settings-input-wrapper .material-symbols-rounded {
   color: var(--text-muted);
   cursor: pointer;
   font-size: 1.2rem;
   user-select: none;
   transition: color 0.2s;
   flex-shrink: 0;
+  margin-left: 10px; /* Descola o ícone do olho do texto */
 }
 
-.settings-input-wrapper .material-symbols-rounded:hover {
+.settings-panel .settings-input-wrapper .material-symbols-rounded:hover {
   color: var(--accent-gold);
 }
 
 /* ==========================================================================
 RESPONSIVIDADE (Tablets e Mobile)
 ========================================================================== */
-
-@media (max-width: 900px) {
-  .auth-input,
-  .settings-input-wrapper input {
-    padding: 14px 15px;
-  }
-}
 
 @media (max-width: 600px) {
   .settings-form {

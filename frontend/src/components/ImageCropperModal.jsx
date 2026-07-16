@@ -36,7 +36,7 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
 
   const onImageLoad = (e) => {
     const { width, height } = e.currentTarget;
-    const initialCrop = centerAspectCrop(width, height, 3 / 4);
+    const initialCrop = centerAspectCrop(width, height, 2 / 3);
     setCrop(initialCrop);
     setCompletedCrop(convertToPixelCrop(initialCrop, width, height));
   };
@@ -45,10 +45,10 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
     const newAspectLocked = !isAspectLocked;
     setIsAspectLocked(newAspectLocked);
 
-    // Se o usuário reativar a trava, re-centralizamos e forçamos a proporção 3:4 perfeitamente
+    // Se o usuário reativar a trava, re-centralizamos e forçamos a proporção 2:3 perfeitamente
     if (newAspectLocked && imgRef.current) {
       const { width, height } = imgRef.current;
-      const newCrop = centerAspectCrop(width, height, 3 / 4);
+      const newCrop = centerAspectCrop(width, height, 2 / 3);
       setCrop(newCrop);
       setCompletedCrop(convertToPixelCrop(newCrop, width, height));
     }
@@ -139,7 +139,7 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
             onComplete={(c) => setCompletedCrop(c)}
-            aspect={isAspectLocked ? 3 / 4 : undefined}
+            aspect={isAspectLocked ? 2 / 3 : undefined}
           >
             <img
               ref={imgRef}
@@ -154,7 +154,7 @@ const ImageCropperModal = ({ imageSrc, onComplete, onCancel }) => {
         <div className="cropper-options">
           <label className="cropper-aspect-toggle">
             <input type="checkbox" checked={isAspectLocked} onChange={handleToggleAspect} />
-            <span>Manter proporção de livro (3:4)</span>
+            <span>Manter proporção de livro 14x21 (2:3)</span>
           </label>
         </div>
 

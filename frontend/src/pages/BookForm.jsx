@@ -59,6 +59,10 @@ const customSelectStyles = {
   })
 };
 
+/**
+ * Componente do formulário de criação e edição de livros.
+ * Integrado com sensor de rede para bloquear buscas externas (Amazon/ISBN) quando offline.
+ */
 const BookForm = () => {
   const { t } = useTranslation();
   const isOnline = useNetworkStatus();
@@ -112,7 +116,6 @@ const BookForm = () => {
         <h1 className="form-title">{isEditMode ? 'Editar Livro' : t('add_book')}</h1>
       </header>
 
-      {}
       {feedback.message && (
         <div className={`feedback-banner ${feedback.type}`}>
           <span className="material-symbols-rounded">
@@ -126,7 +129,6 @@ const BookForm = () => {
         <BarcodeScanner onScanSuccess={handleScanSuccess} onClose={() => setIsScannerOpen(false)} />
       )}
 
-      {}
       <form onSubmit={handleSubmit}>
         <div className="form-section">
           <h2 className="section-title">
@@ -145,7 +147,8 @@ const BookForm = () => {
             </div>
 
             <div className="cover-actions">
-              <label className="btn-action btn-cover-option">
+              {}
+              <label className="btn-action btn-cover-option mobile-camera-btn">
                 <span className="material-symbols-rounded">photo_camera</span>
                 Tirar Foto
                 <input
@@ -258,7 +261,6 @@ const BookForm = () => {
                 </button>
               </div>
 
-              {}
               <div className="isbn-wrapper">
                 <input
                   type="url"
@@ -307,7 +309,6 @@ const BookForm = () => {
               </div>
             </div>
 
-            {}
             <div className="form-group full-width" style={{ marginTop: '10px' }}>
               <label className="form-label">
                 <span className="material-symbols-rounded">title</span> Título do Livro *
@@ -491,7 +492,6 @@ const BookForm = () => {
           </div>
         </div>
 
-        {}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">edit_note</span> Notas Pessoais

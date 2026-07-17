@@ -82,7 +82,7 @@ const CollectionDashboard = () => {
     BookId: null
   });
 
-  const [activeFilter, setActiveFilter] = useState(null);
+  const [activeFilters, setActiveFilters] = useState({});
 
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -255,12 +255,15 @@ const CollectionDashboard = () => {
   const progressStyle = { '--progress': `${stats.progress}%` };
 
   const filteredItems = CollectionItems.filter((item) => {
-    if (activeFilter) {
-      const rawValue = item.axisValues[activeFilter.axis];
+    // Verifica TODOS os filtros ativos (Lógica AND)
+    for (const axis in activeFilters) {
+      const filterValue = activeFilters[axis];
+      const rawValue = item.axisValues[axis];
       const normalizedValue =
         rawValue && String(rawValue).trim() !== '' ? rawValue : 'Não categorizado';
 
-      if (normalizedValue !== activeFilter.value) {
+      // Se falhar em UM filtro, o item já é descartado
+      if (normalizedValue !== filterValue) {
         return false;
       }
     }
@@ -349,7 +352,9 @@ const CollectionDashboard = () => {
         <div className="xp-section">
           <h2 className="section-title mural-title-wrapper">
             <span className="material-symbols-rounded">analytics</span> Desempenho por Categoria
-            <span className="mural-hint-text">(Clique numa barra para filtrar o mural)</span>
+            <span className="mural-hint-text">
+              (Clique nas barras para combinar filtros de categorias diferentes)
+            </span>
           </h2>
           <div className="xp-grid">
             {customAxes.map((axis) => (
@@ -361,17 +366,28 @@ const CollectionDashboard = () => {
                       valStats.total === 0
                         ? 0
                         : Math.round((valStats.owned / valStats.total) * 100);
-                    const isActive = activeFilter?.axis === axis && activeFilter?.value === valName;
+
+                    // Verifica se no dicionário de filtros, este Eixo está com este Valor selecionado
+                    const isActive = activeFilters[axis] === valName;
 
                     return (
                       <div
                         key={valName}
                         className={`xp-bar-container ${isActive ? 'active-filter' : ''}`}
                         onClick={() => {
-                          if (isActive) setActiveFilter(null);
-                          else setActiveFilter({ axis, value: valName });
+                          setActiveFilters((prev) => {
+                            const nextFilters = { ...prev };
+                            if (isActive) {
+                              // Se já está ativo, remove do dicionário (desliga o filtro)
+                              delete nextFilters[axis];
+                            } else {
+                              // Se não está, adiciona ou substitui a escolha naquele Eixo
+                              nextFilters[axis] = valName;
+                            }
+                            return nextFilters;
+                          });
                         }}
-                        title={isActive ? 'Remover filtro' : `Filtrar itens por ${valName}`}
+                        title={isActive ? 'Remover filtro' : `Adicionar aos filtros`}
                       >
                         <div className="xp-bar-header">
                           <span className="xp-val-name">{valName}</span>
@@ -395,18 +411,29 @@ const CollectionDashboard = () => {
       <div className="mural-section">
         <div className="mural-header">
           <div className="mural-header-top">
-            <div className="mural-title-wrapper">
+            <div className="mural-title-wrapper" style={{ flexWrap: 'wrap' }}>
               <h2 className="section-title" style={{ margin: 0 }}>
                 <span className="material-symbols-rounded">grid_view</span> Mural de Coleção
               </h2>
-              {activeFilter && (
-                <span className="mural-active-filter">
-                  Filtro {activeFilter.axis}: {activeFilter.value}
-                  <span className="material-symbols-rounded" onClick={() => setActiveFilter(null)}>
+
+              {/* Gerador Dinâmico de Badges para múltiplos filtros */}
+              {Object.entries(activeFilters).map(([axis, val]) => (
+                <span key={axis} className="mural-active-filter">
+                  Filtro {axis}: {val}
+                  <span
+                    className="material-symbols-rounded"
+                    onClick={() => {
+                      setActiveFilters((prev) => {
+                        const next = { ...prev };
+                        delete next[axis];
+                        return next;
+                      });
+                    }}
+                  >
                     cancel
                   </span>
                 </span>
-              )}
+              ))}
             </div>
 
             <button className="btn-action btn-primary" onClick={() => openItemModal()}>
@@ -480,13 +507,13 @@ const CollectionDashboard = () => {
             <button
               className="btn-action btn-empty-clear"
               onClick={() => {
-                setActiveFilter(null);
+                setActiveFilters({});
                 setSearchInput('');
                 setSearchQuery('');
                 setHideMissing(false);
               }}
             >
-              Limpar Filtros
+              Limpar Todos os Filtros
             </button>
           </div>
         ) : (

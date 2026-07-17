@@ -84,7 +84,6 @@ const CollectionDashboard = () => {
 
   const [activeFilter, setActiveFilter] = useState(null);
 
-  // Estados separados para o Debounce da pesquisa
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -132,17 +131,16 @@ const CollectionDashboard = () => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCollection();
+
     fetchLibraryBooks();
   }, [fetchCollection, fetchLibraryBooks]);
 
-  // Persistência das preferências do usuário
   useEffect(() => {
     localStorage.setItem(`violib_col_sort_multi_${id}`, JSON.stringify(userSortBy));
     localStorage.setItem(`violib_col_order_${id}`, sortOrder);
     localStorage.setItem(`violib_col_hide_missing_${id}`, hideMissing);
   }, [userSortBy, sortOrder, hideMissing, id]);
 
-  // Lógica de Debounce para a pesquisa em memória (evita travamentos na interface)
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       setSearchQuery(searchInput);
@@ -257,7 +255,16 @@ const CollectionDashboard = () => {
   const progressStyle = { '--progress': `${stats.progress}%` };
 
   const filteredItems = CollectionItems.filter((item) => {
-    if (activeFilter && item.axisValues[activeFilter.axis] !== activeFilter.value) return false;
+    if (activeFilter) {
+      const rawValue = item.axisValues[activeFilter.axis];
+      const normalizedValue =
+        rawValue && String(rawValue).trim() !== '' ? rawValue : 'Não categorizado';
+
+      if (normalizedValue !== activeFilter.value) {
+        return false;
+      }
+    }
+
     if (hideMissing && item.status === 'missing') return false;
     if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
@@ -394,7 +401,7 @@ const CollectionDashboard = () => {
               </h2>
               {activeFilter && (
                 <span className="mural-active-filter">
-                  Filtro XP: {activeFilter.value}
+                  Filtro {activeFilter.axis}: {activeFilter.value}
                   <span className="material-symbols-rounded" onClick={() => setActiveFilter(null)}>
                     cancel
                   </span>

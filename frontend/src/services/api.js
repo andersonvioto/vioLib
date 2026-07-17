@@ -97,7 +97,6 @@ api.interceptors.response.use(
     const method = response.config.method;
 
     try {
-      // PREVENÇÃO DE LOGOUT: Cache do perfil no login
       if (method === 'post' && url.includes('/auth/login')) {
         if (response.data && response.data.user) {
           localStorage.setItem('violib_offline_profile', JSON.stringify(response.data.user));
@@ -112,11 +111,16 @@ api.interceptors.response.use(
             ? response.data
             : response.data.books || [];
           const isPageOne = url.includes('page=1');
+
+          // Se tiver qualquer filtro ativo na URL, nós NÃO queremos sobrescrever a base offline completa!
           const hasFilters =
             url.includes('search=') ||
             url.includes('genre=') ||
             url.includes('subgenre=') ||
-            url.includes('tag=');
+            url.includes('tag=') ||
+            url.includes('author=') ||
+            url.includes('translator=');
+
           const isReset = isPageOne && !hasFilters;
 
           await saveBooksCache(booksData, isReset);
@@ -139,7 +143,7 @@ api.interceptors.response.use(
       const config = error.config;
 
       // ==========================================
-      // FALLBACK DE LEITURA (GET)
+      // FALLBACK DE LEITURA (GET) - OFFLINE SEARCH
       // ==========================================
       if (config && config.method === 'get') {
         try {
@@ -153,7 +157,7 @@ api.interceptors.response.use(
               const bookId = parseInt(bookIdMatch[1], 10);
               const foundBook = cachedBooks.find((b) => b.id === bookId);
               if (foundBook) {
-                foundBook.isOwner = true; // Injeta propriedade p/ permitir edição offline
+                foundBook.isOwner = true;
                 return Promise.resolve({
                   data: foundBook,
                   status: 200,
@@ -175,6 +179,8 @@ api.interceptors.response.use(
             const genre = params.get('genre');
             const subgenre = params.get('subgenre');
             const tag = params.get('tag');
+            const author = params.get('author');
+            const translator = params.get('translator');
             const borrowed = params.get('borrowed') === 'true';
             const sortBy = params.get('sortBy') || 'title';
             const order = params.get('order') || 'ASC';
@@ -193,6 +199,12 @@ api.interceptors.response.use(
               filtered = filtered.filter((b) => b.Subgenres?.some((s) => s.name === subgenre));
             if (tag) filtered = filtered.filter((b) => b.Tags?.some((t) => t.name === tag));
             if (borrowed) filtered = filtered.filter((b) => b.Loans?.some((l) => !l.returnDate));
+
+            // Novos filtros estritos
+            if (author)
+              filtered = filtered.filter((b) => b.Authors?.some((a) => a.name === author));
+            if (translator)
+              filtered = filtered.filter((b) => b.Translators?.some((t) => t.name === translator));
 
             filtered.sort((a, b) => {
               let valA = a[sortBy];
@@ -277,7 +289,6 @@ api.interceptors.response.use(
             let payload = config.data;
             let isFormData = false;
 
-            // Garantia extra de extração de FormData
             if (
               config.data instanceof FormData ||
               (config.data &&
@@ -303,7 +314,6 @@ api.interceptors.response.use(
               isFormData: isFormData
             });
 
-            // ATUALIZAÇÃO OTIMISTA NO INDEXED DB
             if (config.url.includes('/books') && !config.url.includes('/access/')) {
               const parseArrayField = (fieldData) => {
                 if (!fieldData) return [];

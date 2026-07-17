@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import './GenreManager.css';
 
 const GenreManager = () => {
+  const navigate = useNavigate();
+
   const [genres, setGenres] = useState([]);
   const [subgenres, setSubgenres] = useState([]);
 
@@ -188,8 +191,19 @@ const GenreManager = () => {
                   <div className="attribute-info">
                     <h3 className="attribute-name-text">
                       {genre.name}
-                      {/* Badge embutida no texto para fluir ao lado */}
-                      <span className="attribute-badge" title="Livros vinculados">
+                      {/* Badge clicável para filtrar o Dashboard */}
+                      <span
+                        className="attribute-badge"
+                        title="Ver livros deste gênero na Biblioteca"
+                        style={{
+                          cursor: 'pointer',
+                          color: 'var(--accent-gold)',
+                          borderColor: 'var(--accent-gold)'
+                        }}
+                        onClick={() =>
+                          navigate(`/biblioteca?genre=${encodeURIComponent(genre.name)}`)
+                        }
+                      >
                         ({genre.bookCount || 0})
                       </span>
                     </h3>
@@ -255,7 +269,21 @@ const GenreManager = () => {
                         <div className="attribute-info">
                           <span className="attribute-name-text">
                             {subgenre.name}
-                            <span className="attribute-badge" title="Livros vinculados">
+                            {/* Badge clicável para filtrar o Dashboard com gênero e subgênero */}
+                            <span
+                              className="attribute-badge"
+                              title="Ver livros deste subgênero na Biblioteca"
+                              style={{
+                                cursor: 'pointer',
+                                color: 'var(--accent-gold)',
+                                borderColor: 'var(--accent-gold)'
+                              }}
+                              onClick={() =>
+                                navigate(
+                                  `/biblioteca?genre=${encodeURIComponent(genre.name)}&subgenre=${encodeURIComponent(subgenre.name)}`
+                                )
+                              }
+                            >
                               ({subgenre.bookCount || 0})
                             </span>
                           </span>

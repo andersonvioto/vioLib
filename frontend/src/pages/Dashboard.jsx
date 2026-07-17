@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 
 // Contextos
@@ -16,7 +16,6 @@ import './dashboard.css';
 
 /**
  * Componente interno do Skeleton Screen.
- * Imita o formato visual do BookCard enquanto os dados estão sendo buscados.
  */
 const SkeletonCard = () => (
   <div className="skeleton-card">
@@ -34,32 +33,37 @@ const SkeletonCard = () => (
 
 /**
  * Tela Principal da Biblioteca (Dashboard).
- * Atua como o maestro, coordenando os componentes visuais, o estado e as chamadas de API.
+ * Controlada integralmente pela URL (URL as Single Source of Truth).
  */
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Estado Global: Define de quem é a biblioteca que estamos visualizando
   const { currentLibrary } = useContext(LibraryContext);
 
-  // Estados de Paginação e Dados
   const [myBooks, setMyBooks] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [totalBooks, setTotalBooks] = useState(0);
 
-  // Estados dos Filtros Ativos (com persistência no localStorage)
-  const [searchInput, setSearchInput] = useState(''); // O que o usuário vê na tela enquanto digita
-  const [searchTerm, setSearchTerm] = useState(''); // O que de fato vai para a API (após o atraso)
+  // Lemos os filtros ativos diretamente da URL
+  const urlSearch = searchParams.get('search') || '';
+  const urlGenre = searchParams.get('genre') || '';
+  const urlSubgenre = searchParams.get('subgenre') || '';
+  const urlTag = searchParams.get('tag') || '';
 
+  // NOVOS FILTROS ESTRITOS
+  const urlAuthor = searchParams.get('author') || '';
+  const urlTranslator = searchParams.get('translator') || '';
+
+  const [searchInput, setSearchInput] = useState(urlSearch);
+
+  // Preferências persistentes do Usuário
   const [sortBy, setSortBy] = useState(() => localStorage.getItem('violib_sortBy') || 'title');
   const [sortOrder, setSortOrder] = useState(
     () => localStorage.getItem('violib_sortOrder') || 'ASC'
   );
-  const [selectedGenre, setSelectedGenre] = useState('');
-  const [selectedSubgenre, setSelectedSubgenre] = useState('');
-  const [selectedTag, setSelectedTag] = useState('');
   const [showOnlyBorrowed, setShowOnlyBorrowed] = useState(
     () => localStorage.getItem('violib_showOnlyBorrowed') === 'true'
   );
@@ -68,26 +72,57 @@ const Dashboard = () => {
     return saved !== null ? saved === 'true' : true;
   });
 
-  // Estados de UI
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [availableGenres, setAvailableGenres] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
 
-  // ==========================================
-  // DEBOUNCE (LAZY SEARCH) - Otimização de Performance
-  // ==========================================
+  // Sincronização e Debounce
   useEffect(() => {
-    // Aguarda 600ms após o usuário parar de digitar para acionar a busca real
+    setSearchInput(urlSearch);
+  }, [urlSearch]);
+
+  useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      setSearchTerm(searchInput);
+      if (searchInput !== urlSearch) {
+        const newParams = new URLSearchParams(searchParams);
+        if (searchInput) newParams.set('search', searchInput);
+        else newParams.delete('search');
+        setSearchParams(newParams);
+      }
     }, 600);
-
     return () => clearTimeout(delayDebounceFn);
-  }, [searchInput]);
+  }, [searchInput, urlSearch, searchParams, setSearchParams]);
 
-  // ==========================================
-  // PERSISTÊNCIA DAS PREFERÊNCIAS DO USUÁRIO
-  // ==========================================
+  const handleSelectGenre = (genreValue) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (genreValue) newParams.set('genre', genreValue);
+    else newParams.delete('genre');
+
+    newParams.delete('subgenre');
+    setSearchParams(newParams);
+  };
+
+  const handleSelectSubgenre = (subgenreValue) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (subgenreValue) newParams.set('subgenre', subgenreValue);
+    else newParams.delete('subgenre');
+    setSearchParams(newParams);
+  };
+
+  const handleSelectTag = (tagValue) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (tagValue) newParams.set('tag', tagValue);
+    else newParams.delete('tag');
+    setSearchParams(newParams);
+  };
+
+  // Helper para limpar um filtro estrito pela UI
+  const handleClearStrictFilter = (paramKey) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete(paramKey);
+    setSearchParams(newParams);
+  };
+
   useEffect(() => {
     localStorage.setItem('violib_sortBy', sortBy);
     localStorage.setItem('violib_sortOrder', sortOrder);
@@ -95,25 +130,7 @@ const Dashboard = () => {
     localStorage.setItem('violib_showTagsOnCards', showTagsOnCards);
   }, [sortBy, sortOrder, showOnlyBorrowed, showTagsOnCards]);
 
-  // ==========================================
-  // EFEITOS INICIAIS E SINCRONIZAÇÃO
-  // ==========================================
-
-  // Busca as taxonomias dinamicamente com base na biblioteca atual
   useEffect(() => {
-    // 1. Limpa os filtros anteriores para não buscar uma categoria que não existe no amigo
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSearchInput('');
-
-    setSearchTerm('');
-
-    setSelectedGenre('');
-
-    setSelectedSubgenre('');
-
-    setSelectedTag('');
-
-    // 2. Monta os parâmetros de forma segura
     const params = new URLSearchParams();
     params.append('usedOnly', 'true');
 
@@ -130,15 +147,7 @@ const Dashboard = () => {
       .catch(console.error);
   }, [currentLibrary]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSelectedSubgenre('');
-  }, [selectedGenre]);
-
-  // ==========================================
-  // LÓGICA DE BUSCA DA API (MOTOR CENTRAL)
-  // ==========================================
-
+  // Lógica da API reativa
   const fetchBooks = useCallback(
     async (targetPage, isReset = false) => {
       setIsLoading(true);
@@ -151,12 +160,14 @@ const Dashboard = () => {
         const params = new URLSearchParams({
           page: targetPage,
           limit: 20,
-          search: searchTerm,
+          search: urlSearch,
           sortBy: sortBy,
           order: sortOrder,
-          genre: selectedGenre,
-          subgenre: selectedSubgenre,
-          tag: selectedTag,
+          genre: urlGenre,
+          subgenre: urlSubgenre,
+          tag: urlTag,
+          author: urlAuthor, // Injetando o filtro estrito
+          translator: urlTranslator, // Injetando o filtro estrito
           borrowed: showOnlyBorrowed ? 'true' : 'false'
         });
 
@@ -198,12 +209,14 @@ const Dashboard = () => {
       }
     },
     [
-      searchTerm,
+      urlSearch,
+      urlGenre,
+      urlSubgenre,
+      urlTag,
+      urlAuthor,
+      urlTranslator,
       sortBy,
       sortOrder,
-      selectedGenre,
-      selectedSubgenre,
-      selectedTag,
       showOnlyBorrowed,
       currentLibrary,
       navigate
@@ -211,15 +224,9 @@ const Dashboard = () => {
   );
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
-
     fetchBooks(1, true);
   }, [fetchBooks]);
-
-  // ==========================================
-  // HANDLERS E VARIÁVEIS DE RENDERIZAÇÃO
-  // ==========================================
 
   const handleLoadMore = () => {
     const nextPage = page + 1;
@@ -227,10 +234,10 @@ const Dashboard = () => {
     fetchBooks(nextPage, false);
   };
 
-  // Comparação à prova de falhas: ignora case sensitive e espaços vazios acidentais
   const activeGenreObj = availableGenres.find(
-    (g) => g.name?.trim().toLowerCase() === selectedGenre?.trim().toLowerCase()
+    (g) => g.name?.trim().toLowerCase() === urlGenre?.trim().toLowerCase()
   );
+
   const activeSubgenres = activeGenreObj
     ? activeGenreObj.Subgenres || activeGenreObj.subgenres || []
     : [];
@@ -242,9 +249,16 @@ const Dashboard = () => {
       'Convidado'
     : '';
 
-  // ==========================================
-  // RENDERIZAÇÃO
-  // ==========================================
+  // Determina dinamicamente o título da seção baseando-se na URL
+  const renderSectionTitle = () => {
+    if (urlAuthor) return `Obras de ${urlAuthor}`;
+    if (urlTranslator) return `Traduções de ${urlTranslator}`;
+    if (urlSubgenre) return urlSubgenre;
+    if (urlGenre) return urlGenre;
+    if (currentLibrary) return `Acervo de ${libraryOwnerName}`;
+    return 'Minha Biblioteca';
+  };
+
   return (
     <div className="dashboard-container">
       <Header />
@@ -277,8 +291,8 @@ const Dashboard = () => {
         setSortBy={setSortBy}
         sortOrder={sortOrder}
         setSortOrder={setSortOrder}
-        selectedTag={selectedTag}
-        setSelectedTag={setSelectedTag}
+        selectedTag={urlTag}
+        setSelectedTag={handleSelectTag}
         availableTags={availableTags}
         showOnlyBorrowed={showOnlyBorrowed}
         setShowOnlyBorrowed={setShowOnlyBorrowed}
@@ -288,16 +302,16 @@ const Dashboard = () => {
 
       <Shelf
         items={availableGenres}
-        activeItem={selectedGenre}
-        onSelect={setSelectedGenre}
+        activeItem={urlGenre}
+        onSelect={handleSelectGenre}
         defaultLabel="Toda a Biblioteca"
       />
 
       {activeSubgenres.length > 0 && (
         <Shelf
           items={activeSubgenres}
-          activeItem={selectedSubgenre}
-          onSelect={setSelectedSubgenre}
+          activeItem={urlSubgenre}
+          onSelect={handleSelectSubgenre}
           defaultLabel={`Todos em ${activeGenreObj.name}`}
           isSubgenre={true}
         />
@@ -306,19 +320,39 @@ const Dashboard = () => {
       <div className="library-section">
         <div className="section-header">
           <span className="material-symbols-rounded section-icon">
-            {selectedSubgenre || selectedGenre ? 'folder_open' : 'local_library'}
+            {urlAuthor
+              ? 'person'
+              : urlTranslator
+                ? 'translate'
+                : urlSubgenre || urlGenre
+                  ? 'folder_open'
+                  : 'local_library'}
           </span>
-          <h2 className="section-title">
-            {selectedSubgenre
-              ? selectedSubgenre
-              : selectedGenre
-                ? selectedGenre
-                : currentLibrary
-                  ? `Acervo de ${libraryOwnerName}`
-                  : 'Minha Biblioteca'}
+          <h2
+            className="section-title"
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
+            {renderSectionTitle()}
             <span className="title-count">
               ({isLoading && myBooks.length === 0 ? '...' : totalBooks})
             </span>
+
+            {/* Botão de limpeza rápida caso o usuário esteja preso no filtro estrito */}
+            {(urlAuthor || urlTranslator) && (
+              <span
+                className="material-symbols-rounded"
+                onClick={() => handleClearStrictFilter(urlAuthor ? 'author' : 'translator')}
+                title="Limpar este filtro"
+                style={{
+                  fontSize: '20px',
+                  color: 'var(--text-danger)',
+                  cursor: 'pointer',
+                  marginLeft: '5px'
+                }}
+              >
+                cancel
+              </span>
+            )}
           </h2>
         </div>
 

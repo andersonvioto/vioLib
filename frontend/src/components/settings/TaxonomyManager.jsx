@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import './TaxonomyManager.css';
 
@@ -9,6 +10,7 @@ import './TaxonomyManager.css';
  * @param {string} itemLabel - Rótulo para placeholders e botões
  */
 const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState(''); // Estado da barra de busca
 
@@ -90,21 +92,26 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
   // Função utilitária para remover acentos e transformar em minúsculas
   const normalizeText = (text) => {
     return text
-      .normalize('NFD') // Separa os acentos das letras
-      .replace(/[\u0300-\u036f]/g, '') // Remove os acentos
-      .toLowerCase(); // Tudo minúsculo
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
   };
 
-  // Aplica o filtro de texto em tempo real (ignorando acentos e maiúsculas)
   const filteredItems = items.filter((item) =>
     normalizeText(item.name).includes(normalizeText(searchTerm))
   );
+
+  // Mapeia dinamicamente o parâmetro da URL correto com base no endpoint
+  const getFilterParam = () => {
+    if (endpoint === 'authors') return 'author';
+    if (endpoint === 'translators') return 'translator';
+    return 'search'; // Fallback de segurança
+  };
 
   return (
     <div className="settings-panel">
       <h2>{title}</h2>
 
-      {/* Barra de Ações: Adicionar e Buscar */}
       <div
         style={{
           display: 'flex',
@@ -264,7 +271,19 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
                 <div className="attribute-info">
                   <span className="attribute-name-text">
                     {item.name}
-                    <span className="attribute-badge" title="Livros vinculados">
+                    {/* Badge clicável gerando a URL exata do filtro estrito */}
+                    <span
+                      className="attribute-badge"
+                      title="Ver livros associados na Biblioteca"
+                      style={{
+                        cursor: 'pointer',
+                        color: 'var(--accent-gold)',
+                        borderColor: 'var(--accent-gold)'
+                      }}
+                      onClick={() =>
+                        navigate(`/biblioteca?${getFilterParam()}=${encodeURIComponent(item.name)}`)
+                      }
+                    >
                       ({item.bookCount || 0})
                     </span>
                   </span>

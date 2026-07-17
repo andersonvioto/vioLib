@@ -12,7 +12,6 @@ const {
 
 /**
  * Função utilitária para normalizar strings (remove acentos e converte para minúsculas).
- * Essencial para buscas tolerantes a falhas.
  */
 const normalizeText = (text) => {
   if (!text) return '';
@@ -23,7 +22,7 @@ const normalizeText = (text) => {
 };
 
 /**
- * Helper para processar associações N:N simples (Autores, Tradutores, Tags).
+ * Helper para processar associações N:N simples.
  */
 const processRelations = async (book, items, Model, userId, associationMethod) => {
   if (items && items.length > 0) {
@@ -43,12 +42,11 @@ const processRelations = async (book, items, Model, userId, associationMethod) =
  * Helper inteligente para processar Gêneros e Subgêneros hierárquicos on-the-fly.
  */
 const processCategories = async (book, genreNames, subgenreNames, userId, methodPrefix) => {
-  const setGenres = methodPrefix + 'Genres'; // ex: 'addGenres' ou 'setGenres'
-  const setSubgenres = methodPrefix + 'Subgenres'; // ex: 'addSubgenres' ou 'setSubgenres'
+  const setGenres = methodPrefix + 'Genres';
+  const setSubgenres = methodPrefix + 'Subgenres';
 
   let genreInstance = null;
 
-  // 1. Processa o Gênero Pai
   if (genreNames && genreNames.length > 0) {
     const genreName = genreNames[0].trim();
     if (genreName) {
@@ -61,7 +59,6 @@ const processCategories = async (book, genreNames, subgenreNames, userId, method
     await book[setGenres]([]);
   }
 
-  // 2. Processa os Subgêneros (apenas se existir um Gênero Pai válido)
   if (subgenreNames && subgenreNames.length > 0 && genreInstance) {
     const subInstances = await Promise.all(
       subgenreNames.map(async (subName) => {
@@ -80,9 +77,6 @@ const processCategories = async (book, genreNames, subgenreNames, userId, method
   }
 };
 
-/**
- * Cria um novo livro e suas associações iniciais.
- */
 exports.createBook = async (req, res) => {
   try {
     const userId = req.userId;
@@ -120,7 +114,6 @@ exports.createBook = async (req, res) => {
     await processRelations(book, translators, Translator, userId, 'addTranslators');
     await processRelations(book, tags, Tag, userId, 'addTags');
 
-    // Processamento hierárquico dinâmico para Gêneros
     await processCategories(book, genres, subgenres, userId, 'add');
 
     res.status(201).json({ message: 'Livro cadastrado com sucesso!', book });
@@ -131,7 +124,7 @@ exports.createBook = async (req, res) => {
 };
 
 /**
- * Busca livros com suporte a filtros, ordenação e paginação.
+ * Busca livros com suporte a filtros estritos e busca em memória tolerante a falhas.
  */
 exports.getAllBooks = async (req, res) => {
   try {
@@ -144,6 +137,8 @@ exports.getAllBooks = async (req, res) => {
       genre = '',
       subgenre = '',
       tag = '',
+      author = '', // Novo Filtro Estrito
+      translator = '', // Novo Filtro Estrito
       borrowed = 'false'
     } = req.query;
 
@@ -167,11 +162,16 @@ exports.getAllBooks = async (req, res) => {
 
     const needsMemorySearch = search.trim().length > 0;
 
+    // Constrói a Query utilizando Filtros Estritos com Inner Joins (required: !!value)
     const queryOptions = {
       where: bookWhere,
       include: [
-        { model: Author },
-        { model: Translator },
+        { model: Author, where: author ? { name: author } : undefined, required: !!author },
+        {
+          model: Translator,
+          where: translator ? { name: translator } : undefined,
+          required: !!translator
+        },
         { model: Subgenre, where: subgenre ? { name: subgenre } : undefined, required: !!subgenre },
         { model: Genre, where: genre ? { name: genre } : undefined, required: !!genre },
         { model: Tag, where: tag ? { name: tag } : undefined, required: !!tag },
@@ -217,7 +217,6 @@ exports.getAllBooks = async (req, res) => {
         })
         .filter((item) => item.score > 0);
 
-      // Ordena por pontuação (Maior para o Menor). Em caso de empate, usa a ordem alfabética do título.
       scoredBooks.sort((a, b) => {
         if (b.score !== a.score) {
           return b.score - a.score;
@@ -225,7 +224,6 @@ exports.getAllBooks = async (req, res) => {
         return a.book.title.localeCompare(b.book.title);
       });
 
-      // Atualiza o total de itens para o Frontend e aplica a paginação programaticamente no array
       count = scoredBooks.length;
       const paginatedScoredBooks = scoredBooks.slice(offset, offset + parseInt(limit, 10));
       rows = paginatedScoredBooks.map((item) => item.book);
@@ -243,9 +241,6 @@ exports.getAllBooks = async (req, res) => {
   }
 };
 
-/**
- * Busca detalhes de um livro por ID, validando permissão do usuário.
- */
 exports.getBookById = async (req, res) => {
   try {
     const bookId = parseInt(req.params.id, 10);
@@ -275,9 +270,6 @@ exports.getBookById = async (req, res) => {
   }
 };
 
-/**
- * Exclui um livro pertencente ao usuário logado.
- */
 exports.deleteBook = async (req, res) => {
   try {
     const deleted = await Book.destroy({ where: { id: req.params.id, UserId: req.userId } });
@@ -289,9 +281,6 @@ exports.deleteBook = async (req, res) => {
   }
 };
 
-/**
- * Atualiza um livro existente e suas relações.
- */
 exports.updateBook = async (req, res) => {
   try {
     const { id } = req.params;
@@ -338,7 +327,6 @@ exports.updateBook = async (req, res) => {
     );
     await processRelations(book, JSON.parse(req.body.tags || '[]'), Tag, userId, 'setTags');
 
-    // Processamento hierárquico dinâmico para Gêneros na atualização
     await processCategories(
       book,
       JSON.parse(req.body.genres || '[]'),

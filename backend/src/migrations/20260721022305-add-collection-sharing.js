@@ -16,6 +16,10 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
+    /**
+     * REVERTENDO AS ALTERAÇÕES (Rollback)
+     */
+
     await queryInterface.removeColumn('LIBRARY_ACCESS', 'canViewLibrary');
     await queryInterface.removeColumn('LIBRARY_ACCESS', 'canViewCollections');
   }

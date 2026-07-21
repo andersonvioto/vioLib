@@ -1,24 +1,44 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../services/api';
-import './BookForm.css'; // Reutilizamos os estilos base dos formulários da aplicação
+import { getCoverUrl } from '../utils/bookHelpers';
+import './BookForm.css';
 
 const CollectionForm = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
+
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
 
-  // Dados básicos
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
-  // Imagem de Banner
   const [bannerFile, setBannerFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  // Eixos Dinâmicos (Array de strings)
   const [axes, setAxes] = useState([]);
   const [newAxisInput, setNewAxisInput] = useState('');
+
+  // Busca os dados se estivermos a editar
+  useEffect(() => {
+    if (isEditMode) {
+      api
+        .get(`/collections/${id}`)
+        .then((res) => {
+          const col = res.data;
+          setTitle(col.title);
+          setDescription(col.description || '');
+          setAxes(col.customAxes || []);
+          if (col.bannerImage) setPreviewUrl(getCoverUrl(col.bannerImage));
+        })
+        .catch((err) => {
+          console.error(err);
+          navigate('/colecoes');
+        });
+    }
+  }, [id, isEditMode, navigate]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -72,12 +92,17 @@ const CollectionForm = () => {
         payloadForm.append('bannerImage', bannerFile);
       }
 
-      await api.post('/collections', payloadForm);
-      navigate('/colecoes'); // Redireciona para o Mural de Troféus
+      if (isEditMode) {
+        await api.put(`/collections/${id}`, payloadForm);
+      } else {
+        await api.post('/collections', payloadForm);
+      }
+
+      navigate('/colecoes');
     } catch (error) {
       setFeedback({
         type: 'error',
-        message: error.response?.data?.error || 'Erro ao criar coleção.'
+        message: error.response?.data?.error || 'Erro ao salvar coleção.'
       });
       setIsSaving(false);
     }
@@ -90,9 +115,9 @@ const CollectionForm = () => {
           className="material-symbols-rounded"
           style={{ fontSize: '2.5em', color: 'var(--accent-gold)' }}
         >
-          library_books
+          {isEditMode ? 'edit_document' : 'library_books'}
         </span>
-        <h1 className="form-title">Criar Nova Coleção</h1>
+        <h1 className="form-title">{isEditMode ? 'Editar Coleção' : 'Criar Nova Coleção'}</h1>
       </header>
 
       {feedback.message && (
@@ -105,7 +130,6 @@ const CollectionForm = () => {
       )}
 
       <form onSubmit={handleSubmit}>
-        {/* SESSÃO 1: CAPA/BANNER */}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">wallpaper</span> Imagem de Fundo (Banner)
@@ -137,7 +161,6 @@ const CollectionForm = () => {
           </div>
         </div>
 
-        {/* SESSÃO 2: DADOS BÁSICOS */}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">info</span> Informações Básicas
@@ -166,7 +189,6 @@ const CollectionForm = () => {
           </div>
         </div>
 
-        {/* SESSÃO 3: EIXOS DINÂMICOS (A GRANDE INOVAÇÃO) */}
         <div className="form-section">
           <h2 className="section-title" style={{ marginBottom: '5px' }}>
             <span className="material-symbols-rounded">category</span> Eixos de Agrupamento
@@ -208,7 +230,6 @@ const CollectionForm = () => {
             </button>
           </div>
 
-          {/* Área visual das Tags criadas */}
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {axes.map((axis) => (
               <div
@@ -253,7 +274,7 @@ const CollectionForm = () => {
             Cancelar
           </button>
           <button type="submit" className="btn-action btn-primary" disabled={isSaving}>
-            {isSaving ? 'A Guardar...' : 'Guardar Nova Coleção'}
+            {isSaving ? 'A Guardar...' : isEditMode ? 'Guardar Edição' : 'Guardar Nova Coleção'}
           </button>
         </div>
       </form>

@@ -22,10 +22,6 @@ import CollectionForm from './pages/CollectionForm';
 import CollectionDashboard from './pages/CollectionDashboard';
 import ReloadPrompt from './components/ReloadPrompt';
 
-// ==========================================
-// GUARDAS DE ROTA (ROUTE GUARDS)
-// ==========================================
-
 const PrivateRoute = ({ children }) => {
   const isAuthenticated = !!localStorage.getItem('token');
   return isAuthenticated ? children : <Navigate to="/login" replace />;
@@ -35,10 +31,6 @@ const PublicRoute = ({ children }) => {
   const isAuthenticated = !!localStorage.getItem('token');
   return isAuthenticated ? <Navigate to="/biblioteca" replace /> : children;
 };
-
-// ==========================================
-// INDICADOR VISUAL DE SINCRONIZAÇÃO
-// ==========================================
 
 const SyncIndicator = () => {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -88,10 +80,6 @@ const SyncIndicator = () => {
   );
 };
 
-// ==========================================
-// COMPONENTE PRINCIPAL
-// ==========================================
-
 function App() {
   useEffect(() => {
     const handleOnline = () => {
@@ -118,7 +106,6 @@ function App() {
             <Routes>
               <Route path="/" element={<Navigate to="/biblioteca" replace />} />
 
-              {/* ROTAS PÚBLICAS E POLÍTICAS */}
               <Route
                 path="/login"
                 element={
@@ -135,7 +122,6 @@ function App() {
               <Route path="/verificar-email/:token" element={<VerifyEmail />} />
               <Route path="/redefinir-senha/:token" element={<ResetPassword />} />
 
-              {/* ROTAS PRIVADAS (Só acessa com Token) */}
               <Route
                 path="/biblioteca"
                 element={
@@ -193,7 +179,6 @@ function App() {
                 }
               />
 
-              {/* ROTAS DO MÓDULO DE COLEÇÕES (GAMIFICAÇÃO) */}
               <Route
                 path="/colecoes"
                 element={
@@ -204,6 +189,14 @@ function App() {
               />
               <Route
                 path="/colecoes/nova"
+                element={
+                  <PrivateRoute>
+                    <CollectionForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/colecoes/editar/:id"
                 element={
                   <PrivateRoute>
                     <CollectionForm />

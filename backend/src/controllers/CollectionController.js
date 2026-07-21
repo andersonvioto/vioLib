@@ -90,7 +90,6 @@ exports.getCollectionById = async (req, res) => {
     let ownedItems = 0;
 
     // Objeto que vai guardar o progresso de cada Eixo Dinâmico
-    // Exemplo: { "Edição": { "1a": { total: 10, owned: 5 } } }
     const axisStats = {};
     plainCol.customAxes.forEach((axis) => {
       axisStats[axis] = {};
@@ -129,12 +128,67 @@ exports.getCollectionById = async (req, res) => {
   }
 };
 
+exports.updateCollection = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description } = req.body;
+    const newAxes = req.body.customAxes ? JSON.parse(req.body.customAxes) : [];
+
+    const collection = await Collection.findOne({
+      where: { id, UserId: req.userId },
+      include: [{ model: CollectionItem }]
+    });
+
+    if (!collection) return res.status(404).json({ error: 'Coleção não encontrada.' });
+
+    // VALIDAÇÃO INTELIGENTE: Impedir a remoção de uma categoria (eixo) se ela já estiver em uso
+    const currentAxes = collection.customAxes || [];
+    const removedAxes = currentAxes.filter((axis) => !newAxes.includes(axis));
+
+    for (const removedAxis of removedAxes) {
+      const isAxisInUse = collection.CollectionItems.some((item) => {
+        const val = item.axisValues && item.axisValues[removedAxis];
+        return val && String(val).trim() !== '';
+      });
+
+      if (isAxisInUse) {
+        return res.status(400).json({
+          error: `Não é possível remover a categoria "${removedAxis}" porque já existem itens a utilizá-la.`
+        });
+      }
+    }
+
+    // Se uma nova imagem foi enviada, usamos a nova. Se não, mantemos a antiga.
+    const bannerImage = req.file ? req.file.path : collection.bannerImage;
+
+    await collection.update({
+      title: title || collection.title,
+      description: description !== undefined ? description : collection.description,
+      bannerImage,
+      customAxes: newAxes
+    });
+
+    res.json({ message: 'Coleção atualizada com sucesso!', collection });
+  } catch (error) {
+    console.error('❌ ERRO AO ATUALIZAR COLEÇÃO:', error);
+    res.status(500).json({ error: 'Erro ao atualizar a coleção.' });
+  }
+};
+
 exports.deleteCollection = async (req, res) => {
   try {
-    const deleted = await Collection.destroy({ where: { id: req.params.id, UserId: req.userId } });
-    if (!deleted) return res.status(404).json({ error: 'Coleção não encontrada.' });
+    const { id } = req.params;
+
+    const collection = await Collection.findOne({ where: { id, UserId: req.userId } });
+    if (!collection) return res.status(404).json({ error: 'Coleção não encontrada.' });
+
+    await CollectionItem.destroy({ where: { CollectionId: collection.id } });
+
+    await collection.destroy();
+
     res.json({ message: 'Coleção excluída com sucesso.' });
   } catch (error) {
+    console.error('❌ ERRO AO EXCLUIR COLEÇÃO:', error);
     res.status(500).json({ error: 'Erro ao excluir coleção.' });
   }
 };
@@ -150,7 +204,6 @@ exports.addItem = async (req, res) => {
     const { collectionId } = req.params;
     const { title, status, axisValues, BookId } = req.body;
 
-    // Verifica se a coleção pertence ao utilizador
     const collection = await Collection.findOne({
       where: { id: collectionId, UserId: req.userId }
     });
@@ -159,7 +212,7 @@ exports.addItem = async (req, res) => {
     const item = await CollectionItem.create({
       title,
       status: status || 'missing',
-      axisValues: axisValues || {}, // Ex: { "Edição": "1", "Categoria": "Aventura" }
+      axisValues: axisValues || {},
       CollectionId: collection.id,
       BookId: BookId || null
     });
@@ -176,7 +229,6 @@ exports.updateItem = async (req, res) => {
     const { itemId } = req.params;
     const { title, status, axisValues, BookId } = req.body;
 
-    // Segurança: Garantir que o item pertence a uma coleção do utilizador logado
     const item = await CollectionItem.findOne({
       where: { id: itemId },
       include: [{ model: Collection, where: { UserId: req.userId } }]

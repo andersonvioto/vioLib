@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useContext } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 import api from '../services/api';
 import Header from '../components/Header';
 import { LibraryContext } from '../contexts/LibraryContext';
@@ -136,7 +137,6 @@ const CollectionDashboard = () => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCollection();
-    // Apenas carrega os livros para o select se for o dono
     if (!isGuest) fetchLibraryBooks();
   }, [fetchCollection, fetchLibraryBooks, isGuest]);
 
@@ -152,6 +152,21 @@ const CollectionDashboard = () => {
     }, 500);
     return () => clearTimeout(delayDebounceFn);
   }, [searchInput]);
+
+  const handleDeleteCollection = async () => {
+    if (
+      window.confirm(
+        'Tem a certeza que deseja APAGAR esta coleção inteira e todos os seus itens? Os livros na biblioteca não serão afetados.'
+      )
+    ) {
+      try {
+        await api.delete(`/collections/${id}`);
+        navigate('/colecoes');
+      } catch (error) {
+        alert('Erro ao excluir coleção.');
+      }
+    }
+  };
 
   const openItemModal = (item = null) => {
     if (item) {
@@ -310,9 +325,36 @@ const CollectionDashboard = () => {
         }}
       >
         <div className="hero-gradient-overlay"></div>
-        <button className="btn-back-hero" onClick={() => navigate('/colecoes')}>
-          <span className="material-symbols-rounded">arrow_back</span> Voltar
-        </button>
+
+        {/* Nova Barra Superior Limpa e Estruturada */}
+        <div className="hero-top-bar">
+          <button className="btn-back-hero" onClick={() => navigate('/colecoes')}>
+            <span className="material-symbols-rounded">arrow_back</span> Voltar
+          </button>
+
+          {!isGuest && (
+            <div className="hero-owner-actions">
+              <button
+                className="btn-action hero-action-btn"
+                onClick={() => navigate(`/colecoes/editar/${id}`)}
+                title="Editar Coleção"
+              >
+                <span className="material-symbols-rounded" style={{ margin: 0 }}>
+                  edit
+                </span>
+              </button>
+              <button
+                className="btn-action hero-action-btn delete-btn"
+                onClick={handleDeleteCollection}
+                title="Excluir Coleção"
+              >
+                <span className="material-symbols-rounded" style={{ margin: 0 }}>
+                  delete
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="hero-content">
           <div className="hero-text-area">
@@ -398,7 +440,7 @@ const CollectionDashboard = () => {
 
               {Object.entries(activeFilters).map(([axis, val]) => (
                 <span key={axis} className="mural-active-filter">
-                  {axis}: {val}
+                  Filtro {axis}: {val}
                   <span
                     className="material-symbols-rounded"
                     onClick={() => {
@@ -507,7 +549,6 @@ const CollectionDashboard = () => {
                   key={item.id}
                   className={`item-card ${isMissing ? 'status-missing' : 'status-owned'}`}
                   onClick={() => {
-                    // Impede o modal de abrir para convidados
                     if (!isGuest) openItemModal(item);
                   }}
                   style={{ cursor: isGuest ? 'default' : 'pointer' }}
@@ -599,7 +640,7 @@ const CollectionDashboard = () => {
                     required
                     value={itemForm.title}
                     onChange={(e) => handleItemFormChange('title', e.target.value)}
-                    placeholder="Ex: Way of the Dragon"
+                    placeholder="Ex: Prelúdios e Noturnos"
                   />
                 </div>
 
@@ -671,18 +712,38 @@ const CollectionDashboard = () => {
                   <div className="modal-category-block">
                     <h4 className="modal-category-header">Categorização do Item</h4>
                     <div className="modal-category-grid">
-                      {customAxes.map((axis) => (
-                        <div key={axis} className="form-group full-width">
-                          <label className="form-label">{axis}</label>
-                          <input
-                            type="text"
-                            className="form-input"
-                            placeholder={`Ex: Valor para ${axis}`}
-                            value={itemForm.axisValues[axis] || ''}
-                            onChange={(e) => handleAxisChange(axis, e.target.value)}
-                          />
-                        </div>
-                      ))}
+                      {customAxes.map((axis) => {
+                        const existingValues = Object.keys(stats.axisStats[axis] || {})
+                          .filter((val) => val !== 'Não categorizado')
+                          .map((val) => ({ value: val, label: val }));
+
+                        return (
+                          <div key={axis} className="form-group full-width">
+                            <label className="form-label">{axis}</label>
+                            <CreatableSelect
+                              isClearable
+                              options={existingValues}
+                              value={
+                                itemForm.axisValues[axis]
+                                  ? {
+                                      label: itemForm.axisValues[axis],
+                                      value: itemForm.axisValues[axis]
+                                    }
+                                  : null
+                              }
+                              onChange={(selected) =>
+                                handleAxisChange(axis, selected ? selected.value : '')
+                              }
+                              styles={customSelectStyles}
+                              placeholder={`Selecione ou digite um novo...`}
+                              formatCreateLabel={(inputValue) => `Criar: "${inputValue}"`}
+                              noOptionsMessage={() =>
+                                'Nenhuma opção cadastrada. Digite para criar.'
+                              }
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

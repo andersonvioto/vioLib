@@ -13,7 +13,7 @@ const LibraryAccess = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Users',
+        model: 'USERS', // <-- CORREÇÃO: Maiúsculas para o Oracle Database
         key: 'id'
       },
       onDelete: 'CASCADE'
@@ -22,7 +22,7 @@ const LibraryAccess = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Users',
+        model: 'USERS', // <-- CORREÇÃO: Maiúsculas para o Oracle Database
         key: 'id'
       },
       onDelete: 'CASCADE'
@@ -41,14 +41,8 @@ const LibraryAccess = sequelize.define(
     }
   },
   {
-    tableName: 'LIBRARY_ACCESS',
-    timestamps: true,
-    indexes: [
-      {
-        unique: true,
-        fields: ['ownerId', 'guestId']
-      }
-    ]
+    tableName: 'LIBRARY_ACCESS', // <-- CORREÇÃO: Maiúsculas para o Oracle Database
+    timestamps: true
   }
 );
 

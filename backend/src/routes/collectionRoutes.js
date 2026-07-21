@@ -3,12 +3,10 @@ const router = express.Router();
 const CollectionController = require('../controllers/CollectionController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
-// Configuração do Multer para upload de imagens
 const multer = require('multer');
 const multerConfig = require('../config/multer');
 const upload = multer(multerConfig);
 
-// Proteção global para todas as rotas deste arquivo
 router.use(authMiddleware);
 
 /**
@@ -22,6 +20,7 @@ router
 router
   .route('/:id')
   .get(CollectionController.getCollectionById)
+  .put(upload.single('bannerImage'), CollectionController.updateCollection)
   .delete(CollectionController.deleteCollection);
 
 /**

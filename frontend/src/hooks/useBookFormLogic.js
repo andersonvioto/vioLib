@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import api from '../services/api';
 
 const DEFAULT_COVER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"><rect width="200" height="300" fill="transparent" stroke="%23D4AF37" stroke-width="1" stroke-dasharray="4,4"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="serif" font-size="28" fill="%23D4AF37">vioLib</text><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23888888">Sem Capa</text></svg>`;
@@ -43,6 +43,10 @@ const useBookFormLogic = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = Boolean(id);
+
+  // MÁGICA DE ROTA: Lê se viemos de alguma tela específica (como Coleções)
+  const location = useLocation();
+  const backUrl = location.state?.backUrl;
 
   const [formData, setFormData] = useState({
     isbn: '',
@@ -481,7 +485,8 @@ const useBookFormLogic = () => {
     try {
       if (isEditMode) {
         await api.put(`/books/${id}`, payloadForm);
-        navigate(`/livro/${id}`);
+        // Repassa o "caminho de volta" para a tela de detalhes não o perder!
+        navigate(`/livro/${id}`, { state: { backUrl } });
       } else {
         await api.post('/books', payloadForm);
         navigate('/biblioteca');

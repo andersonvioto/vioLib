@@ -144,7 +144,7 @@ const CollectionForm = () => {
           </h2>
           <div className="form-grid">
             <div className="form-group full-width">
-              <label className="form-label">Nome da Coleção (ex: L5R RPG) *</label>
+              <label className="form-label">Nome da Coleção (ex: Absolute Sandman) *</label>
               <input
                 type="text"
                 value={title}
@@ -180,7 +180,7 @@ const CollectionForm = () => {
             }}
           >
             Como quer organizar e ver o progresso desta coleção? Crie até 4 categorias
-            personalizadas (ex: Edição, Saga, Formato).
+            personalizadas (ex: Edição, Arco, Saga).
           </p>
 
           <div className="isbn-wrapper" style={{ marginBottom: '20px' }}>

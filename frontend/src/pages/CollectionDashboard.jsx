@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Select from 'react-select';
 import api from '../services/api';
 import Header from '../components/Header';
@@ -66,6 +66,7 @@ const customSelectStyles = {
 const CollectionDashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); // Usado para repassar a rota atual para o "Voltar"
 
   const [collection, setCollection] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -367,7 +368,6 @@ const CollectionDashboard = () => {
                         ? 0
                         : Math.round((valStats.owned / valStats.total) * 100);
 
-                    // Verifica se no dicionário de filtros, este Eixo está com este Valor selecionado
                     const isActive = activeFilters[axis] === valName;
 
                     return (
@@ -378,10 +378,8 @@ const CollectionDashboard = () => {
                           setActiveFilters((prev) => {
                             const nextFilters = { ...prev };
                             if (isActive) {
-                              // Se já está ativo, remove do dicionário (desliga o filtro)
                               delete nextFilters[axis];
                             } else {
-                              // Se não está, adiciona ou substitui a escolha naquele Eixo
                               nextFilters[axis] = valName;
                             }
                             return nextFilters;
@@ -527,29 +525,38 @@ const CollectionDashboard = () => {
                   onClick={() => openItemModal(item)}
                 >
                   <div className="item-card-header">
-                    <h4 className="item-card-title">{item.title}</h4>
+                    {/* Alinhamento Esquerdo: Ícone + Título */}
+                    <div className="item-header-left">
+                      <span
+                        className={`material-symbols-rounded item-owned-icon ${isMissing ? 'icon-placeholder' : ''}`}
+                        title={!isMissing ? 'Item Adquirido' : ''}
+                      >
+                        workspace_premium
+                      </span>
+                      <h4 className="item-card-title">{item.title}</h4>
+                    </div>
 
+                    {/* Alinhamento Direito: Link da Biblioteca */}
                     <div className="item-card-actions">
-                      {item.BookId && (
-                        <span
-                          className="material-symbols-rounded item-link-icon"
-                          title="Ir para o Livro na Biblioteca"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/livro/${item.BookId}`);
-                          }}
-                        >
-                          auto_stories
-                        </span>
-                      )}
-                      {!isMissing && (
-                        <span
-                          className="material-symbols-rounded item-owned-icon"
-                          title="Adquirido"
-                        >
-                          workspace_premium
-                        </span>
-                      )}
+                      <span
+                        className={`material-symbols-rounded item-link-icon ${item.BookId ? 'linked' : 'unlinked'}`}
+                        title={
+                          item.BookId
+                            ? 'Ir para o Livro na Biblioteca'
+                            : 'Não vinculado à biblioteca'
+                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.BookId) {
+                            // MÁGICA DE ROTAS: Passamos a URL atual como "estado de origem"
+                            navigate(`/livro/${item.BookId}`, {
+                              state: { backUrl: location.pathname }
+                            });
+                          }
+                        }}
+                      >
+                        auto_stories
+                      </span>
                     </div>
                   </div>
 

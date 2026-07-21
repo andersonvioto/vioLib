@@ -1,12 +1,16 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getCitationText } from '../utils/bookHelpers';
 import './BookDetailHeader.css';
 
 const BookDetailHeader = ({ book, onDelete }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showCitationMenu, setShowCitationMenu] = useState(false);
+
+  // Lê a rota de origem (se houver). Se não houver, assume a biblioteca como padrão.
+  const backUrl = location.state?.backUrl || '/biblioteca';
 
   const handleCopyCitation = async (format) => {
     try {
@@ -45,7 +49,8 @@ const BookDetailHeader = ({ book, onDelete }) => {
 
   return (
     <div className="details-header">
-      <button onClick={() => navigate('/biblioteca')} className="btn-action btn-back-clean">
+      {/* O Botão agora volta de forma absoluta para a origem inteligente */}
+      <button onClick={() => navigate(backUrl)} className="btn-action btn-back-clean">
         <span className="material-symbols-rounded">arrow_back</span>
         Voltar
       </button>
@@ -102,12 +107,15 @@ const BookDetailHeader = ({ book, onDelete }) => {
                 <span className="material-symbols-rounded">settings</span>
                 <span className="action-label">Ajustes</span>
               </button>
+
+              {/* Repassamos a rota de origem para a tela de edição não perder o rastro! */}
               <button
-                onClick={() => navigate(`/editar-livro/${book.id}`)}
+                onClick={() => navigate(`/editar-livro/${book.id}`, { state: { backUrl } })}
                 className="btn-action edit-btn"
               >
                 <span className="material-symbols-rounded">edit</span> Editar Obra
               </button>
+
               <button onClick={onDelete} className="btn-action delete-btn">
                 <span className="material-symbols-rounded">delete</span> Excluir
               </button>

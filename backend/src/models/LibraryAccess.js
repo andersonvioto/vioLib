@@ -41,7 +41,7 @@ const LibraryAccess = sequelize.define(
     }
   },
   {
-    tableName: 'LibraryAccess',
+    tableName: 'LIBRARY_ACCESS',
     timestamps: true,
     indexes: [
       {

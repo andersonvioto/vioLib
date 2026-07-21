@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Select from 'react-select';
 import api from '../services/api';
 import Header from '../components/Header';
+import { LibraryContext } from '../contexts/LibraryContext';
 import { getCoverUrl } from '../utils/bookHelpers';
 import './CollectionDashboard.css';
 
@@ -66,7 +67,10 @@ const customSelectStyles = {
 const CollectionDashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation(); // Usado para repassar a rota atual para o "Voltar"
+  const location = useLocation();
+
+  const { currentLibrary } = useContext(LibraryContext);
+  const isGuest = !!currentLibrary;
 
   const [collection, setCollection] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -84,7 +88,6 @@ const CollectionDashboard = () => {
   });
 
   const [activeFilters, setActiveFilters] = useState({});
-
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -97,9 +100,7 @@ const CollectionDashboard = () => {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) {}
     }
     return [{ value: 'title', label: 'Título' }];
   });
@@ -110,7 +111,10 @@ const CollectionDashboard = () => {
 
   const fetchCollection = useCallback(async () => {
     try {
-      const response = await api.get(`/collections/${id}`);
+      const endpoint = currentLibrary
+        ? `/access/${currentLibrary.ownerId}/collections/${id}`
+        : `/collections/${id}`;
+      const response = await api.get(endpoint);
       setCollection(response.data);
     } catch (error) {
       console.error('Erro ao carregar coleção:', error);
@@ -118,7 +122,7 @@ const CollectionDashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [id, navigate]);
+  }, [id, currentLibrary, navigate]);
 
   const fetchLibraryBooks = useCallback(async () => {
     try {
@@ -132,9 +136,9 @@ const CollectionDashboard = () => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCollection();
-
-    fetchLibraryBooks();
-  }, [fetchCollection, fetchLibraryBooks]);
+    // Apenas carrega os livros para o select se for o dono
+    if (!isGuest) fetchLibraryBooks();
+  }, [fetchCollection, fetchLibraryBooks, isGuest]);
 
   useEffect(() => {
     localStorage.setItem(`violib_col_sort_multi_${id}`, JSON.stringify(userSortBy));
@@ -146,7 +150,6 @@ const CollectionDashboard = () => {
     const delayDebounceFn = setTimeout(() => {
       setSearchQuery(searchInput);
     }, 500);
-
     return () => clearTimeout(delayDebounceFn);
   }, [searchInput]);
 
@@ -170,10 +173,7 @@ const CollectionDashboard = () => {
   };
 
   const handleAxisChange = (axisName, value) => {
-    setItemForm((prev) => ({
-      ...prev,
-      axisValues: { ...prev.axisValues, [axisName]: value }
-    }));
+    setItemForm((prev) => ({ ...prev, axisValues: { ...prev.axisValues, [axisName]: value } }));
   };
 
   const handleSilentBookCreate = async () => {
@@ -202,9 +202,7 @@ const CollectionDashboard = () => {
     setIsSaving(true);
     try {
       const finalPayload = { ...itemForm };
-      if (finalPayload.status === 'missing') {
-        finalPayload.BookId = null;
-      }
+      if (finalPayload.status === 'missing') finalPayload.BookId = null;
 
       if (itemForm.id) {
         await api.put(`/collections/items/${itemForm.id}`, finalPayload);
@@ -240,12 +238,12 @@ const CollectionDashboard = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || !collection) {
     return (
       <div className="dashboard-container">
         <Header />
         <div className="collections-loading">
-          <span className="material-symbols-rounded spinner-icon">sync</span> Sincronizando o seu
+          <span className="material-symbols-rounded spinner-icon">sync</span> Sincronizando o
           progresso...
         </div>
       </div>
@@ -256,19 +254,13 @@ const CollectionDashboard = () => {
   const progressStyle = { '--progress': `${stats.progress}%` };
 
   const filteredItems = CollectionItems.filter((item) => {
-    // Verifica TODOS os filtros ativos (Lógica AND)
     for (const axis in activeFilters) {
       const filterValue = activeFilters[axis];
       const rawValue = item.axisValues[axis];
       const normalizedValue =
         rawValue && String(rawValue).trim() !== '' ? rawValue : 'Não categorizado';
-
-      // Se falhar em UM filtro, o item já é descartado
-      if (normalizedValue !== filterValue) {
-        return false;
-      }
+      if (normalizedValue !== filterValue) return false;
     }
-
     if (hideMissing && item.status === 'missing') return false;
     if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
@@ -276,7 +268,6 @@ const CollectionDashboard = () => {
 
   const sortedItems = [...filteredItems].sort((a, b) => {
     const collator = new Intl.Collator('pt-BR', { numeric: true, sensitivity: 'base' });
-
     for (const sortOption of userSortBy) {
       const criteria = sortOption.value;
       let valA, valB;
@@ -294,14 +285,9 @@ const CollectionDashboard = () => {
       }
 
       const comparisonResult = collator.compare(valA, valB);
-      if (comparisonResult !== 0) {
-        return sortOrder === 'ASC' ? comparisonResult : -comparisonResult;
-      }
+      if (comparisonResult !== 0) return sortOrder === 'ASC' ? comparisonResult : -comparisonResult;
     }
-
-    if (!userSortBy.some((opt) => opt.value === 'title')) {
-      return collator.compare(a.title, b.title);
-    }
+    if (!userSortBy.some((opt) => opt.value === 'title')) return collator.compare(a.title, b.title);
     return 0;
   });
 
@@ -367,7 +353,6 @@ const CollectionDashboard = () => {
                       valStats.total === 0
                         ? 0
                         : Math.round((valStats.owned / valStats.total) * 100);
-
                     const isActive = activeFilters[axis] === valName;
 
                     return (
@@ -377,15 +362,12 @@ const CollectionDashboard = () => {
                         onClick={() => {
                           setActiveFilters((prev) => {
                             const nextFilters = { ...prev };
-                            if (isActive) {
-                              delete nextFilters[axis];
-                            } else {
-                              nextFilters[axis] = valName;
-                            }
+                            if (isActive) delete nextFilters[axis];
+                            else nextFilters[axis] = valName;
                             return nextFilters;
                           });
                         }}
-                        title={isActive ? 'Remover filtro' : `Adicionar aos filtros`}
+                        title={isActive ? 'Remover filtro' : 'Adicionar aos filtros'}
                       >
                         <div className="xp-bar-header">
                           <span className="xp-val-name">{valName}</span>
@@ -414,10 +396,9 @@ const CollectionDashboard = () => {
                 <span className="material-symbols-rounded">grid_view</span> Mural de Coleção
               </h2>
 
-              {/* Gerador Dinâmico de Badges para múltiplos filtros */}
               {Object.entries(activeFilters).map(([axis, val]) => (
                 <span key={axis} className="mural-active-filter">
-                  Filtro {axis}: {val}
+                  {axis}: {val}
                   <span
                     className="material-symbols-rounded"
                     onClick={() => {
@@ -434,9 +415,11 @@ const CollectionDashboard = () => {
               ))}
             </div>
 
-            <button className="btn-action btn-primary" onClick={() => openItemModal()}>
-              <span className="material-symbols-rounded">add</span> Adicionar Item
-            </button>
+            {!isGuest && (
+              <button className="btn-action btn-primary" onClick={() => openItemModal()}>
+                <span className="material-symbols-rounded">add</span> Adicionar Item
+              </button>
+            )}
           </div>
 
           {CollectionItems.length > 0 && (
@@ -493,8 +476,9 @@ const CollectionDashboard = () => {
             <span className="material-symbols-rounded empty-icon">extension_off</span>
             <h2>Coleção Vazia!</h2>
             <p>
-              Adicione os livros que fazem parte desta coleção para começar a acompanhar o seu
-              progresso.
+              {isGuest
+                ? 'Este usuário ainda não adicionou itens a esta coleção.'
+                : 'Adicione os livros que fazem parte desta coleção para começar a acompanhar o seu progresso.'}
             </p>
           </div>
         ) : sortedItems.length === 0 ? (
@@ -522,10 +506,13 @@ const CollectionDashboard = () => {
                 <div
                   key={item.id}
                   className={`item-card ${isMissing ? 'status-missing' : 'status-owned'}`}
-                  onClick={() => openItemModal(item)}
+                  onClick={() => {
+                    // Impede o modal de abrir para convidados
+                    if (!isGuest) openItemModal(item);
+                  }}
+                  style={{ cursor: isGuest ? 'default' : 'pointer' }}
                 >
                   <div className="item-card-header">
-                    {/* Alinhamento Esquerdo: Ícone + Título */}
                     <div className="item-header-left">
                       <span
                         className={`material-symbols-rounded item-owned-icon ${isMissing ? 'icon-placeholder' : ''}`}
@@ -536,7 +523,6 @@ const CollectionDashboard = () => {
                       <h4 className="item-card-title">{item.title}</h4>
                     </div>
 
-                    {/* Alinhamento Direito: Link da Biblioteca */}
                     <div className="item-card-actions">
                       <span
                         className={`material-symbols-rounded item-link-icon ${item.BookId ? 'linked' : 'unlinked'}`}
@@ -548,7 +534,6 @@ const CollectionDashboard = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                           if (item.BookId) {
-                            // MÁGICA DE ROTAS: Passamos a URL atual como "estado de origem"
                             navigate(`/livro/${item.BookId}`, {
                               state: { backUrl: location.pathname }
                             });
@@ -582,7 +567,7 @@ const CollectionDashboard = () => {
         )}
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && !isGuest && (
         <div className="legal-modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div
             className="legal-modal-box collection-item-modal"
@@ -636,7 +621,7 @@ const CollectionDashboard = () => {
                   <div className="modal-link-block">
                     <h4 className="modal-link-header">
                       <span className="material-symbols-rounded">menu_book</span> Vínculo com a
-                      Biblioteca (Opcional)
+                      Biblioteca
                     </h4>
                     <p className="modal-link-desc">
                       Conecte este item a um livro real do seu acervo principal para acesso rápido.
@@ -670,7 +655,6 @@ const CollectionDashboard = () => {
                           className="btn-action btn-modal-create"
                           onClick={handleSilentBookCreate}
                           disabled={isCreatingBook || !itemForm.title.trim()}
-                          title="Cria automaticamente um livro com este nome na sua biblioteca"
                         >
                           {isCreatingBook ? (
                             <span className="material-symbols-rounded spinner-icon">sync</span>

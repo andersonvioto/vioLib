@@ -3,32 +3,18 @@ const router = express.Router();
 const accessController = require('../controllers/AccessController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
-/**
- * Middleware global de autenticação para todas as rotas de acesso.
- */
 router.use(authMiddleware);
 
-/**
- * Gerenciamento de compartilhamento de bibliotecas
- */
-
-// Retorna bibliotecas que foram compartilhadas COM o usuário logado
+// --- Gerenciamento de compartilhamento ---
 router.get('/shared-with-me', accessController.getSharedWithMe);
-
-// Retorna as pessoas que TÊM ACESSO à biblioteca do usuário logado
 router.get('/my-shares', accessController.getMyShares);
-
-// Compartilha a biblioteca do usuário logado com um convidado
 router.post('/share', accessController.shareLibrary);
-
-// Revoga o acesso de um convidado específico
+router.put('/shares/:guestId', accessController.updateAccess);
 router.delete('/shares/:guestId', accessController.revokeAccess);
 
-/**
- * Consulta de conteúdos compartilhados
- */
-
-// Busca os livros de uma biblioteca compartilhada por um proprietário (ownerId)
+// --- Consulta de conteúdos compartilhados (Modo Convidado) ---
 router.get('/:ownerId/books', accessController.getSharedBooks);
+router.get('/:ownerId/collections', accessController.getSharedCollections);
+router.get('/:ownerId/collections/:collectionId', accessController.getSharedCollectionById);
 
 module.exports = router;

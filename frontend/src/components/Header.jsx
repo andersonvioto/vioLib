@@ -20,6 +20,11 @@ const Header = () => {
   // --- ESTADOS DO MODAL DE COMPARTILHAMENTO ---
   const [showShareModal, setShowShareModal] = useState(false);
   const [guestEmail, setGuestEmail] = useState('');
+
+  // Novas permissões no momento do convite
+  const [shareLibraryPerm, setShareLibraryPerm] = useState(true);
+  const [shareCollectionsPerm, setShareCollectionsPerm] = useState(true);
+
   const [isSharing, setIsSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState({ type: '', text: '' });
 
@@ -28,6 +33,8 @@ const Header = () => {
   const openShareModal = () => {
     setShareMsg({ type: '', text: '' });
     setGuestEmail('');
+    setShareLibraryPerm(true);
+    setShareCollectionsPerm(true);
     setShowShareModal(true);
     setIsMenuOpen(false);
   };
@@ -36,11 +43,22 @@ const Header = () => {
     e.preventDefault();
     if (!guestEmail.trim()) return;
 
+    if (!shareLibraryPerm && !shareCollectionsPerm) {
+      return setShareMsg({
+        type: 'error',
+        text: 'Você precisa conceder acesso a pelo menos uma área.'
+      });
+    }
+
     setIsSharing(true);
     setShareMsg({ type: '', text: '' });
 
     try {
-      const response = await api.post('/access/share', { guestEmail });
+      const response = await api.post('/access/share', {
+        guestEmail,
+        canViewLibrary: shareLibraryPerm,
+        canViewCollections: shareCollectionsPerm
+      });
       setShareMsg({ type: 'success', text: response.data.message });
       setGuestEmail('');
 
@@ -62,6 +80,23 @@ const Header = () => {
     } else {
       const selectedLib = sharedLibraries.find((l) => l.ownerId.toString() === selectedId);
       setCurrentLibrary(selectedLib);
+
+      // Roteamento Inteligente: Redireciona o usuário para onde ele tem permissão
+      if (selectedLib) {
+        if (selectedLib.canViewLibrary && !selectedLib.canViewCollections && isCollectionsPath) {
+          navigate('/biblioteca');
+        } else if (
+          !selectedLib.canViewLibrary &&
+          selectedLib.canViewCollections &&
+          !isCollectionsPath
+        ) {
+          navigate('/colecoes');
+        } else if (!selectedLib.canViewLibrary && !selectedLib.canViewCollections) {
+          // Se não tiver permissão nenhuma (revogado), atira para a própria biblioteca
+          setCurrentLibrary(null);
+          navigate('/biblioteca');
+        }
+      }
     }
   };
 
@@ -77,7 +112,10 @@ const Header = () => {
               src={miniLogo}
               alt="vioLib"
               className="brand-logo"
-              onClick={() => navigate('/biblioteca')}
+              onClick={() => {
+                setCurrentLibrary(null);
+                navigate('/biblioteca');
+              }}
               style={{ cursor: 'pointer' }}
             />
 
@@ -125,6 +163,34 @@ const Header = () => {
             </button>
 
             <div className={`header-actions ${isMenuOpen ? 'open' : ''}`}>
+              {/* O Visitante só vê os botões de navegação se o proprietário permitiu */}
+              {(!currentLibrary || currentLibrary.canViewLibrary) && isCollectionsPath && (
+                <button
+                  onClick={() => {
+                    navigate('/biblioteca');
+                    setIsMenuOpen(false);
+                  }}
+                  className="btn-action"
+                >
+                  <span className="material-symbols-rounded">library_books</span>
+                  <span className="action-label">Biblioteca</span>
+                </button>
+              )}
+
+              {(!currentLibrary || currentLibrary.canViewCollections) && !isCollectionsPath && (
+                <button
+                  onClick={() => {
+                    navigate('/colecoes');
+                    setIsMenuOpen(false);
+                  }}
+                  className="btn-action"
+                >
+                  <span className="material-symbols-rounded">workspace_premium</span>
+                  <span className="action-label">Coleções</span>
+                </button>
+              )}
+
+              {/* Botões restritos ao Proprietário */}
               {!currentLibrary && (
                 <>
                   <button
@@ -138,33 +204,9 @@ const Header = () => {
                     <span className="action-label">Ajustes</span>
                   </button>
 
-                  {isCollectionsPath ? (
-                    <button
-                      onClick={() => {
-                        navigate('/biblioteca');
-                        setIsMenuOpen(false);
-                      }}
-                      className="btn-action"
-                    >
-                      <span className="material-symbols-rounded">library_books</span>
-                      <span className="action-label">Biblioteca</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        navigate('/colecoes');
-                        setIsMenuOpen(false);
-                      }}
-                      className="btn-action"
-                    >
-                      <span className="material-symbols-rounded">workspace_premium</span>
-                      <span className="action-label">Coleções</span>
-                    </button>
-                  )}
-
                   <button onClick={openShareModal} className="btn-action">
                     <span className="material-symbols-rounded">group_add</span>
-                    <span className="action-label">Convidar</span>
+                    <span className="action-label">Compartilhar</span>
                   </button>
 
                   <button
@@ -232,7 +274,7 @@ const Header = () => {
               }}
             >
               <span className="material-symbols-rounded">group_add</span>
-              Compartilhar Biblioteca
+              Compartilhar Acervo
             </h2>
             <p
               style={{
@@ -241,7 +283,7 @@ const Header = () => {
                 marginBottom: '20px'
               }}
             >
-              Digite o e-mail do usuário que receberá acesso de leitura à sua biblioteca.
+              Convide alguém para visualizar a sua conta. Escolha o que essa pessoa poderá ver:
             </p>
 
             {shareMsg.text && (
@@ -266,7 +308,7 @@ const Header = () => {
                 autoFocus
                 type="email"
                 required
-                placeholder="exemplo@email.com"
+                placeholder="E-mail do convidado..."
                 value={guestEmail}
                 onChange={(e) => setGuestEmail(e.target.value)}
                 style={{
@@ -281,6 +323,58 @@ const Header = () => {
                   boxSizing: 'border-box'
                 }}
               />
+
+              {/* Opções Granulares no Convite */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  marginBottom: '25px',
+                  padding: '15px',
+                  background: 'var(--bg-main)',
+                  borderRadius: '6px',
+                  border: '1px dashed var(--border-color)'
+                }}
+              >
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem'
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={shareLibraryPerm}
+                    onChange={(e) => setShareLibraryPerm(e.target.checked)}
+                    style={{ width: '18px', height: '18px', accentColor: 'var(--accent-gold)' }}
+                  />
+                  Acesso à Biblioteca Principal
+                </label>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem'
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={shareCollectionsPerm}
+                    onChange={(e) => setShareCollectionsPerm(e.target.checked)}
+                    style={{ width: '18px', height: '18px', accentColor: 'var(--accent-gold)' }}
+                  />
+                  Acesso às Coleções Gamificadas
+                </label>
+              </div>
+
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                 <button
                   type="button"

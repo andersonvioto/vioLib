@@ -686,9 +686,18 @@ const CollectionDashboard = () => {
                                 }
                               : null
                           }
-                          onChange={(selected) =>
-                            handleItemFormChange('BookId', selected ? selected.value : null)
-                          }
+                          onChange={(selected) => {
+                            setItemForm((prev) => {
+                              const newState = {
+                                ...prev,
+                                BookId: selected ? selected.value : null
+                              };
+                              if (selected && !prev.title.trim()) {
+                                newState.title = selected.label;
+                              }
+                              return newState;
+                            });
+                          }}
                           isClearable
                           placeholder="Pesquise pelo nome do livro..."
                           noOptionsMessage={() => 'Nenhum livro encontrado'}

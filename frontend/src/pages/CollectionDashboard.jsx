@@ -26,6 +26,10 @@ const customSelectStyles = {
     border: '1px solid var(--border-color)',
     zIndex: 100
   }),
+  menuPortal: (provided) => ({
+    ...provided,
+    zIndex: 9999
+  }),
   option: (provided, state) => ({
     ...provided,
     backgroundColor: state.isFocused ? 'rgba(212, 175, 55, 0.1)' : 'transparent',
@@ -101,7 +105,9 @@ const CollectionDashboard = () => {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {}
+      } catch (e) {
+        console.error('Erro ao analisar as regras de ordenação salvas:', e);
+      }
     }
     return [{ value: 'title', label: 'Título' }];
   });
@@ -163,6 +169,7 @@ const CollectionDashboard = () => {
         await api.delete(`/collections/${id}`);
         navigate('/colecoes');
       } catch (error) {
+        console.error('Erro ao excluir coleção:', error);
         alert('Erro ao excluir coleção.');
       }
     }
@@ -326,7 +333,6 @@ const CollectionDashboard = () => {
       >
         <div className="hero-gradient-overlay"></div>
 
-        {/* Nova Barra Superior Limpa e Estruturada */}
         <div className="hero-top-bar">
           <button className="btn-back-hero" onClick={() => navigate('/colecoes')}>
             <span className="material-symbols-rounded">arrow_back</span> Voltar
@@ -687,6 +693,8 @@ const CollectionDashboard = () => {
                           placeholder="Pesquise pelo nome do livro..."
                           noOptionsMessage={() => 'Nenhum livro encontrado'}
                           styles={customSelectStyles}
+                          menuPortalTarget={document.body}
+                          menuPosition="fixed"
                         />
                       </div>
 
@@ -740,6 +748,8 @@ const CollectionDashboard = () => {
                               noOptionsMessage={() =>
                                 'Nenhuma opção cadastrada. Digite para criar.'
                               }
+                              menuPortalTarget={document.body}
+                              menuPosition="fixed"
                             />
                           </div>
                         );

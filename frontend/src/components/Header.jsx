@@ -371,7 +371,7 @@ const Header = () => {
                     onChange={(e) => setShareCollectionsPerm(e.target.checked)}
                     style={{ width: '18px', height: '18px', accentColor: 'var(--accent-gold)' }}
                   />
-                  Acesso às Coleções Gamificadas
+                  Acesso às Coleções
                 </label>
               </div>
 

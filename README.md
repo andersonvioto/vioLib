@@ -36,22 +36,23 @@ O projeto adota uma arquitetura separada em duas camadas lógicas principais no 
   - **Google OAuth2 (Nodemailer):** Envio de e-mails transacionais utilizando Refresh Tokens para evitar bloqueios de segurança do Google.
   - **JWT (JSON Web Tokens):** Autenticação stateless.
 
-  ## 🚀 Como Executar o Projeto Localmente
+## 🚀 Como Executar o Projeto Localmente
 
-  Siga os passos abaixo para configurar o ambiente de desenvolvimento.
+Siga os passos abaixo para configurar o ambiente de desenvolvimento.
 
-  ### Pré-requisitos
-  - Node.js (Versão 18 ou superior)
-  - Conta na Oracle Cloud (Banco de Dados ADB) e a sua respetiva Wallet descompactada.
-  - Conta no Cloudinary (Para as imagens).
-  - Credenciais do Google Cloud Console (OAuth2 para e-mail e Login).
+### Pré-requisitos
 
-  ### 1. Clonar o Repositório
+- Node.js (Versão 18 ou superior)
+- Conta na Oracle Cloud (Banco de Dados ADB) e a sua respetiva Wallet descompactada.
+- Conta no Cloudinary (Para as imagens).
+- Credenciais do Google Cloud Console (OAuth2 para e-mail e Login).
 
-  ```
-  git clone https://github.com/andersonvioto/violib.git
-  cd violib
-  ```
+### 1. Clonar o Repositório
+
+```
+git clone https://github.com/andersonvioto/violib.git
+cd violib
+```
 
 ### 2. Configurar o Backend e o Banco de Dados (Oracle Wallet)
 

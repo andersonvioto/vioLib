@@ -2,22 +2,16 @@ import { useState, useEffect, useCallback, useContext } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 
-// Contextos
 import { LibraryContext } from '../contexts/LibraryContext';
 import { ThemeContext } from '../contexts/ThemeContext';
 
-// Componentes
 import Header from '../components/Header';
 import FilterDrawer from '../components/FilterDrawer';
 import Shelf from '../components/Shelf';
 import BookCard from '../components/BookCard';
 
-// Estilos
 import './dashboard.css';
 
-/**
- * Componente interno do Skeleton Screen, adaptado para os 3 modos de visualização.
- */
 const SkeletonCard = ({ viewMode }) => {
   if (viewMode === 'list') {
     return (
@@ -32,7 +26,6 @@ const SkeletonCard = ({ viewMode }) => {
     );
   }
 
-  // Modos 'grid' ou 'compact' partilham a mesma estrutura base, muda apenas o CSS pai
   return (
     <div className="skeleton-card">
       <div className="skeleton-img"></div>
@@ -50,15 +43,12 @@ const SkeletonCard = ({ viewMode }) => {
   );
 };
 
-/**
- * Tela Principal da Biblioteca (Dashboard).
- */
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { currentLibrary } = useContext(LibraryContext);
-  const { viewMode, setViewMode } = useContext(ThemeContext); // Extração do estado de visualização
+  const { viewMode, setViewMode } = useContext(ThemeContext);
 
   const [myBooks, setMyBooks] = useState([]);
   const [page, setPage] = useState(1);
@@ -66,17 +56,16 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [totalBooks, setTotalBooks] = useState(0);
 
-  // Lemos os filtros ativos diretamente da URL
   const urlSearch = searchParams.get('search') || '';
   const urlGenre = searchParams.get('genre') || '';
   const urlSubgenre = searchParams.get('subgenre') || '';
   const urlTag = searchParams.get('tag') || '';
   const urlAuthor = searchParams.get('author') || '';
   const urlTranslator = searchParams.get('translator') || '';
+  const urlReadingStatus = searchParams.get('readingStatus') || '';
 
   const [searchInput, setSearchInput] = useState(urlSearch);
 
-  // Preferências persistentes do Usuário
   const [sortBy, setSortBy] = useState(() => localStorage.getItem('violib_sortBy') || 'title');
   const [sortOrder, setSortOrder] = useState(
     () => localStorage.getItem('violib_sortOrder') || 'ASC'
@@ -93,7 +82,6 @@ const Dashboard = () => {
   const [availableGenres, setAvailableGenres] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
 
-  // Sincronização e Debounce da busca
   useEffect(() => {
     setSearchInput(urlSearch);
   }, [urlSearch]);
@@ -110,7 +98,6 @@ const Dashboard = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchInput, urlSearch, searchParams, setSearchParams]);
 
-  // Manipuladores de Filtros (Shelfs)
   const handleSelectGenre = (genreValue) => {
     const newParams = new URLSearchParams(searchParams);
     if (genreValue) newParams.set('genre', genreValue);
@@ -133,13 +120,19 @@ const Dashboard = () => {
     setSearchParams(newParams);
   };
 
+  const handleSelectReadingStatus = (statusValue) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (statusValue) newParams.set('readingStatus', statusValue);
+    else newParams.delete('readingStatus');
+    setSearchParams(newParams);
+  };
+
   const handleClearStrictFilter = (paramKey) => {
     const newParams = new URLSearchParams(searchParams);
     newParams.delete(paramKey);
     setSearchParams(newParams);
   };
 
-  // Salvar preferências de ordenação
   useEffect(() => {
     localStorage.setItem('violib_sortBy', sortBy);
     localStorage.setItem('violib_sortOrder', sortOrder);
@@ -147,7 +140,6 @@ const Dashboard = () => {
     localStorage.setItem('violib_showTagsOnCards', showTagsOnCards);
   }, [sortBy, sortOrder, showOnlyBorrowed, showTagsOnCards]);
 
-  // Buscar opções dinâmicas para os filtros
   useEffect(() => {
     const params = new URLSearchParams();
     params.append('usedOnly', 'true');
@@ -164,7 +156,6 @@ const Dashboard = () => {
       .catch(console.error);
   }, [currentLibrary]);
 
-  // Motor de Busca
   const fetchBooks = useCallback(
     async (targetPage, isReset = false) => {
       setIsLoading(true);
@@ -182,6 +173,7 @@ const Dashboard = () => {
           tag: urlTag,
           author: urlAuthor,
           translator: urlTranslator,
+          readingStatus: urlReadingStatus,
           borrowed: showOnlyBorrowed ? 'true' : 'false'
         });
 
@@ -229,6 +221,7 @@ const Dashboard = () => {
       urlTag,
       urlAuthor,
       urlTranslator,
+      urlReadingStatus,
       sortBy,
       sortOrder,
       showOnlyBorrowed,
@@ -287,7 +280,6 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Toggles de Visualização Rápida no Dashboard */}
         <div className="view-mode-toggles">
           <button
             className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
@@ -330,6 +322,8 @@ const Dashboard = () => {
         setSortOrder={setSortOrder}
         selectedTag={urlTag}
         setSelectedTag={handleSelectTag}
+        readingStatus={urlReadingStatus}
+        setReadingStatus={handleSelectReadingStatus}
         availableTags={availableTags}
         showOnlyBorrowed={showOnlyBorrowed}
         setShowOnlyBorrowed={setShowOnlyBorrowed}
@@ -374,10 +368,14 @@ const Dashboard = () => {
               ({isLoading && myBooks.length === 0 ? '...' : totalBooks})
             </span>
 
-            {(urlAuthor || urlTranslator) && (
+            {(urlAuthor || urlTranslator || urlReadingStatus) && (
               <span
                 className="material-symbols-rounded"
-                onClick={() => handleClearStrictFilter(urlAuthor ? 'author' : 'translator')}
+                onClick={() => {
+                  if (urlAuthor) handleClearStrictFilter('author');
+                  else if (urlTranslator) handleClearStrictFilter('translator');
+                  else if (urlReadingStatus) handleClearStrictFilter('readingStatus');
+                }}
                 title="Limpar este filtro"
                 style={{
                   fontSize: '20px',
@@ -392,7 +390,6 @@ const Dashboard = () => {
           </h2>
         </div>
 
-        {/* Renderização baseada no ViewMode (Grid, Compact, List) */}
         {isLoading && myBooks.length === 0 ? (
           <div className={`book-layout-${viewMode}`}>
             {Array.from({ length: viewMode === 'compact' ? 14 : 10 }).map((_, idx) => (

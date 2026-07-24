@@ -71,12 +71,36 @@ const BookDetails = () => {
         </div>
 
         <div className="details-content">
-          {/* 3. Título e Autores Principais */}
+          {/* 3. Título, Autores e Badges de Status */}
           <div>
             <h1 className="book-main-title">{book.title}</h1>
             <p className="book-main-authors">
               {book.Authors?.map((a) => a.name).join(', ') || 'Autor Desconhecido'}
             </p>
+
+            {/* Badges de Status (Leitura e Empréstimo) */}
+            <div className="book-status-badges">
+              {book.readingStatus === 'reading' && (
+                <span className="detail-badge reading" title="A ler atualmente">
+                  <span className="material-symbols-rounded">import_contacts</span> Lendo
+                </span>
+              )}
+              {book.readingStatus === 'read' && (
+                <span className="detail-badge read" title="Leitura concluída">
+                  <span className="material-symbols-rounded">task_alt</span> Lido
+                </span>
+              )}
+              {book.readingStatus === 'unread' && (
+                <span className="detail-badge unread" title="Ainda não lido">
+                  <span className="material-symbols-rounded">book</span> Não Lido
+                </span>
+              )}
+              {activeLoan && (
+                <span className="detail-badge borrowed" title="Emprestado no momento">
+                  <span className="material-symbols-rounded">schedule</span> Emprestado
+                </span>
+              )}
+            </div>
           </div>
 
           {/* 4. Metadados e Notas (Posicionado abaixo do título para melhor fluxo de leitura) */}

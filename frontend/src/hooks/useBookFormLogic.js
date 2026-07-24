@@ -44,7 +44,6 @@ const useBookFormLogic = () => {
   const { id } = useParams();
   const isEditMode = Boolean(id);
 
-  // MÁGICA DE ROTA: Lê se viemos de alguma tela específica (como Coleções)
   const location = useLocation();
   const backUrl = location.state?.backUrl;
 
@@ -58,6 +57,7 @@ const useBookFormLogic = () => {
     acquisitionDate: '',
     notes: '',
     coverImage: '',
+    readingStatus: 'unread', // Adicionado Status de Leitura
     authors: [],
     translators: [],
     tags: '',
@@ -71,7 +71,6 @@ const useBookFormLogic = () => {
   const [availableAuthors, setAvailableAuthors] = useState([]);
   const [availableTranslators, setAvailableTranslators] = useState([]);
 
-  // Estados de Imagem e Crop
   const [coverFile, setCoverFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [imageSrcForCrop, setImageSrcForCrop] = useState(null);
@@ -128,6 +127,7 @@ const useBookFormLogic = () => {
             acquisitionDate: b.acquisitionDate ? b.acquisitionDate.split('T')[0] : '',
             notes: b.notes || '',
             coverImage: b.coverImage || '',
+            readingStatus: b.readingStatus || 'unread', // Carrego o status do banco
             authors: bookAuthors.map((a) => ({ value: a.name, label: a.name })),
             translators: bookTranslators.map((t) => ({ value: t.name, label: t.name })),
             tags: bookTags.map((t) => t.name).join(', '),
@@ -174,9 +174,6 @@ const useBookFormLogic = () => {
     }
   };
 
-  // =========================================================================
-  // NOVA LÓGICA DA CAPA: Aceita fotos gigantes para repassar ao Cropper
-  // =========================================================================
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -446,6 +443,7 @@ const useBookFormLogic = () => {
     payloadForm.append('publisher', formData.publisher);
     payloadForm.append('acquisitionDate', formData.acquisitionDate);
     payloadForm.append('notes', formData.notes);
+    payloadForm.append('readingStatus', formData.readingStatus); // Vinculando o campo ao payload
 
     payloadForm.append(
       'authors',
@@ -485,7 +483,6 @@ const useBookFormLogic = () => {
     try {
       if (isEditMode) {
         await api.put(`/books/${id}`, payloadForm);
-        // Repassa o "caminho de volta" para a tela de detalhes não o perder!
         navigate(`/livro/${id}`, { state: { backUrl } });
       } else {
         await api.post('/books', payloadForm);

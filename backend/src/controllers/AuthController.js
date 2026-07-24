@@ -56,7 +56,10 @@ const initializeUserGenres = async (userId, transaction) => {
 exports.register = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
-    const { name, email, password, language } = req.body;
+    const { name, password, language } = req.body;
+
+    // Tratamento rigoroso de Case Sensitive e espaços para o e-mail
+    const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
 
     const existingUser = await User.findOne({ where: { email }, transaction });
     if (existingUser) {
@@ -82,10 +85,7 @@ exports.register = async (req, res) => {
     // Inicialização paralela de categorias para performance
     await initializeUserGenres(user.id, transaction);
 
-    // MELHORIA CRUCIAL (Operação Atômica):
-    // O e-mail é enviado ANTES de commitar a transação no banco.
-    // Se o serviço de e-mail falhar, a execução pula direto para o catch(),
-    // a transação sofre rollback e o usuário "preso" não é gravado no banco.
+    // MELHORIA CRUCIAL (Operação Atômica)
     try {
       await mailService.sendVerificationEmail(user.email, verificationToken);
     } catch (emailError) {
@@ -103,13 +103,11 @@ exports.register = async (req, res) => {
       .status(201)
       .json({ message: 'Conta criada com sucesso! Verifique seu e-mail para ativar.' });
   } catch (error) {
-    // PROTEÇÃO SÊNIOR: Apenas executa rollback se a transação ainda estiver pendente.
     if (!transaction.finished) {
       await transaction.rollback();
     }
     console.error('🕵️ ERRO NO AUTHCONTROLLER (REGISTER):', error);
 
-    // Tratativa de UX mais clara para o usuário
     res.status(400).json({
       error:
         'Não foi possível enviar o e-mail de confirmação devido a uma instabilidade. O cadastro foi revertido, tente novamente em alguns instantes.'
@@ -122,7 +120,9 @@ exports.register = async (req, res) => {
  */
 exports.login = async (req, res) => {
   try {
-    const { email, password, rememberMe } = req.body;
+    const { password, rememberMe } = req.body;
+    const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
+
     const user = await User.findOne({ where: { email } });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -158,7 +158,8 @@ exports.googleLogin = async (req, res) => {
     });
 
     const payload = ticket.getPayload();
-    const { email, name } = payload;
+    const { name } = payload;
+    const email = payload.email ? payload.email.toLowerCase().trim() : '';
 
     let user = await User.findOne({ where: { email }, transaction });
 
@@ -224,7 +225,7 @@ exports.verifyEmail = async (req, res) => {
  */
 exports.forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
     const user = await User.findOne({ where: { email } });
 
     if (user) {

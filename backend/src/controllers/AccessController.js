@@ -18,7 +18,8 @@ const {
  */
 exports.shareLibrary = async (req, res) => {
   try {
-    const { guestEmail, canViewLibrary = true, canViewCollections = true } = req.body;
+    const { canViewLibrary = true, canViewCollections = true } = req.body;
+    const guestEmail = req.body.guestEmail ? req.body.guestEmail.toLowerCase().trim() : '';
     const currentOwnerId = req.userId;
 
     const owner = await User.findByPk(currentOwnerId);
@@ -168,12 +169,14 @@ exports.getSharedBooks = async (req, res) => {
       genre = '',
       subgenre = '',
       tag = '',
-      borrowed = 'false'
+      borrowed = 'false',
+      readingStatus = ''
     } = req.query;
     const offset = (page - 1) * limit;
     const bookWhere = { UserId: ownerId };
 
     if (search) bookWhere.title = { [Op.like]: `%${search}%` };
+    if (readingStatus) bookWhere.readingStatus = readingStatus;
 
     const orderClause =
       sortBy === 'author'

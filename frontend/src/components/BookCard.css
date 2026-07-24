@@ -4,7 +4,6 @@ Estilos específicos do cartão de livro individual e seus 3 Modos de Visualiza�
 ========================================================================== */
 
 /* ==========================================================================
-
 MODO GRELHA (PADRÃO) E COMPACTO
 ========================================================================== */
 .book-card {
@@ -78,14 +77,14 @@ MODO GRELHA (PADRÃO) E COMPACTO
 
 .book-card.is-compact .book-title {
   font-size: 0.95em;
-  -webkit-line-clamp: 2; /* Garante que cabe bem */
+  -webkit-line-clamp: 2;
 }
 
 .book-card.is-compact .book-author {
   font-size: 0.8em;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* Em modo compacto, corta o nome se for grande */
+  text-overflow: ellipsis;
 }
 
 /* ==========================================================================
@@ -95,11 +94,9 @@ MODO GRELHA (PADRÃO) E COMPACTO
   perspective: 1200px;
   border-bottom: none;
   overflow: visible;
-  /* Adiciona margens dinâmicas dependendo se é compact ou não */
   padding: 20px 30px 25px 25px;
 }
 
-/* O modo compacto precisa de menos margem para o 3D não parecer minúsculo */
 [data-cover-style='book'] .book-card.is-compact .book-cover-wrapper {
   padding: 10px 15px 15px 15px;
 }
@@ -275,24 +272,43 @@ MODO GRELHA (PADRÃO) E COMPACTO
   margin-left: 2px;
 }
 
-/* Badge Emprestado (Para Grid/Compact) */
-.badge-borrowed {
+.book-card-badges {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: var(--accent-gold);
-  color: #000;
-  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 20;
+}
+
+.badge-icon {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-  z-index: 20;
 }
 
-.badge-borrowed .material-symbols-rounded {
-  font-size: 1.3em !important;
+.badge-icon .material-symbols-rounded {
+  font-size: 1.2em !important;
+}
+
+.badge-icon.borrowed {
+  background: var(--accent-gold);
+  color: #000;
+}
+
+.badge-icon.reading {
+  background: #4da6ff;
+  color: #000;
+}
+
+.badge-icon.read {
+  background: #4dff88;
+  color: #000;
 }
 
 /* ==========================================================================
@@ -313,7 +329,7 @@ MODO GRELHA (PADRÃO) E COMPACTO
 .book-card-list-view:hover {
   background: var(--bg-input);
   border-color: var(--accent-gold);
-  transform: translateX(5px); /* Efeito sutil para a direita, como um destaque de linha */
+  transform: translateX(5px);
 }
 
 .list-cover-img {
@@ -330,8 +346,8 @@ MODO GRELHA (PADRÃO) E COMPACTO
   display: flex;
   flex-direction: column;
   gap: 4px;
-  flex: 1; /* Ocupa o espaço central primário */
-  min-width: 0; /* Previne overflow de títulos longos */
+  flex: 1;
+  min-width: 0;
 }
 
 .list-book-title {
@@ -368,7 +384,7 @@ MODO GRELHA (PADRÃO) E COMPACTO
   display: flex;
   gap: 5px;
   flex-wrap: wrap;
-  width: 200px; /* Limita o espaço das tags */
+  width: 200px;
   flex-shrink: 0;
 }
 
@@ -383,26 +399,47 @@ MODO GRELHA (PADRÃO) E COMPACTO
 }
 
 .list-status {
-  width: 120px;
+  width: 140px;
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 6px;
   flex-shrink: 0;
 }
 
-.badge-borrowed-list {
+.badge-borrowed-list,
+.badge-reading-list,
+.badge-read-list {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: rgba(212, 175, 55, 0.1);
-  color: var(--accent-gold);
   padding: 4px 10px;
   border-radius: 20px;
-  border: 1px solid var(--accent-gold);
   font-size: 0.8em;
   font-weight: 600;
 }
 
-.badge-borrowed-list .material-symbols-rounded {
+.badge-borrowed-list {
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+}
+
+.badge-reading-list {
+  background: rgba(77, 166, 255, 0.1);
+  color: #4da6ff;
+  border: 1px solid #4da6ff;
+}
+
+.badge-read-list {
+  background: rgba(77, 255, 136, 0.1);
+  color: #4dff88;
+  border: 1px solid #4dff88;
+}
+
+.badge-borrowed-list .material-symbols-rounded,
+.badge-reading-list .material-symbols-rounded,
+.badge-read-list .material-symbols-rounded {
   font-size: 1.2em;
 }
 
@@ -424,7 +461,6 @@ MODO GRELHA (PADRÃO) E COMPACTO
     font-size: 1em;
   }
 
-  /* Esconde tags e status extra no modo mobile para a linha não quebrar */
   .list-tags-container,
   .list-meta-details {
     display: none;
@@ -432,17 +468,23 @@ MODO GRELHA (PADRÃO) E COMPACTO
 
   .list-status {
     width: auto;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
   }
 
-  /* Encurta o badge de empréstimo (apenas o ícone) */
-  .badge-borrowed-list {
+  /* Encurta o badge escondendo o texto, mantendo só o ícone num círculo */
+  .badge-borrowed-list,
+  .badge-reading-list,
+  .badge-read-list {
     padding: 6px;
     border-radius: 50%;
-    /* Remove o texto "Emprestado", mantendo só o ícone */
     font-size: 0;
   }
 
-  .badge-borrowed-list .material-symbols-rounded {
+  .badge-borrowed-list .material-symbols-rounded,
+  .badge-reading-list .material-symbols-rounded,
+  .badge-read-list .material-symbols-rounded {
     font-size: 16px;
   }
 }

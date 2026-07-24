@@ -88,7 +88,8 @@ exports.createBook = async (req, res) => {
       publisher,
       publicationLocation,
       acquisitionDate,
-      notes
+      notes,
+      readingStatus
     } = req.body;
 
     const authors = req.body.authors ? JSON.parse(req.body.authors) : [];
@@ -107,6 +108,7 @@ exports.createBook = async (req, res) => {
       acquisitionDate: acquisitionDate || null,
       notes: notes || null,
       coverImage: req.file ? req.file.path : null,
+      readingStatus: readingStatus || 'unread',
       UserId: userId
     });
 
@@ -137,13 +139,18 @@ exports.getAllBooks = async (req, res) => {
       genre = '',
       subgenre = '',
       tag = '',
-      author = '', // Novo Filtro Estrito
-      translator = '', // Novo Filtro Estrito
-      borrowed = 'false'
+      author = '',
+      translator = '',
+      borrowed = 'false',
+      readingStatus = ''
     } = req.query;
 
     const offset = (page - 1) * limit;
     const bookWhere = { UserId: req.userId };
+
+    if (readingStatus) {
+      bookWhere.readingStatus = readingStatus;
+    }
 
     const orderClause =
       sortBy === 'author'
@@ -293,7 +300,8 @@ exports.updateBook = async (req, res) => {
       publisher,
       publicationLocation,
       acquisitionDate,
-      notes
+      notes,
+      readingStatus
     } = req.body;
 
     const book = await Book.findOne({ where: { id, UserId: userId } });
@@ -308,7 +316,8 @@ exports.updateBook = async (req, res) => {
       publisher: publisher || null,
       acquisitionDate: acquisitionDate || null,
       notes: notes || null,
-      coverImage: req.file ? req.file.path : req.body.coverImage || book.coverImage
+      coverImage: req.file ? req.file.path : req.body.coverImage || book.coverImage,
+      readingStatus: readingStatus || book.readingStatus
     });
 
     await processRelations(

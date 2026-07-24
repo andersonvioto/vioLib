@@ -71,6 +71,11 @@ const Book = sequelize.define(
     coverImage: {
       type: DataTypes.STRING
     },
+    readingStatus: {
+      type: DataTypes.ENUM('unread', 'reading', 'read'),
+      allowNull: false,
+      defaultValue: 'unread'
+    },
     UserId: {
       type: DataTypes.INTEGER,
       allowNull: false,

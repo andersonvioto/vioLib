@@ -41,7 +41,10 @@ const Header = () => {
 
   const handleShareSubmit = async (e) => {
     e.preventDefault();
-    if (!guestEmail.trim()) return;
+
+    // Tratamento de segurança contra digitação no celular (Case Sensitive / Espaços)
+    const formattedEmail = guestEmail ? guestEmail.toLowerCase().trim() : '';
+    if (!formattedEmail) return;
 
     if (!shareLibraryPerm && !shareCollectionsPerm) {
       return setShareMsg({
@@ -55,7 +58,7 @@ const Header = () => {
 
     try {
       const response = await api.post('/access/share', {
-        guestEmail,
+        guestEmail: formattedEmail,
         canViewLibrary: shareLibraryPerm,
         canViewCollections: shareCollectionsPerm
       });

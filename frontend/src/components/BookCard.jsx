@@ -14,11 +14,11 @@ const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
   const navigate = useNavigate();
 
   const isBorrowed = book.Loans?.some((loan) => !loan.returnDate);
+  const readingStatus = book.readingStatus || 'unread'; // Leitura do novo status
+
   const authorName = book.Authors?.length > 0 ? book.Authors[0].name : 'Autor Desconhecido';
   const releaseYear = book.releaseYear ? book.releaseYear : '';
 
-  // === RENDERIZAÇÃO MODO LISTA ===
-  // O modo lista possui um layout DOM horizontal totalmente diferente para atuar como uma tabela elegante.
   if (viewMode === 'list') {
     return (
       <div className="book-card-list-view" onClick={() => navigate(`/livro/${book.id}`)}>
@@ -44,6 +44,16 @@ const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
         </div>
 
         <div className="list-status">
+          {readingStatus === 'reading' && (
+            <span className="badge-reading-list" title="Lendo Atualmente">
+              <span className="material-symbols-rounded">import_contacts</span> Lendo
+            </span>
+          )}
+          {readingStatus === 'read' && (
+            <span className="badge-read-list" title="Livro Lido">
+              <span className="material-symbols-rounded">task_alt</span> Lido
+            </span>
+          )}
           {isBorrowed && (
             <span className="badge-borrowed-list" title="Emprestado">
               <span className="material-symbols-rounded">schedule</span> Emprestado
@@ -54,14 +64,11 @@ const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
     );
   }
 
-  // === RENDERIZAÇÃO MODOS GRID E COMPACT ===
-  // O modo 'compact' usa a mesma estrutura DOM do 'grid', mas omite tags e o CSS ajusta os tamanhos.
   return (
     <div
       className={`book-card ${viewMode === 'compact' ? 'is-compact' : ''}`}
       onClick={() => navigate(`/livro/${book.id}`)}
     >
-      {/* O Palco 3D (Perspectiva) */}
       <div className="book-cover-wrapper">
         <div className="book-volume">
           <img src={getCoverUrl(book.coverImage)} alt={book.title} className="book-cover-img" />
@@ -76,7 +83,6 @@ const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
         <h3 className="book-title">{book.title}</h3>
         <p className="book-author">{authorName}</p>
 
-        {/* No modo compacto, omitimos as tags para poupar espaço */}
         {showTags && viewMode !== 'compact' && book.Tags?.length > 0 && (
           <div className="card-tags-container">
             {book.Tags.slice(0, 2).map((tag) => (
@@ -89,11 +95,24 @@ const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
         )}
       </div>
 
-      {isBorrowed && (
-        <span className="badge-borrowed" title="Emprestado">
-          <span className="material-symbols-rounded">schedule</span>
-        </span>
-      )}
+      {/* Contentor de Badges empilháveis */}
+      <div className="book-card-badges">
+        {isBorrowed && (
+          <span className="badge-icon borrowed" title="Emprestado">
+            <span className="material-symbols-rounded">schedule</span>
+          </span>
+        )}
+        {readingStatus === 'reading' && (
+          <span className="badge-icon reading" title="Lendo Atualmente">
+            <span className="material-symbols-rounded">import_contacts</span>
+          </span>
+        )}
+        {readingStatus === 'read' && (
+          <span className="badge-icon read" title="Livro Lido">
+            <span className="material-symbols-rounded">task_alt</span>
+          </span>
+        )}
+      </div>
     </div>
   );
 };

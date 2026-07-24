@@ -1,7 +1,7 @@
 /* ==========================================================================
-   PAGE CSS - BookDetail
-   Estilos macro da tela de detalhes da obra (Layout Assimétrico Principal).
-   ========================================================================== */
+PAGE CSS - BookDetail
+Estilos macro da tela de detalhes da obra (Layout Assimétrico Principal).
+========================================================================== */
 
 /* --- CABEÇALHO FIXO GLOBAL DA TELA DE DETALHES --- */
 .fixed-detail-header {
@@ -24,7 +24,6 @@
 
 /* --- CONTAINER BASE DA PÁGINA --- */
 .details-container {
-  /* O teto foi ampliado de 40px para 120px para limpar o header fixo */
   padding: 120px 40px 40px 40px;
   max-width: 1000px;
   margin: 0 auto;
@@ -41,7 +40,6 @@
 /* --- COLUNA ESQUERDA: CAPA --- */
 .cover-wrapper {
   position: sticky;
-  /* A capa cola a 120px do topo da tela, evitando sumir sob o header fixo */
   top: 120px;
 }
 
@@ -75,9 +73,55 @@
   font-style: italic;
 }
 
+.book-status-badges {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.detail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85em;
+  font-weight: 600;
+  font-family: var(--font-sans);
+}
+
+.detail-badge .material-symbols-rounded {
+  font-size: 1.2em;
+}
+
+.detail-badge.reading {
+  background: rgba(77, 166, 255, 0.1);
+  color: #4da6ff;
+  border: 1px solid #4da6ff;
+}
+
+.detail-badge.read {
+  background: rgba(77, 255, 136, 0.1);
+  color: #4dff88;
+  border: 1px solid #4dff88;
+}
+
+.detail-badge.unread {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.detail-badge.borrowed {
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+}
+
 /* ==========================================================================
-   RESPONSIVIDADE: TABLETS E CELULARES
-   ========================================================================== */
+RESPONSIVIDADE: TABLETS E CELULARES
+========================================================================== */
 
 /* TABLET RETRATO (até 900px) */
 @media (max-width: 900px) {
@@ -128,5 +172,9 @@
   .book-main-authors {
     font-size: 1.1em;
     text-align: center;
+  }
+
+  .book-status-badges {
+    justify-content: center;
   }
 }

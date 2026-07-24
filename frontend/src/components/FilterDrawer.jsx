@@ -13,6 +13,8 @@ import './FilterDrawer.css';
  * @param {Function} props.setSortOrder - Função para atualizar a ordem.
  * @param {string} props.selectedTag - Tag atualmente filtrada.
  * @param {Function} props.setSelectedTag - Função para atualizar a tag filtrada.
+ * @param {string} props.readingStatus - Status de leitura atualmente filtrado.
+ * @param {Function} props.setReadingStatus - Função para atualizar o status de leitura filtrado.
  * @param {Array} props.availableTags - Lista de tags disponíveis para o dropdown.
  * @param {boolean} props.showOnlyBorrowed - Estado do toggle de livros emprestados.
  * @param {Function} props.setShowOnlyBorrowed - Função para atualizar o toggle de empréstimo.
@@ -28,23 +30,21 @@ const FilterDrawer = ({
   setSortOrder,
   selectedTag,
   setSelectedTag,
+  readingStatus,
+  setReadingStatus,
   availableTags,
   showOnlyBorrowed,
   setShowOnlyBorrowed,
   showTagsOnCards,
   setShowTagsOnCards
 }) => {
-  // Se não estiver aberto, não renderiza nada no DOM
   if (!isOpen) return null;
 
   return (
     <>
-      {/* Fundo escuro clicável para fechar a gaveta */}
       <div className="filter-drawer-backdrop" onClick={onClose}></div>
 
-      {/* Contêiner principal da gaveta */}
       <div className="filter-drawer-container">
-        {/* Cabeçalho da gaveta */}
         <div className="filter-drawer-header">
           <h3>
             <span className="material-symbols-rounded">tune</span> Refinamento
@@ -54,7 +54,6 @@ const FilterDrawer = ({
           </button>
         </div>
 
-        {/* Grade de Filtros */}
         <div className="filter-drawer-grid">
           {/* Ordenação */}
           <div className="filter-field-group">
@@ -104,7 +103,24 @@ const FilterDrawer = ({
             </select>
           </div>
 
-          {/* Toggles (Switches) */}
+          {/* Filtro por Status de Leitura */}
+          <div className="filter-field-group">
+            <label className="form-label">
+              <span className="material-symbols-rounded">menu_book</span> Status de Leitura
+            </label>
+            <select
+              value={readingStatus}
+              onChange={(e) => setReadingStatus(e.target.value)}
+              className="form-select"
+            >
+              <option value="">Todos os Livros</option>
+              <option value="unread">Não Lidos</option>
+              <option value="reading">Estou Lendo</option>
+              <option value="read">Já Lidos</option>
+            </select>
+          </div>
+
+          {/* Toggles */}
           <div className="filter-field-group full-width toggles-row">
             <label className="checkbox-toggle-label">
               <input

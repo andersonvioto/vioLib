@@ -130,6 +130,7 @@ const BookForm = () => {
       )}
 
       <form onSubmit={handleSubmit}>
+        {}
         <div className="form-section">
           <h2 className="section-title">
             <span className="material-symbols-rounded">image</span> Capa do Livro
@@ -147,7 +148,6 @@ const BookForm = () => {
             </div>
 
             <div className="cover-actions">
-              {}
               <label className="btn-action btn-cover-option mobile-camera-btn">
                 <span className="material-symbols-rounded">photo_camera</span>
                 Tirar Foto
@@ -406,9 +406,9 @@ const BookForm = () => {
               />
             </div>
 
-            <div className="form-group full-width">
+            <div className="form-group">
               <label className="form-label">
-                <span className="material-symbols-rounded">style</span> Tags
+                <span className="material-symbols-rounded">style</span> Etiquetas (Tags)
               </label>
               <input
                 type="text"
@@ -418,6 +418,23 @@ const BookForm = () => {
                 className="form-input"
                 placeholder="Separadas por vírgula"
               />
+            </div>
+
+            {/* Novo Menu de Seleção de Leitura */}
+            <div className="form-group">
+              <label className="form-label">
+                <span className="material-symbols-rounded">menu_book</span> Status de Leitura
+              </label>
+              <select
+                name="readingStatus"
+                value={formData.readingStatus}
+                onChange={handleChange}
+                className="form-select"
+              >
+                <option value="unread">Não Lido</option>
+                <option value="reading">Lendo</option>
+                <option value="read">Lido</option>
+              </select>
             </div>
           </div>
         </div>

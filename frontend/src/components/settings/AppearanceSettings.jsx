@@ -131,7 +131,7 @@ const AppearanceSettings = () => {
             grid_view
           </span>
           <div>
-            <strong style={{ display: 'block', fontSize: '1.1em' }}>Grelha Padrão</strong>
+            <strong style={{ display: 'block', fontSize: '1.1em' }}>Capas Padrão</strong>
             <span style={{ color: 'var(--text-secondary)', fontSize: '0.9em' }}>
               Capas médias com título e autor
             </span>
@@ -157,7 +157,7 @@ const AppearanceSettings = () => {
             apps
           </span>
           <div>
-            <strong style={{ display: 'block', fontSize: '1.1em' }}>Grelha Compacta</strong>
+            <strong style={{ display: 'block', fontSize: '1.1em' }}>Capas Compactas</strong>
             <span style={{ color: 'var(--text-secondary)', fontSize: '0.9em' }}>
               Capas pequenas, ideal para acervos grandes
             </span>

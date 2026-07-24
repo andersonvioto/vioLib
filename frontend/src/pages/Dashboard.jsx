@@ -284,7 +284,7 @@ const Dashboard = () => {
           <button
             className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
             onClick={() => setViewMode('grid')}
-            title="Visualização em Grelha"
+            title="Visualização Padrão"
           >
             <span className="material-symbols-rounded">grid_view</span>
           </button>

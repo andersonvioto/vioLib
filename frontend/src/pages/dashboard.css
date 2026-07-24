@@ -1,20 +1,14 @@
 /* ==========================================================================
-   DASHBOARD CSS - vioLib
-   Estilos estruturais da página principal (Dashboard).
-   Nota: Componentes (BookCard, Header, Shelf, FilterDrawer) possuem seus próprios CSS.
-   ========================================================================== */
+DASHBOARD CSS - vioLib
+Estilos estruturais da página principal (Dashboard).
+========================================================================== */
 
-/* ==========================================================================
-   1. ESTRUTURA GLOBAL DA PÁGINA E BOTÕES
-   ========================================================================== */
 .dashboard-container {
-  /* O padding-top de 120px compensa a altura da barra fixa do cabeçalho */
   padding: 120px 40px 40px 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-/* Utilitários de Botões compartilhados no Dashboard (Filtros, Carregar Mais) */
 .btn-action {
   display: flex;
   align-items: center;
@@ -49,8 +43,8 @@
 }
 
 /* ==========================================================================
-   2. BARRA DE PESQUISA (SEARCH BAR)
-   ========================================================================== */
+BARRA DE PESQUISA E TOGGLES DE VISUALIZAÇÃO
+========================================================================== */
 .search-filter-bar {
   display: flex;
   gap: 15px;
@@ -90,14 +84,47 @@
   box-shadow: 0 0 0 3px var(--accent-gold-glow);
 }
 
+/* Toggles de Visualização */
+.view-mode-toggles {
+  display: flex;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  gap: 4px;
+}
+
+.view-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-smooth);
+}
+
+.view-toggle-btn:hover {
+  color: var(--text-primary);
+}
+
+.view-toggle-btn.active {
+  background: var(--surface-container-highest);
+  color: var(--accent-gold);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .btn-filter-trigger.active {
   background-color: var(--accent-gold);
   color: #000;
 }
 
 /* ==========================================================================
-   3. SEÇÃO PRINCIPAL DA BIBLIOTECA (Grid)
-   ========================================================================== */
+MODOS DE LAYOUT (Grid, Compact, List)
+========================================================================== */
 .library-section {
   margin-bottom: 50px;
 }
@@ -127,30 +154,28 @@
   font-weight: normal;
 }
 
-.book-grid {
+/* 1. Modo Grid (Clássico) */
+.book-layout-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 25px;
 }
 
-.pagination-trigger-zone {
-  text-align: center;
-  margin-top: 40px;
+/* 2. Modo Compacto (Apenas Capas / Pequenas) */
+.book-layout-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 15px;
 }
 
-.btn-load-more {
-  padding: 14px 40px;
-  margin: 0 auto;
+/* 3. Modo Lista (Linhas Horizontais) */
+.book-layout-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.empty-message {
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* ==========================================================================
-   4. SKELETON SCREEN (CARREGAMENTO ELEGANTE)
-   ========================================================================== */
+/* --- ESTILOS DO SKELETON CARDS PARA OS MODOS --- */
 .skeleton-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -163,10 +188,13 @@
 
 .skeleton-img {
   width: 100%;
-  aspect-ratio: 3 / 4;
-  height: auto;
+  height: 280px;
   background: var(--bg-input);
   animation: skeletonPulse 1.5s infinite ease-in-out;
+}
+
+.book-layout-compact .skeleton-img {
+  height: 190px;
 }
 
 .skeleton-info {
@@ -180,6 +208,7 @@
   background: var(--bg-input);
   border-radius: 4px;
   animation: skeletonPulse 1.5s infinite ease-in-out;
+  height: 14px;
 }
 
 .skeleton-line.title {
@@ -189,7 +218,6 @@
 
 .skeleton-line.author {
   width: 60%;
-  height: 14px;
 }
 
 .skeleton-tags {
@@ -206,6 +234,33 @@
   animation: skeletonPulse 1.5s infinite ease-in-out;
 }
 
+/* Skeleton para o Modo Lista */
+.skeleton-card-list {
+  display: flex;
+  gap: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 15px;
+  align-items: center;
+}
+
+.skeleton-img-list {
+  width: 60px;
+  height: 90px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  animation: skeletonPulse 1.5s infinite ease-in-out;
+  flex-shrink: 0;
+}
+
+.skeleton-info-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 @keyframes skeletonPulse {
   0% {
     opacity: 0.4;
@@ -219,21 +274,46 @@
 }
 
 /* ==========================================================================
-   5. RESPONSIVIDADE E ADAPTAÇÃO MOBILE (Media Queries)
-   ========================================================================== */
+PAGINAÇÃO E EMPTY STATES
+========================================================================== */
+.pagination-trigger-zone {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.btn-load-more {
+  padding: 14px 40px;
+  margin: 0 auto;
+}
+
+.empty-message {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ==========================================================================
+RESPONSIVIDADE E ADAPTAÇÃO MOBILE (Media Queries)
+========================================================================== */
 
 @media (max-width: 900px) {
   .dashboard-container {
     padding: 100px 20px 20px 20px;
   }
 
-  .book-grid {
+  .book-layout-grid {
     grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
     gap: 20px;
   }
 
+  .book-layout-compact {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  }
+
   .skeleton-img {
     height: 240px;
+  }
+  .book-layout-compact .skeleton-img {
+    height: 160px;
   }
 }
 
@@ -242,13 +322,21 @@
     padding: 90px 15px 15px 15px;
   }
 
-  .book-grid {
+  .book-layout-grid {
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 12px;
   }
 
+  .book-layout-compact {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+  }
+
   .skeleton-img {
     height: 190px;
+  }
+  .book-layout-compact .skeleton-img {
+    height: 130px;
   }
 
   .search-filter-bar {
@@ -259,6 +347,10 @@
 
   .search-wrapper {
     width: 100%;
+  }
+
+  .view-mode-toggles {
+    justify-content: space-around;
   }
 
   .btn-filter-trigger {

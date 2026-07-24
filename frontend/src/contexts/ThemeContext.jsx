@@ -1,6 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
 
-// O comentário abaixo ensina o Vite a não reclamar sobre exportar contextos junto com componentes
 // eslint-disable-next-line react-refresh/only-export-components
 export const ThemeContext = createContext();
 
@@ -10,9 +9,14 @@ export const ThemeProvider = ({ children }) => {
     return localStorage.getItem('violib_theme') || 'system';
   });
 
-  // 2. NOVO: Estado do Estilo da Capa (Flat/Book)
+  // 2. Estado do Estilo da Capa (Flat/Book)
   const [coverStyle, setCoverStyle] = useState(() => {
     return localStorage.getItem('violib_cover_style') || 'flat';
+  });
+
+  // 3. NOVO: Estado do Modo de Visualização do Dashboard (grid/compact/list)
+  const [viewMode, setViewMode] = useState(() => {
+    return localStorage.getItem('violib_view_mode') || 'grid';
   });
 
   // Efeito que controla a cor do Tema
@@ -38,14 +42,28 @@ export const ThemeProvider = ({ children }) => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
 
-  // NOVO: Efeito que aplica o estilo da capa globalmente
+  // Efeito que aplica o estilo da capa globalmente
   useEffect(() => {
     document.documentElement.setAttribute('data-cover-style', coverStyle);
     localStorage.setItem('violib_cover_style', coverStyle);
   }, [coverStyle]);
 
+  // Efeito para persistir o modo de visualização
+  useEffect(() => {
+    localStorage.setItem('violib_view_mode', viewMode);
+  }, [viewMode]);
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, coverStyle, setCoverStyle }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        setTheme,
+        coverStyle,
+        setCoverStyle,
+        viewMode,
+        setViewMode
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

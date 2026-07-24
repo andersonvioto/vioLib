@@ -4,6 +4,7 @@ import api from '../services/api';
 
 // Contextos
 import { LibraryContext } from '../contexts/LibraryContext';
+import { ThemeContext } from '../contexts/ThemeContext';
 
 // Componentes
 import Header from '../components/Header';
@@ -15,31 +16,49 @@ import BookCard from '../components/BookCard';
 import './dashboard.css';
 
 /**
- * Componente interno do Skeleton Screen.
+ * Componente interno do Skeleton Screen, adaptado para os 3 modos de visualização.
  */
-const SkeletonCard = () => (
-  <div className="skeleton-card">
-    <div className="skeleton-img"></div>
-    <div className="skeleton-info">
-      <div className="skeleton-line title"></div>
-      <div className="skeleton-line author"></div>
-      <div className="skeleton-tags">
-        <div className="skeleton-tag"></div>
-        <div className="skeleton-tag" style={{ width: '55px' }}></div>
+const SkeletonCard = ({ viewMode }) => {
+  if (viewMode === 'list') {
+    return (
+      <div className="skeleton-card-list">
+        <div className="skeleton-img-list"></div>
+        <div className="skeleton-info-list">
+          <div className="skeleton-line title" style={{ width: '40%' }}></div>
+          <div className="skeleton-line author" style={{ width: '20%' }}></div>
+          <div className="skeleton-line" style={{ width: '60%', marginTop: '10px' }}></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Modos 'grid' ou 'compact' partilham a mesma estrutura base, muda apenas o CSS pai
+  return (
+    <div className="skeleton-card">
+      <div className="skeleton-img"></div>
+      <div className="skeleton-info">
+        <div className="skeleton-line title"></div>
+        <div className="skeleton-line author"></div>
+        {viewMode !== 'compact' && (
+          <div className="skeleton-tags">
+            <div className="skeleton-tag"></div>
+            <div className="skeleton-tag" style={{ width: '55px' }}></div>
+          </div>
+        )}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 /**
  * Tela Principal da Biblioteca (Dashboard).
- * Controlada integralmente pela URL (URL as Single Source of Truth).
  */
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { currentLibrary } = useContext(LibraryContext);
+  const { viewMode, setViewMode } = useContext(ThemeContext); // Extração do estado de visualização
 
   const [myBooks, setMyBooks] = useState([]);
   const [page, setPage] = useState(1);
@@ -52,8 +71,6 @@ const Dashboard = () => {
   const urlGenre = searchParams.get('genre') || '';
   const urlSubgenre = searchParams.get('subgenre') || '';
   const urlTag = searchParams.get('tag') || '';
-
-  // NOVOS FILTROS ESTRITOS
   const urlAuthor = searchParams.get('author') || '';
   const urlTranslator = searchParams.get('translator') || '';
 
@@ -76,7 +93,7 @@ const Dashboard = () => {
   const [availableGenres, setAvailableGenres] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
 
-  // Sincronização e Debounce
+  // Sincronização e Debounce da busca
   useEffect(() => {
     setSearchInput(urlSearch);
   }, [urlSearch]);
@@ -93,11 +110,11 @@ const Dashboard = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchInput, urlSearch, searchParams, setSearchParams]);
 
+  // Manipuladores de Filtros (Shelfs)
   const handleSelectGenre = (genreValue) => {
     const newParams = new URLSearchParams(searchParams);
     if (genreValue) newParams.set('genre', genreValue);
     else newParams.delete('genre');
-
     newParams.delete('subgenre');
     setSearchParams(newParams);
   };
@@ -116,13 +133,13 @@ const Dashboard = () => {
     setSearchParams(newParams);
   };
 
-  // Helper para limpar um filtro estrito pela UI
   const handleClearStrictFilter = (paramKey) => {
     const newParams = new URLSearchParams(searchParams);
     newParams.delete(paramKey);
     setSearchParams(newParams);
   };
 
+  // Salvar preferências de ordenação
   useEffect(() => {
     localStorage.setItem('violib_sortBy', sortBy);
     localStorage.setItem('violib_sortOrder', sortOrder);
@@ -130,10 +147,10 @@ const Dashboard = () => {
     localStorage.setItem('violib_showTagsOnCards', showTagsOnCards);
   }, [sortBy, sortOrder, showOnlyBorrowed, showTagsOnCards]);
 
+  // Buscar opções dinâmicas para os filtros
   useEffect(() => {
     const params = new URLSearchParams();
     params.append('usedOnly', 'true');
-
     if (currentLibrary) {
       params.append('ownerId', currentLibrary.ownerId);
     }
@@ -147,14 +164,11 @@ const Dashboard = () => {
       .catch(console.error);
   }, [currentLibrary]);
 
-  // Lógica da API reativa
+  // Motor de Busca
   const fetchBooks = useCallback(
     async (targetPage, isReset = false) => {
       setIsLoading(true);
-
-      if (isReset) {
-        setMyBooks([]);
-      }
+      if (isReset) setMyBooks([]);
 
       try {
         const params = new URLSearchParams({
@@ -166,8 +180,8 @@ const Dashboard = () => {
           genre: urlGenre,
           subgenre: urlSubgenre,
           tag: urlTag,
-          author: urlAuthor, // Injetando o filtro estrito
-          translator: urlTranslator, // Injetando o filtro estrito
+          author: urlAuthor,
+          translator: urlTranslator,
           borrowed: showOnlyBorrowed ? 'true' : 'false'
         });
 
@@ -237,7 +251,6 @@ const Dashboard = () => {
   const activeGenreObj = availableGenres.find(
     (g) => g.name?.trim().toLowerCase() === urlGenre?.trim().toLowerCase()
   );
-
   const activeSubgenres = activeGenreObj
     ? activeGenreObj.Subgenres || activeGenreObj.subgenres || []
     : [];
@@ -249,7 +262,6 @@ const Dashboard = () => {
       'Convidado'
     : '';
 
-  // Determina dinamicamente o título da seção baseando-se na URL
   const renderSectionTitle = () => {
     if (urlAuthor) return `Obras de ${urlAuthor}`;
     if (urlTranslator) return `Traduções de ${urlTranslator}`;
@@ -273,6 +285,31 @@ const Dashboard = () => {
             onChange={(e) => setSearchInput(e.target.value)}
             className="search-input"
           />
+        </div>
+
+        {/* Toggles de Visualização Rápida no Dashboard */}
+        <div className="view-mode-toggles">
+          <button
+            className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+            onClick={() => setViewMode('grid')}
+            title="Visualização em Grelha"
+          >
+            <span className="material-symbols-rounded">grid_view</span>
+          </button>
+          <button
+            className={`view-toggle-btn ${viewMode === 'compact' ? 'active' : ''}`}
+            onClick={() => setViewMode('compact')}
+            title="Visualização Compacta"
+          >
+            <span className="material-symbols-rounded">apps</span>
+          </button>
+          <button
+            className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+            title="Visualização em Lista"
+          >
+            <span className="material-symbols-rounded">view_list</span>
+          </button>
         </div>
 
         <button
@@ -337,7 +374,6 @@ const Dashboard = () => {
               ({isLoading && myBooks.length === 0 ? '...' : totalBooks})
             </span>
 
-            {/* Botão de limpeza rápida caso o usuário esteja preso no filtro estrito */}
             {(urlAuthor || urlTranslator) && (
               <span
                 className="material-symbols-rounded"
@@ -356,23 +392,26 @@ const Dashboard = () => {
           </h2>
         </div>
 
+        {/* Renderização baseada no ViewMode (Grid, Compact, List) */}
         {isLoading && myBooks.length === 0 ? (
-          <div className="book-grid">
-            {Array.from({ length: 10 }).map((_, idx) => (
-              <SkeletonCard key={`skel-init-${idx}`} />
+          <div className={`book-layout-${viewMode}`}>
+            {Array.from({ length: viewMode === 'compact' ? 14 : 10 }).map((_, idx) => (
+              <SkeletonCard key={`skel-init-${idx}`} viewMode={viewMode} />
             ))}
           </div>
         ) : !Array.isArray(myBooks) || myBooks.length === 0 ? (
           <p className="empty-message">Nenhum livro encontrado nesta prateleira.</p>
         ) : (
-          <div className="book-grid">
+          <div className={`book-layout-${viewMode}`}>
             {myBooks.map((book) => (
-              <BookCard key={book.id} book={book} showTags={showTagsOnCards} />
+              <BookCard key={book.id} book={book} showTags={showTagsOnCards} viewMode={viewMode} />
             ))}
 
             {isLoading &&
               myBooks.length > 0 &&
-              Array.from({ length: 5 }).map((_, idx) => <SkeletonCard key={`skel-more-${idx}`} />)}
+              Array.from({ length: 5 }).map((_, idx) => (
+                <SkeletonCard key={`skel-more-${idx}`} viewMode={viewMode} />
+              ))}
           </div>
         )}
 

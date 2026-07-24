@@ -1,8 +1,12 @@
 /* ==========================================================================
-   COMPONENT CSS - BookCard
-   Estilos específicos do cartão de livro individual e seus estados.
-   ========================================================================== */
+COMPONENT CSS - BookCard
+Estilos específicos do cartão de livro individual e seus 3 Modos de Visualização.
+========================================================================== */
 
+/* ==========================================================================
+
+MODO GRELHA (PADRÃO) E COMPACTO
+========================================================================== */
 .book-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -29,14 +33,11 @@
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
-/* ==========================================================================
-   ESTILO PADRÃO (FLAT / 2D)
-   ========================================================================== */
-
+/* Wrapper da Capa */
 .book-cover-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 2 / 3;
   background-color: transparent;
   border-bottom: 1px solid var(--border-color);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
@@ -69,15 +70,38 @@
   display: none;
 }
 
-/* ==========================================================================
-   MÁGICA DO LIVRO REALISTA (3D ISOMÉTRICO)
-   ========================================================================== */
+/* Modificadores para o Modo Compacto (is-compact) */
+.book-card.is-compact .book-info {
+  padding: 10px;
+  gap: 4px;
+}
 
+.book-card.is-compact .book-title {
+  font-size: 0.95em;
+  -webkit-line-clamp: 2; /* Garante que cabe bem */
+}
+
+.book-card.is-compact .book-author {
+  font-size: 0.8em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Em modo compacto, corta o nome se for grande */
+}
+
+/* ==========================================================================
+2. MODO LIVRO REALISTA (3D ISOMÉTRICO) PARA GRELHA/COMPACTO
+========================================================================== */
 [data-cover-style='book'] .book-cover-wrapper {
   perspective: 1200px;
   border-bottom: none;
   overflow: visible;
+  /* Adiciona margens dinâmicas dependendo se é compact ou não */
   padding: 20px 30px 25px 25px;
+}
+
+/* O modo compacto precisa de menos margem para o 3D não parecer minúsculo */
+[data-cover-style='book'] .book-card.is-compact .book-cover-wrapper {
+  padding: 10px 15px 15px 15px;
 }
 
 [data-cover-style='book'] .book-volume {
@@ -167,16 +191,11 @@
   background-color: #2c2c2c;
 }
 
-/* ==========================================================================
-   OVERLAY: A "MARCA" DA LOMBADA E ILUMINAÇÃO
-   ========================================================================== */
-
 [data-cover-style='book'] .book-cover-overlay {
   inset: 0;
   transform: translateZ(10.5px);
   border-radius: 2px 4px 4px 2px;
   pointer-events: none;
-
   box-shadow: inset 4px 0 8px rgba(0, 0, 0, 0.2);
   background: linear-gradient(
     to right,
@@ -200,21 +219,9 @@
   );
 }
 
-[data-theme='light'][data-cover-style='book'] .book-card:hover .book-cover-overlay {
-  box-shadow: inset 6px 0 12px rgba(0, 0, 0, 0.2);
-  background: linear-gradient(
-    to right,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(255, 255, 255, 0.5) 2%,
-    rgba(255, 255, 255, 0) 6%,
-    rgba(255, 255, 255, 0) 90%
-  );
-}
-
 /* ==========================================================================
-   RESTANTE DO ESTILO (Informações e Badges)
-   ========================================================================== */
-
+3. INFORMAÇÕES DE TEXTO (Modos Grid e Compacto)
+========================================================================== */
 .book-info {
   padding: 15px;
   display: flex;
@@ -268,6 +275,7 @@
   margin-left: 2px;
 }
 
+/* Badge Emprestado (Para Grid/Compact) */
 .badge-borrowed {
   position: absolute;
   top: 10px;
@@ -285,4 +293,156 @@
 
 .badge-borrowed .material-symbols-rounded {
   font-size: 1.3em !important;
+}
+
+/* ==========================================================================
+4. MODO EM LISTA (List View)
+========================================================================== */
+.book-card-list-view {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 15px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.book-card-list-view:hover {
+  background: var(--bg-input);
+  border-color: var(--accent-gold);
+  transform: translateX(5px); /* Efeito sutil para a direita, como um destaque de linha */
+}
+
+.list-cover-img {
+  width: 60px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.list-main-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1; /* Ocupa o espaço central primário */
+  min-width: 0; /* Previne overflow de títulos longos */
+}
+
+.list-book-title {
+  font-size: 1.1em;
+  color: var(--text-primary);
+  margin: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-book-author {
+  font-size: 0.9em;
+  color: var(--accent-gold);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-meta-details {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.list-meta-item {
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+.list-tags-container {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  width: 200px; /* Limita o espaço das tags */
+  flex-shrink: 0;
+}
+
+.list-tag-chip {
+  font-size: 0.7em;
+  background: var(--bg-main);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.list-status {
+  width: 120px;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.badge-borrowed-list {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(212, 175, 55, 0.1);
+  color: var(--accent-gold);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--accent-gold);
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+.badge-borrowed-list .material-symbols-rounded {
+  font-size: 1.2em;
+}
+
+/* ==========================================================================
+5. RESPONSIVIDADE MOBILE (Modo Lista)
+========================================================================== */
+@media (max-width: 600px) {
+  .book-card-list-view {
+    gap: 15px;
+    padding: 10px;
+  }
+
+  .list-cover-img {
+    width: 50px;
+    height: 75px;
+  }
+
+  .list-book-title {
+    font-size: 1em;
+  }
+
+  /* Esconde tags e status extra no modo mobile para a linha não quebrar */
+  .list-tags-container,
+  .list-meta-details {
+    display: none;
+  }
+
+  .list-status {
+    width: auto;
+  }
+
+  /* Encurta o badge de empréstimo (apenas o ícone) */
+  .badge-borrowed-list {
+    padding: 6px;
+    border-radius: 50%;
+    /* Remove o texto "Emprestado", mantendo só o ícone */
+    font-size: 0;
+  }
+
+  .badge-borrowed-list .material-symbols-rounded {
+    font-size: 16px;
+  }
 }

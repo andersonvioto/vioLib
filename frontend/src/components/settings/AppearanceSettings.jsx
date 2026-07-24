@@ -2,10 +2,11 @@ import { useContext } from 'react';
 import { ThemeContext } from '../../contexts/ThemeContext';
 
 /**
- * Componente responsável pelas configurações visuais (Modo Claro/Escuro e Estilo de Capa)
+ * Componente responsável pelas configurações visuais (Modo Claro/Escuro, Estilo de Capa e Visualização)
  */
 const AppearanceSettings = () => {
-  const { theme, setTheme, coverStyle, setCoverStyle } = useContext(ThemeContext);
+  const { theme, setTheme, coverStyle, setCoverStyle, viewMode, setViewMode } =
+    useContext(ThemeContext);
 
   const getCardStyle = (isActive) => ({
     display: 'flex',
@@ -106,7 +107,91 @@ const AppearanceSettings = () => {
         </label>
       </div>
 
-      {/* SEÇÃO 2: ESTILO DAS CAPAS (NOVO) */}
+      {/* SEÇÃO 2: MODO DE VISUALIZAÇÃO PADRÃO (NOVO) */}
+      <h3 style={{ marginTop: '30px', marginBottom: '15px', fontSize: '1.1em' }}>
+        Visualização da Biblioteca
+      </h3>
+      <div className="theme-options">
+        <label style={getCardStyle(viewMode === 'grid')}>
+          <input
+            type="radio"
+            name="viewMode"
+            value="grid"
+            checked={viewMode === 'grid'}
+            onChange={() => setViewMode('grid')}
+            style={{ display: 'none' }}
+          />
+          <span
+            className="material-symbols-rounded"
+            style={{
+              fontSize: '2em',
+              color: viewMode === 'grid' ? 'var(--accent-gold)' : 'var(--text-muted)'
+            }}
+          >
+            grid_view
+          </span>
+          <div>
+            <strong style={{ display: 'block', fontSize: '1.1em' }}>Grelha Padrão</strong>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.9em' }}>
+              Capas médias com título e autor
+            </span>
+          </div>
+        </label>
+
+        <label style={getCardStyle(viewMode === 'compact')}>
+          <input
+            type="radio"
+            name="viewMode"
+            value="compact"
+            checked={viewMode === 'compact'}
+            onChange={() => setViewMode('compact')}
+            style={{ display: 'none' }}
+          />
+          <span
+            className="material-symbols-rounded"
+            style={{
+              fontSize: '2em',
+              color: viewMode === 'compact' ? 'var(--accent-gold)' : 'var(--text-muted)'
+            }}
+          >
+            apps
+          </span>
+          <div>
+            <strong style={{ display: 'block', fontSize: '1.1em' }}>Grelha Compacta</strong>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.9em' }}>
+              Capas pequenas, ideal para acervos grandes
+            </span>
+          </div>
+        </label>
+
+        <label style={getCardStyle(viewMode === 'list')}>
+          <input
+            type="radio"
+            name="viewMode"
+            value="list"
+            checked={viewMode === 'list'}
+            onChange={() => setViewMode('list')}
+            style={{ display: 'none' }}
+          />
+          <span
+            className="material-symbols-rounded"
+            style={{
+              fontSize: '2em',
+              color: viewMode === 'list' ? 'var(--accent-gold)' : 'var(--text-muted)'
+            }}
+          >
+            view_list
+          </span>
+          <div>
+            <strong style={{ display: 'block', fontSize: '1.1em' }}>Em Lista</strong>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.9em' }}>
+              Formato de tabela horizontal com mais detalhes
+            </span>
+          </div>
+        </label>
+      </div>
+
+      {/* SEÇÃO 3: ESTILO DAS CAPAS */}
       <h3 style={{ marginTop: '30px', marginBottom: '15px', fontSize: '1.1em' }}>
         Estilo das Capas
       </h3>
@@ -156,7 +241,7 @@ const AppearanceSettings = () => {
             menu_book
           </span>
           <div>
-            <strong style={{ display: 'block', fontSize: '1.1em' }}>Livro 3D</strong>
+            <strong style={{ display: 'block', fontSize: '1.1em' }}>Livro Realista 3D</strong>
             <span style={{ color: 'var(--text-secondary)', fontSize: '0.9em' }}>
               Adiciona volume, lombada e sombras às capas
             </span>

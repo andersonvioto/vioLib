@@ -10,9 +10,7 @@ const Loan = require('./Loan');
 const LibraryAccess = require('./LibraryAccess');
 const Collection = require('./Collection');
 const CollectionItem = require('./CollectionItem');
-
-// O Novo Modelo do Catálogo Global
-const GlobalBook = require('./GlobalBook');
+const GlobalBook = require('./GlobalBook'); // O Catálogo Global
 
 // Relacionamentos 1:N (Listas autônomas e exclusivas do Usuário)
 User.hasMany(Book, { foreignKey: 'UserId', onDelete: 'CASCADE' });
@@ -79,5 +77,5 @@ module.exports = {
   LibraryAccess,
   Collection,
   CollectionItem,
-  GlobalBook // Exportado para uso nos Controladores
+  GlobalBook
 };

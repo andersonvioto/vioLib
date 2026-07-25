@@ -1,5 +1,5 @@
 /* ==========================================================================
-   PAGE CSS - DeleteAccountInfo
+   PAGE CSS - DeleteAccountInfo (Redesign Editorial VioDesign Pro)
    Estilos da página pública de instruções para exclusão de conta e dados.
    ========================================================================== */
 
@@ -8,91 +8,143 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, #1a1a1a 0%, var(--bg-main) 100%);
-  padding: 20px;
+  background-color: var(--bg-main);
+  padding: var(--space-6, 24px) var(--space-4, 16px);
   box-sizing: border-box;
+  width: 100%;
 }
 
 .delete-account-card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-top: 4px solid var(--text-danger); /* Topo vermelho para contexto de exclusão */
-  border-radius: var(--radius-md);
+  border-top: 4px solid var(--text-danger, #f87171);
+  border-radius: var(--radius-lg, 12px);
   width: 100%;
-  max-width: 550px;
-  padding: 40px 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  text-align: center;
+  max-width: 580px;
+  padding: var(--space-10, 40px) var(--space-8, 32px);
+  box-shadow: var(--shadow-float, 0 20px 25px -5px rgba(0, 0, 0, 0.5));
   box-sizing: border-box;
 }
 
 .delete-logo {
   width: 100%;
-  max-width: 180px;
+  max-width: 160px;
   height: auto;
-  margin: 0 auto 25px auto;
+  margin: 0 auto var(--space-6, 24px) auto;
   display: block;
 }
 
 .delete-title {
   color: var(--text-primary);
-  font-family: serif;
-  font-size: 1.8rem;
-  margin-bottom: 20px;
+  font-family: var(--font-serif, serif);
+  font-size: var(--font-size-2xl, 1.75rem);
+  margin: 0 0 var(--space-4, 16px) 0;
+  text-align: center;
+  font-weight: 700;
+  line-height: var(--line-height-tight, 1.2);
+}
+
+.delete-subtitle {
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 600;
+  margin: var(--space-6, 24px) 0 var(--space-3, 12px) 0;
 }
 
 .delete-text {
   color: var(--text-secondary);
-  font-size: 1rem;
-  line-height: 1.6;
-  margin-bottom: 20px;
-  text-align: left;
+  font-size: var(--font-size-base, 1rem);
+  line-height: var(--line-height-relaxed, 1.6);
+  margin: 0 0 var(--space-5, 20px) 0;
 }
 
 .delete-warning {
-  background-color: rgba(255, 77, 77, 0.1);
-  color: #ff4d4d;
-  border: 1px solid rgba(255, 77, 77, 0.3);
-  padding: 15px;
-  border-radius: var(--radius-sm);
-  font-size: 0.9rem;
-  margin-bottom: 25px;
-  text-align: left;
-  line-height: 1.5;
+  background-color: rgba(248, 113, 113, 0.12);
+  color: var(--text-danger, #f87171);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  padding: var(--space-4, 16px);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-sm, 0.9rem);
+  margin-bottom: var(--space-6, 24px);
+  line-height: var(--line-height-normal, 1.5);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3, 12px);
+}
+
+.warning-icon {
+  font-size: 1.5rem !important;
+  color: var(--text-danger, #f87171);
+  flex-shrink: 0;
 }
 
 .delete-instructions-list {
-  text-align: left;
   color: var(--text-primary);
-  margin-bottom: 30px;
-  padding-left: 20px;
-  line-height: 1.6;
+  margin: 0 0 var(--space-8, 32px) 0;
+  padding-left: var(--space-5, 20px);
+  line-height: var(--line-height-relaxed, 1.6);
+  font-size: var(--font-size-sm, 0.95rem);
 }
 
 .delete-instructions-list li {
-  margin-bottom: 10px;
+  margin-bottom: var(--space-3, 12px);
+}
+
+.delete-instructions-list em {
+  color: var(--accent-gold);
+  font-style: normal;
+  font-weight: 500;
 }
 
 .btn-back-home {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px 20px;
+  gap: var(--space-2, 8px);
+  padding: 0 var(--space-6, 24px);
+  min-height: var(--touch-target, 48px);
   background-color: transparent;
   color: var(--accent-gold);
   border: 1px solid var(--accent-gold);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-sm, 6px);
   text-decoration: none;
   font-family: var(--font-sans);
   font-weight: 600;
-  transition: var(--transition-smooth);
+  font-size: var(--font-size-sm, 0.9rem);
+  transition: all var(--transition-normal);
   width: 100%;
   box-sizing: border-box;
+  outline: none;
 }
 
-.btn-back-home:hover {
+.btn-back-home:hover,
+.btn-back-home:focus-visible {
   background-color: var(--accent-gold);
   color: #000000;
-  box-shadow: 0 4px 15px rgba(214, 175, 55, 0.2);
+  box-shadow: 0 4px 15px var(--accent-gold-glow);
+  transform: translateY(-1px);
+}
+
+/* --- RESPONSIVIDADE PWA MOBILE --- */
+@media (max-width: 600px) {
+  .delete-account-container {
+    padding: var(--space-4, 16px) var(--space-3, 12px);
+  }
+
+  .delete-account-card {
+    padding: var(--space-6, 24px) var(--space-4, 16px);
+  }
+
+  .delete-title {
+    font-size: 1.5rem;
+  }
+
+  .delete-warning {
+    padding: var(--space-3, 12px);
+  }
+
+  .btn-back-home {
+    width: 100%;
+  }
 }

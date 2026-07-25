@@ -1,41 +1,36 @@
 import { useNavigate } from 'react-router-dom';
 import { TermsContent } from '../components/LegalContent';
+import './LegalPages.css';
 
+/**
+ * Página pública de Termos de Serviço.
+ * Consome o CSS mestre editorial para documentos jurídicos.
+ */
 const TermsOfService = () => {
   const navigate = useNavigate();
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px' }}>
-      <button
-        onClick={() => navigate('/login')}
-        className="btn-action"
-        style={{ marginBottom: '30px', border: 'none' }}
-      >
-        <span className="material-symbols-rounded">arrow_back</span> Voltar
-      </button>
+    <main className="legal-page-container">
+      <nav className="legal-page-header">
+        <button
+          type="button"
+          onClick={() => navigate('/login')}
+          className="btn-back-legal"
+          aria-label="Voltar para a tela de login inicial"
+        >
+          <span className="material-symbols-rounded" aria-hidden="true">
+            arrow_back
+          </span>
+          <span>Voltar</span>
+        </button>
+      </nav>
 
-      <h1
-        style={{
-          color: 'var(--accent-gold)',
-          marginBottom: '30px',
-          fontSize: '2.5em',
-          fontFamily: 'serif'
-        }}
-      >
-        Termos de Serviço
-      </h1>
+      <h1 className="legal-doc-title">Termos de Serviço</h1>
 
-      <div
-        style={{
-          background: 'var(--bg-surface)',
-          padding: '40px',
-          borderRadius: '8px',
-          border: '1px solid var(--border-color)'
-        }}
-      >
+      <article className="legal-doc-card" aria-label="Conteúdo integral dos Termos de Serviço">
         <TermsContent />
-      </div>
-    </div>
+      </article>
+    </main>
   );
 };
 

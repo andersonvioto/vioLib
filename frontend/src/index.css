@@ -1,64 +1,167 @@
-/* Importa a fonte serifada elegante do Google Fonts */
-/*@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500&display=swap');*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Paleta Premium Escura e Dourada (Padrão) */
-  --bg-main: #121212;
-  --bg-surface: #1e1e1e;
-  --bg-input: #2a2a2a;
+  /* Paleta Escura Editorial (Grafite & Azul-Noite Profundo) */
+  --bg-main: #0f141c;
+  --bg-surface: #161d28;
+  --bg-elevated: #1e2736;
+  --bg-input: #131923;
 
+  /* Dourado Imperial - Acentos e Foco */
   --accent-gold: #d4af37;
-  --accent-gold-hover: #bda031;
-  --accent-gold-glow: rgba(212, 175, 55, 0.15);
+  --accent-gold-hover: #e5c351;
+  --accent-gold-glow: rgba(212, 175, 55, 0.18);
+  --accent-gold-subtle: rgba(212, 175, 55, 0.08);
 
-  --text-primary: #ffffff;
-  --text-secondary: #aaaaaa;
-  --text-muted: #666666;
-  --text-danger: #ff4d4d;
+  /* Tipografia (Off-white para evitar Halação Óptica) */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-danger: #f87171;
+  --text-success: #34d399;
 
-  --border-color: #333333;
-  --border-focus: #555555;
+  /* Bordas Translúcidas para Profundidade Sutil */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-focus: rgba(212, 175, 55, 0.6);
 
-  /* Tipografia e Raio */
-  --font-sans: 'Inter', sans-serif;
-  --radius-md: 8px;
+  /* Sombras e Elevação (Modo Escuro) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  --shadow-gold: 0 0 15px var(--accent-gold-glow);
+
+  /* Famílias Tipográficas Ultra-Legíveis (Foco em Acessibilidade) */
+  --font-sans:
+    'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-serif:
+    'Inter', Georgia, serif; /* Substituído temporariamente por sans robusta para máxima legibilidade sem halação */
+
+  /* Escala Tipográfica */
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem; /* 36px */
+
+  /* Entrelinhas para Leitura Prolongada */
+  --line-height-tight: 1.3;
+  --line-height-normal: 1.6;
+  --line-height-relaxed: 1.8;
+
+  /* Sistema de Grid 8px (Espaçamentos) */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+
+  /* Ergonomia PWA - Alvos de Toque Mínimos */
+  --touch-target-sm: 44px;
+  --touch-target: 48px;
+
+  /* Raios de Borda */
   --radius-sm: 4px;
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Arquitetura de Camadas (Z-Index) */
+  --z-base: 1;
+  --z-elevated: 10;
+  --z-sticky: 100;
+  --z-header: 500;
+  --z-drawer: 1000;
+  --z-modal: 1500;
+  --z-toast: 2000;
+
+  /* Curvas de Animação (Aceleração GPU) */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --transition-fast: 150ms var(--ease-out);
+  --transition-normal: 250ms var(--ease-out);
+  --transition-slow: 400ms var(--ease-out);
 }
 
-/* Paleta do Modo Claro (Elegância em tons Marfim e Gelo) */
+/* Paleta do Modo Claro (Marfim Editorial & Gelo) */
 [data-theme='light'] {
-  --bg-main: #f4f4f0; /* Fundo principal em tom gelo/marfim suave */
-  --bg-surface: #ffffff; /* Painéis e cartões em branco para dar profundidade */
-  --bg-input: #eeeeee;
+  --bg-main: #f8f9fa;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f1f3f5;
+  --bg-input: #e9ecef;
 
-  --accent-gold: #c59b27; /* Dourado ligeiramente escurecido para não sumir no branco */
-  --accent-gold-hover: #a37f1e;
-  --accent-gold-glow: rgba(197, 155, 39, 0.15);
+  --accent-gold: #b8901f;
+  --accent-gold-hover: #967415;
+  --accent-gold-glow: rgba(184, 144, 31, 0.15);
+  --accent-gold-subtle: rgba(184, 144, 31, 0.08);
 
-  --text-primary: #1a1a1a; /* Quase preto para não cansar a leitura */
-  --text-secondary: #555555;
-  --text-muted: #888888;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-danger: #dc2626;
+  --text-success: #059669;
 
-  --border-color: #dddddd;
-  --border-focus: #bbbbbb;
+  --border-color: rgba(15, 23, 42, 0.08);
+  --border-hover: rgba(15, 23, 42, 0.15);
+  --border-focus: rgba(184, 144, 31, 0.8);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.06);
 }
 
-/* Reset Base */
-* {
+/* Reset Base & Estilos Fundamentais */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
 }
 
 body {
   background-color: var(--bg-main);
   color: var(--text-primary);
   font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+
+  /* Motor de Renderização Óptica e Antialiasing Aprimorado */
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
+  overflow-x: hidden;
 }
 
-/* Utilitário para Ícones */
+/* Acessibilidade - Indicadores de Foco Visível para Navegação via Teclado */
+:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
+/* Utilitário para Ícones Material */
 .material-symbols-rounded {
   font-variation-settings:
     'FILL' 0,
@@ -67,6 +170,34 @@ body {
     'opsz' 24;
   display: inline-block;
   vertical-align: middle;
+  line-height: 1;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* Blindagem Numérica para Tabelas, Badges, ISBNs e Barras de Progresso */
+.progress-value,
+.hero-progress-value,
+.xp-val-numbers,
+.stat-pill,
+table,
+.attribute-badge,
+.title-count {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings:
+    'tnum' on,
+    'lnum' on;
+}
+
+/* CORREÇÃO DE ACESSIBIDADE: Arejamento automático para textos em Caixa Alta */
+button,
+.badge-format,
+.xp-active-badge,
+.section-optional-pill,
+.label-required-badge,
+.axis-tag-pill,
+.mural-active-filter {
+  letter-spacing: 0.05em;
 }
 
 /* Prevenção de Zoom automático no iOS ao focar em campos de texto */
@@ -76,12 +207,4 @@ body {
   textarea {
     font-size: 16px !important;
   }
-}
-
-/* Suavidade no Scroll (Toque nativo) */
-html,
-body {
-  -webkit-overflow-scrolling: touch;
-  /* Opcional: evita o efeito elástico excessivo ao rolar até o limite da página */
-  overscroll-behavior-y: none;
 }

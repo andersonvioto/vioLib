@@ -4,22 +4,18 @@ import { createContext, useState, useEffect } from 'react';
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  // 1. Estado do Tema (Claro/Escuro/Sistema)
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('violib_theme') || 'system';
   });
 
-  // 2. Estado do Estilo da Capa (Flat/Book)
   const [coverStyle, setCoverStyle] = useState(() => {
     return localStorage.getItem('violib_cover_style') || 'flat';
   });
 
-  // 3. NOVO: Estado do Modo de Visualização do Dashboard (grid/compact/list)
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('violib_view_mode') || 'grid';
   });
 
-  // Efeito que controla a cor do Tema
   useEffect(() => {
     const root = document.documentElement;
     let activeTheme = theme;
@@ -42,14 +38,13 @@ export const ThemeProvider = ({ children }) => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
 
-  // Efeito que aplica o estilo da capa globalmente
   useEffect(() => {
     document.documentElement.setAttribute('data-cover-style', coverStyle);
     localStorage.setItem('violib_cover_style', coverStyle);
   }, [coverStyle]);
 
-  // Efeito para persistir o modo de visualização
   useEffect(() => {
+    document.documentElement.setAttribute('data-view-mode', viewMode);
     localStorage.setItem('violib_view_mode', viewMode);
   }, [viewMode]);
 

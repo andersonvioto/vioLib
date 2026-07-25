@@ -4,24 +4,38 @@ import './BookCard.css';
 
 /**
  * Componente visual de um cartão de livro individual.
- * Suporta 3 Modos de Visualização: 'grid' (clássico), 'compact' (só capa/título menor) e 'list' (linha horizontal).
- *
- * @param {Object} props.book - Objeto contendo as informações do livro.
- * @param {boolean} props.showTags - Booleano indicando se as tags devem aparecer no cartão.
- * @param {string} props.viewMode - 'grid', 'compact' ou 'list'.
+ * Suporta 3 Modos de Visualização: 'grid' (clássico), 'compact' (capa/título menor) e 'list' (horizontal).
  */
 const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
   const navigate = useNavigate();
 
   const isBorrowed = book.Loans?.some((loan) => !loan.returnDate);
-  const readingStatus = book.readingStatus || 'unread'; // Leitura do novo status
+  const readingStatus = book.readingStatus || 'unread';
 
   const authorName = book.Authors?.length > 0 ? book.Authors[0].name : 'Autor Desconhecido';
   const releaseYear = book.releaseYear ? book.releaseYear : '';
 
+  const handleCardClick = () => {
+    navigate(`/livro/${book.id}`);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleCardClick();
+    }
+  };
+
   if (viewMode === 'list') {
     return (
-      <div className="book-card-list-view" onClick={() => navigate(`/livro/${book.id}`)}>
+      <div
+        className="book-card-list-view"
+        onClick={handleCardClick}
+        role="button"
+        tabIndex="0"
+        onKeyDown={handleKeyDown}
+        aria-label={`Ver detalhes de ${book.title}, por ${authorName}`}
+      >
         <img src={getCoverUrl(book.coverImage)} alt={book.title} className="list-cover-img" />
 
         <div className="list-main-info">
@@ -46,17 +60,26 @@ const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
         <div className="list-status">
           {readingStatus === 'reading' && (
             <span className="badge-reading-list" title="Lendo Atualmente">
-              <span className="material-symbols-rounded">import_contacts</span> Lendo
+              <span className="material-symbols-rounded" aria-hidden="true">
+                import_contacts
+              </span>
+              <span>Lendo</span>
             </span>
           )}
           {readingStatus === 'read' && (
-            <span className="badge-read-list" title="Livro Lido">
-              <span className="material-symbols-rounded">task_alt</span> Lido
+            <span className="badge-read-list" title="Lido">
+              <span className="material-symbols-rounded" aria-hidden="true">
+                task_alt
+              </span>
+              <span>Lido</span>
             </span>
           )}
           {isBorrowed && (
             <span className="badge-borrowed-list" title="Emprestado">
-              <span className="material-symbols-rounded">schedule</span> Emprestado
+              <span className="material-symbols-rounded" aria-hidden="true">
+                schedule
+              </span>
+              <span>Emprestado</span>
             </span>
           )}
         </div>
@@ -67,15 +90,19 @@ const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
   return (
     <div
       className={`book-card ${viewMode === 'compact' ? 'is-compact' : ''}`}
-      onClick={() => navigate(`/livro/${book.id}`)}
+      onClick={handleCardClick}
+      role="button"
+      tabIndex="0"
+      onKeyDown={handleKeyDown}
+      aria-label={`Ver detalhes do livro ${book.title}`}
     >
       <div className="book-cover-wrapper">
         <div className="book-volume">
           <img src={getCoverUrl(book.coverImage)} alt={book.title} className="book-cover-img" />
-          <div className="book-cover-overlay"></div>
-          <div className="book-spine"></div>
-          <div className="book-pages"></div>
-          <div className="book-back"></div>
+          <div className="book-cover-overlay" aria-hidden="true"></div>
+          <div className="book-spine" aria-hidden="true"></div>
+          <div className="book-pages" aria-hidden="true"></div>
+          <div className="book-back" aria-hidden="true"></div>
         </div>
       </div>
 
@@ -95,21 +122,26 @@ const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
         )}
       </div>
 
-      {/* Contentor de Badges empilháveis */}
-      <div className="book-card-badges">
+      <div className="book-card-badges" aria-label="Status do livro">
         {isBorrowed && (
           <span className="badge-icon borrowed" title="Emprestado">
-            <span className="material-symbols-rounded">schedule</span>
+            <span className="material-symbols-rounded" aria-hidden="true">
+              schedule
+            </span>
           </span>
         )}
         {readingStatus === 'reading' && (
           <span className="badge-icon reading" title="Lendo Atualmente">
-            <span className="material-symbols-rounded">import_contacts</span>
+            <span className="material-symbols-rounded" aria-hidden="true">
+              import_contacts
+            </span>
           </span>
         )}
         {readingStatus === 'read' && (
-          <span className="badge-icon read" title="Livro Lido">
-            <span className="material-symbols-rounded">task_alt</span>
+          <span className="badge-icon read" title="Lido">
+            <span className="material-symbols-rounded" aria-hidden="true">
+              task_alt
+            </span>
           </span>
         )}
       </div>

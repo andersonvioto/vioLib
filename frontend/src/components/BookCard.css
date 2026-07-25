@@ -1,58 +1,59 @@
 /* ==========================================================================
-COMPONENT CSS - BookCard
-Estilos específicos do cartão de livro individual e seus 3 Modos de Visualização.
-========================================================================== */
+   COMPONENT CSS - BookCard (Redesign Editorial VioDesign Pro)
+   Estilos específicos do cartão de livro e seus 3 Modos de Visualização.
+   ========================================================================== */
 
-/* ==========================================================================
-MODO GRELHA (PADRÃO) E COMPACTO
-========================================================================== */
+/* --- MODO GRELHA (PADRÃO) E COMPACTO --- */
 .book-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md, 8px);
   cursor: pointer;
   position: relative;
   display: flex;
   flex-direction: column;
   transition:
-    transform 0.4s ease,
-    box-shadow 0.4s ease,
-    border-color 0.4s ease;
+    transform var(--transition-normal, 0.3s ease),
+    box-shadow var(--transition-normal, 0.3s ease),
+    border-color var(--transition-normal, 0.3s ease);
   height: 100%;
+  outline: none;
+  box-sizing: border-box;
 }
 
-.book-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+.book-card:hover,
+.book-card:focus-visible {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-float, 0 15px 30px rgba(0, 0, 0, 0.5));
   border-color: var(--accent-gold);
   z-index: 10;
 }
 
-[data-theme='light'] .book-card:hover {
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+[data-theme='light'] .book-card:hover,
+[data-theme='light'] .book-card:focus-visible {
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
 }
 
-/* Wrapper da Capa */
 .book-cover-wrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 2 / 3;
   background-color: transparent;
   border-bottom: 1px solid var(--border-color);
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  border-radius: var(--radius-md, 8px) var(--radius-md, 8px) 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   overflow: hidden;
-  transition: all 0.4s ease;
+  transition: padding var(--transition-normal, 0.3s ease);
 }
 
 .book-volume {
   width: 100%;
   height: 100%;
   position: relative;
-  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .book-cover-img {
@@ -69,36 +70,34 @@ MODO GRELHA (PADRÃO) E COMPACTO
   display: none;
 }
 
-/* Modificadores para o Modo Compacto (is-compact) */
+/* Modificadores para o Modo Compacto */
 .book-card.is-compact .book-info {
-  padding: 10px;
-  gap: 4px;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  gap: 2px;
 }
 
 .book-card.is-compact .book-title {
-  font-size: 0.95em;
+  font-size: var(--font-size-sm, 0.875rem);
   -webkit-line-clamp: 2;
 }
 
 .book-card.is-compact .book-author {
-  font-size: 0.8em;
+  font-size: var(--font-size-xs, 0.75rem);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* ==========================================================================
-2. MODO LIVRO REALISTA (3D ISOMÉTRICO) PARA GRELHA/COMPACTO
-========================================================================== */
+/* --- MODO LIVRO REALISTA (3D ISOMÉTRICO) --- */
 [data-cover-style='book'] .book-cover-wrapper {
   perspective: 1200px;
   border-bottom: none;
   overflow: visible;
-  padding: 20px 30px 25px 25px;
+  padding: var(--space-5, 20px) var(--space-6, 24px) var(--space-6, 24px) var(--space-5, 20px);
 }
 
 [data-cover-style='book'] .book-card.is-compact .book-cover-wrapper {
-  padding: 10px 15px 15px 15px;
+  padding: var(--space-3, 12px) var(--space-4, 16px) var(--space-4, 16px) var(--space-3, 12px);
 }
 
 [data-cover-style='book'] .book-volume {
@@ -106,36 +105,42 @@ MODO GRELHA (PADRÃO) E COMPACTO
   height: 100%;
   transform-style: preserve-3d;
   transform: rotateY(-20deg) rotateX(6deg);
+  will-change: transform;
 }
 
 [data-cover-style='book'] .book-volume::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  transform: translateZ(-20px) translate(12px, 12px);
-  filter: blur(12px);
-  border-radius: 4px;
-  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background: rgba(0, 0, 0, 0.45);
+  transform: translateZ(-20px) translate(10px, 10px);
+  filter: blur(10px);
+  border-radius: var(--radius-sm, 4px);
+  transition:
+    transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    filter 0.4s ease,
+    background-color 0.4s ease;
 }
 
 [data-theme='light'][data-cover-style='book'] .book-volume::after {
-  background: rgba(0, 0, 0, 0.15);
-  filter: blur(10px);
+  background: rgba(0, 0, 0, 0.18);
+  filter: blur(8px);
 }
 
-[data-cover-style='book'] .book-card:hover .book-volume {
-  transform: rotateY(-3deg) rotateX(0deg) scale(1.03);
+[data-cover-style='book'] .book-card:hover .book-volume,
+[data-cover-style='book'] .book-card:focus-visible .book-volume {
+  transform: rotateY(-4deg) rotateX(0deg) scale(1.03);
 }
 
-[data-cover-style='book'] .book-card:hover .book-volume::after {
-  transform: translateZ(-30px) translate(8px, 15px);
-  filter: blur(16px);
-  background: rgba(0, 0, 0, 0.25);
+[data-cover-style='book'] .book-card:hover .book-volume::after,
+[data-cover-style='book'] .book-card:focus-visible .book-volume::after {
+  transform: translateZ(-25px) translate(6px, 12px);
+  filter: blur(14px);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 [data-theme='light'][data-cover-style='book'] .book-card:hover .book-volume::after {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.12);
 }
 
 [data-cover-style='book'] .book-cover-overlay,
@@ -185,7 +190,7 @@ MODO GRELHA (PADRÃO) E COMPACTO
   width: 20px;
   transform-origin: left center;
   transform: translateZ(10px) rotateY(-90deg);
-  background-color: #2c2c2c;
+  background-color: #222222;
 }
 
 [data-cover-style='book'] .book-cover-overlay {
@@ -196,43 +201,44 @@ MODO GRELHA (PADRÃO) E COMPACTO
   box-shadow: inset 4px 0 8px rgba(0, 0, 0, 0.2);
   background: linear-gradient(
     to right,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0) 3%,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0) 4%,
     rgba(255, 255, 255, 0) 90%
   );
-  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition:
+    box-shadow 0.4s ease,
+    background 0.4s ease;
 }
 
-[data-cover-style='book'] .book-card:hover .book-cover-overlay {
+[data-cover-style='book'] .book-card:hover .book-cover-overlay,
+[data-cover-style='book'] .book-card:focus-visible .book-cover-overlay {
   box-shadow:
-    inset 8px 0 16px rgba(0, 0, 0, 0.5),
+    inset 8px 0 16px rgba(0, 0, 0, 0.45),
     inset -1px 0 2px rgba(255, 255, 255, 0.1);
   background: linear-gradient(
     to right,
-    rgba(0, 0, 0, 0.3) 0%,
-    rgba(255, 255, 255, 0.2) 2%,
-    rgba(255, 255, 255, 0) 6%,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(255, 255, 255, 0.18) 3%,
+    rgba(255, 255, 255, 0) 8%,
     rgba(255, 255, 255, 0) 90%
   );
 }
 
-/* ==========================================================================
-3. INFORMAÇÕES DE TEXTO (Modos Grid e Compacto)
-========================================================================== */
+/* --- INFORMAÇÕES DE TEXTO --- */
 .book-info {
-  padding: 15px;
+  padding: var(--space-4, 16px);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-1, 4px);
   flex-grow: 1;
 }
 
 .book-title {
-  font-size: 1.1em;
+  font-size: var(--font-size-base, 1rem);
   color: var(--text-primary);
   margin: 0;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: var(--line-height-tight, 1.3);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -241,44 +247,46 @@ MODO GRELHA (PADRÃO) E COMPACTO
 }
 
 .book-author {
-  font-size: 0.9em;
+  font-size: var(--font-size-sm, 0.875rem);
   color: var(--text-secondary);
   margin: 0;
+  line-height: var(--line-height-normal);
 }
 
 .card-tags-container {
   display: flex;
-  gap: 5px;
+  gap: var(--space-1, 4px);
   flex-wrap: wrap;
   margin-top: auto;
-  padding-top: 10px;
+  padding-top: var(--space-2, 8px);
 }
 
 .card-tag-chip {
-  font-size: 0.7em;
+  font-size: var(--font-size-xs, 0.75rem);
   background: var(--bg-input);
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm, 4px);
   color: var(--text-muted);
   border: 1px solid var(--border-color);
   font-weight: 500;
 }
 
 .card-tag-more {
-  font-size: 0.75em;
+  font-size: var(--font-size-xs, 0.75rem);
   color: var(--accent-gold);
   font-weight: 700;
   align-self: center;
   margin-left: 2px;
 }
 
+/* Badges flutuantes com relevo sutil */
 .book-card-badges {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: var(--space-2, 8px);
+  right: var(--space-2, 8px);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-1, 4px);
   z-index: 20;
 }
 
@@ -289,69 +297,72 @@ MODO GRELHA (PADRÃO) E COMPACTO
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
 }
 
 .badge-icon .material-symbols-rounded {
-  font-size: 1.2em !important;
+  font-size: 1.125rem !important;
 }
 
 .badge-icon.borrowed {
   background: var(--accent-gold);
-  color: #000;
+  color: #000000;
 }
 
 .badge-icon.reading {
-  background: #4da6ff;
-  color: #000;
+  background: rgba(77, 166, 255, 0.9);
+  color: #000000;
 }
 
 .badge-icon.read {
-  background: #4dff88;
-  color: #000;
+  background: rgba(52, 211, 153, 0.9);
+  color: #000000;
 }
 
-/* ==========================================================================
-4. MODO EM LISTA (List View)
-========================================================================== */
+/* --- MODO EM LISTA (Horizontal View) --- */
 .book-card-list-view {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-4, 16px);
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 15px;
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: var(--transition-normal, all 0.25s ease);
+  outline: none;
+  min-height: var(--touch-target, 48px);
+  box-sizing: border-box;
 }
 
-.book-card-list-view:hover {
+.book-card-list-view:hover,
+.book-card-list-view:focus-visible {
   background: var(--bg-input);
   border-color: var(--accent-gold);
-  transform: translateX(5px);
+  transform: translateX(4px);
 }
 
 .list-cover-img {
-  width: 60px;
-  height: 90px;
+  width: 56px;
+  height: 84px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
 .list-main-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
   min-width: 0;
 }
 
 .list-book-title {
-  font-size: 1.1em;
+  font-size: var(--font-size-base, 1rem);
   color: var(--text-primary);
   margin: 0;
   font-weight: 600;
@@ -361,7 +372,7 @@ MODO GRELHA (PADRÃO) E COMPACTO
 }
 
 .list-book-author {
-  font-size: 0.9em;
+  font-size: var(--font-size-sm, 0.875rem);
   color: var(--accent-gold);
   margin: 0;
   white-space: nowrap;
@@ -371,28 +382,28 @@ MODO GRELHA (PADRÃO) E COMPACTO
 
 .list-meta-details {
   display: flex;
-  gap: 10px;
-  margin-top: 4px;
+  gap: var(--space-3, 12px);
+  margin-top: 2px;
 }
 
 .list-meta-item {
-  font-size: 0.8em;
+  font-size: var(--font-size-xs, 0.75rem);
   color: var(--text-muted);
 }
 
 .list-tags-container {
   display: flex;
-  gap: 5px;
+  gap: var(--space-1, 4px);
   flex-wrap: wrap;
-  width: 200px;
+  width: 180px;
   flex-shrink: 0;
 }
 
 .list-tag-chip {
-  font-size: 0.7em;
+  font-size: var(--font-size-xs, 0.75rem);
   background: var(--bg-main);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
   white-space: nowrap;
@@ -403,7 +414,7 @@ MODO GRELHA (PADRÃO) E COMPACTO
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 6px;
+  gap: var(--space-1, 4px);
   flex-shrink: 0;
 }
 
@@ -412,53 +423,51 @@ MODO GRELHA (PADRÃO) E COMPACTO
 .badge-read-list {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.8em;
+  border-radius: var(--radius-full, 20px);
+  font-size: var(--font-size-xs, 0.75rem);
   font-weight: 600;
 }
 
 .badge-borrowed-list {
-  background: rgba(212, 175, 55, 0.1);
+  background: var(--accent-gold-subtle);
   color: var(--accent-gold);
-  border: 1px solid var(--accent-gold);
+  border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .badge-reading-list {
-  background: rgba(77, 166, 255, 0.1);
+  background: rgba(77, 166, 255, 0.12);
   color: #4da6ff;
-  border: 1px solid #4da6ff;
+  border: 1px solid rgba(77, 166, 255, 0.3);
 }
 
 .badge-read-list {
-  background: rgba(77, 255, 136, 0.1);
-  color: #4dff88;
-  border: 1px solid #4dff88;
+  background: rgba(52, 211, 153, 0.12);
+  color: var(--text-success, #34d399);
+  border: 1px solid rgba(52, 211, 153, 0.3);
 }
 
 .badge-borrowed-list .material-symbols-rounded,
 .badge-reading-list .material-symbols-rounded,
 .badge-read-list .material-symbols-rounded {
-  font-size: 1.2em;
+  font-size: 1rem !important;
 }
 
-/* ==========================================================================
-5. RESPONSIVIDADE MOBILE (Modo Lista)
-========================================================================== */
+/* --- RESPONSIVIDADE PWA MOBILE --- */
 @media (max-width: 600px) {
   .book-card-list-view {
-    gap: 15px;
-    padding: 10px;
+    gap: var(--space-3, 12px);
+    padding: var(--space-2, 8px) var(--space-3, 12px);
   }
 
   .list-cover-img {
-    width: 50px;
-    height: 75px;
+    width: 48px;
+    height: 72px;
   }
 
   .list-book-title {
-    font-size: 1em;
+    font-size: var(--font-size-sm, 0.9rem);
   }
 
   .list-tags-container,
@@ -473,18 +482,19 @@ MODO GRELHA (PADRÃO) E COMPACTO
     gap: 4px;
   }
 
-  /* Encurta o badge escondendo o texto, mantendo só o ícone num círculo */
   .badge-borrowed-list,
   .badge-reading-list,
   .badge-read-list {
     padding: 6px;
     border-radius: 50%;
-    font-size: 0;
+    width: 28px;
+    height: 28px;
+    justify-content: center;
   }
 
-  .badge-borrowed-list .material-symbols-rounded,
-  .badge-reading-list .material-symbols-rounded,
-  .badge-read-list .material-symbols-rounded {
-    font-size: 16px;
+  .badge-borrowed-list span:not(.material-symbols-rounded),
+  .badge-reading-list span:not(.material-symbols-rounded),
+  .badge-read-list span:not(.material-symbols-rounded) {
+    display: none;
   }
 }

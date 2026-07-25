@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { getCoverUrl } from '../utils/bookHelpers';
 
-// Sub-Componentes extraídos
 import BookDetailHeader from '../components/BookDetailHeader';
 import LoanManager from '../components/LoanManager';
 import BookMetadataGrid from '../components/BookMetadataGrid';
@@ -13,7 +12,7 @@ import './BookDetails.css';
 
 /**
  * Tela Principal de Detalhes da Obra.
- * Atua como orquestrador de estado global do livro e monta a estrutura visual da página.
+ * Orquestra o estado global do livro e monta a estrutura visual editorial.
  */
 const BookDetails = () => {
   const { id } = useParams();
@@ -48,7 +47,6 @@ const BookDetails = () => {
     }
   };
 
-  // Trava de Segurança visual elegante (Skeleton Loading)
   if (!book) {
     return <BookDetailSkeleton />;
   }
@@ -57,61 +55,79 @@ const BookDetails = () => {
 
   return (
     <div className="details-container">
-      {/* 1. Componente de Cabeçalho Envelopado em Barra Fixa */}
       <div className="fixed-detail-header">
         <div className="fixed-detail-header-inner">
           <BookDetailHeader book={book} onDelete={handleDelete} />
         </div>
       </div>
 
-      <div className="editorial-layout">
-        {/* 2. Capa da Obra */}
+      <main className="editorial-layout" aria-label={`Detalhes da obra ${book.title}`}>
         <div className="cover-wrapper">
-          <img src={getCoverUrl(book.coverImage)} alt={book.title} className="details-cover" />
+          <img
+            src={getCoverUrl(book.coverImage)}
+            alt={`Capa do livro ${book.title}`}
+            className="details-cover"
+          />
         </div>
 
         <div className="details-content">
-          {/* 3. Título, Autores e Badges de Status */}
-          <div>
+          <header className="book-main-header">
             <h1 className="book-main-title">{book.title}</h1>
             <p className="book-main-authors">
               {book.Authors?.map((a) => a.name).join(', ') || 'Autor Desconhecido'}
             </p>
 
-            {/* Badges de Status (Leitura e Empréstimo) */}
-            <div className="book-status-badges">
+            <div className="book-status-badges" role="list" aria-label="Status bibliográfico">
               {book.readingStatus === 'reading' && (
-                <span className="detail-badge reading" title="A ler atualmente">
-                  <span className="material-symbols-rounded">import_contacts</span> Lendo
+                <span className="detail-badge reading" role="listitem" title="A ler atualmente">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    import_contacts
+                  </span>
+                  <span>Lendo</span>
                 </span>
               )}
               {book.readingStatus === 'read' && (
-                <span className="detail-badge read" title="Leitura concluída">
-                  <span className="material-symbols-rounded">task_alt</span> Lido
+                <span className="detail-badge read" role="listitem" title="Leitura concluída">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    task_alt
+                  </span>
+                  <span>Lido</span>
                 </span>
               )}
               {book.readingStatus === 'unread' && (
-                <span className="detail-badge unread" title="Ainda não lido">
-                  <span className="material-symbols-rounded">book</span> Não Lido
+                <span className="detail-badge unread" role="listitem" title="Ainda não lido">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    book
+                  </span>
+                  <span>Não Lido</span>
                 </span>
               )}
               {activeLoan && (
-                <span className="detail-badge borrowed" title="Emprestado no momento">
-                  <span className="material-symbols-rounded">schedule</span> Emprestado
+                <span
+                  className="detail-badge borrowed"
+                  role="listitem"
+                  title="Emprestado no momento"
+                >
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    schedule
+                  </span>
+                  <span>Emprestado</span>
                 </span>
               )}
             </div>
-          </div>
+          </header>
 
-          {/* 4. Metadados e Notas (Posicionado abaixo do título para melhor fluxo de leitura) */}
-          <BookMetadataGrid book={book} />
+          <section className="metadata-section" aria-label="Ficha técnica e metadados">
+            <BookMetadataGrid book={book} />
+          </section>
 
-          {/* 5. Gerenciador de Empréstimos (Movido para o final da ficha técnica) */}
           {book.isOwner && (
-            <LoanManager bookId={book.id} activeLoan={activeLoan} onUpdate={fetchBookDetails} />
+            <section className="loan-section" aria-label="Gestão de empréstimos">
+              <LoanManager bookId={book.id} activeLoan={activeLoan} onUpdate={fetchBookDetails} />
+            </section>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };

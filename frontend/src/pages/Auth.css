@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COMPONENT CSS - Auth & Security (Versão Corrigida - Anti-Sobreposição)
+   COMPONENT CSS - Auth & Security (Redesign Editorial VioDesign Pro)
    Estilos mestre para telas de Login, Registo, Recuperação e Verificação.
    ========================================================================== */
 
@@ -9,8 +9,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, var(--bg-surface) 0%, var(--bg-main) 100%);
-  padding: 20px;
+  background: radial-gradient(circle at top, var(--bg-surface) 0%, var(--bg-main) 100%);
+  padding: var(--space-6, 24px) var(--space-4, 16px);
   box-sizing: border-box;
 }
 
@@ -18,69 +18,121 @@
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-top: 4px solid var(--accent-gold);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg, 12px);
   width: 100%;
-  max-width: 400px;
-  padding: 40px 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  max-width: 420px;
+  padding: var(--space-8, 32px) var(--space-6, 24px);
+  box-shadow: var(--shadow-float, 0 20px 25px -5px rgba(0, 0, 0, 0.5));
   text-align: center;
   box-sizing: border-box;
+  backdrop-filter: blur(8px);
+  transition: var(--transition-normal);
 }
 
 .auth-logo-img {
   width: 100%;
-  max-width: 220px;
+  max-width: 200px;
   height: auto;
-  margin: 0 auto 30px auto;
+  margin: 0 auto var(--space-6, 24px) auto;
   display: block;
-  border-radius: var(--radius-sm);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }
 
-/* Modificadores para telas exclusivas de aviso (sem formulários complexos) */
-.security-card-centered {
-  text-align: center;
+/* --- ABAS SUPERIORES (CONTROLE SEGMENTADO PWA) --- */
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  padding: 6px;
+  margin-bottom: var(--space-6, 24px);
 }
 
-.security-logo {
-  display: block;
-  margin: 0 auto 20px auto;
+.auth-tab {
+  min-height: var(--touch-target-sm, 44px);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast, all 0.15s ease);
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  box-sizing: border-box;
 }
 
-.security-title {
-  margin-bottom: 20px;
-  text-align: center;
+.auth-tab:hover:not(.active) {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.auth-tab:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: -2px;
+}
+
+.auth-tab.active {
+  background-color: var(--bg-surface);
   color: var(--accent-gold);
-  font-family: serif;
+  box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.25));
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.auth-view-title {
+  margin-bottom: var(--space-6, 24px);
+  text-align: center;
+}
+
+.auth-view-title h2 {
+  font-family: var(--font-serif);
+  color: var(--accent-gold);
+  font-size: var(--font-size-xl, 1.5rem);
+  margin-bottom: var(--space-2, 8px);
+}
+
+.auth-view-title p {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm, 0.875rem);
+  line-height: var(--line-height-normal);
 }
 
 /* --- ALERTAS DE FEEDBACK --- */
 .auth-alert {
-  padding: 12px 15px;
-  border-radius: var(--radius-sm);
-  margin-bottom: 20px;
-  font-size: 0.95em;
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  border-radius: var(--radius-sm, 6px);
+  margin-bottom: var(--space-5, 20px);
+  font-size: var(--font-size-sm, 0.875rem);
   font-weight: 500;
   text-align: left;
-  animation: authFadeDown 0.3s ease-out;
+  animation: authFadeDown 0.3s var(--ease-out);
   box-sizing: border-box;
+  line-height: var(--line-height-normal);
 }
 
 .alert-error {
-  background-color: rgba(255, 77, 77, 0.12);
-  color: #ff4d4d;
-  border: 1px solid #ff4d4d;
+  background-color: rgba(248, 113, 113, 0.12);
+  color: var(--text-danger, #f87171);
+  border: 1px solid var(--text-danger, #f87171);
 }
 
 .alert-success {
-  background-color: rgba(77, 255, 136, 0.12);
-  color: #4dff88;
-  border: 1px solid #4dff88;
+  background-color: rgba(52, 211, 153, 0.12);
+  color: var(--text-success, #34d399);
+  border: 1px solid var(--text-success, #34d399);
 }
 
 @keyframes authFadeDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
@@ -88,110 +140,100 @@
   }
 }
 
-/* --- BLOCOS DE STATUS (Telas de Verificação) --- */
-.status-loading {
-  color: var(--text-muted);
-}
-
-.status-success-block {
-  color: #4dff88;
-  margin-bottom: 20px;
-}
-
-.status-error-block {
-  color: #ff4d4d;
-  margin-bottom: 20px;
-}
-
-.status-icon {
-  font-size: 48px !important;
-  margin-bottom: 10px;
-}
-
-/* --- FORMULÁRIO E SOLUÇÃO DO FLUXO DE INPUTS (FLEXBOX REAL) --- */
+/* --- FORMULÁRIO E FLUXO DE INPUTS UNIFICADO --- */
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-4, 16px);
 }
 
-/* A caixa externa assume o papel visual do input (Bordas, Fundo e Foco) */
+/* O container responde visualmente por todo o campo como peça única */
 .input-group {
   display: flex;
   align-items: center;
   width: 100%;
+  min-height: var(--touch-target, 48px);
   background-color: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  transition: var(--transition-smooth);
-  padding: 0 14px; /* Espaçamento fixo nas extremidades internas da caixa */
+  border-radius: var(--radius-md, 8px);
+  transition: var(--transition-normal, all 0.2s ease);
+  padding: 0 var(--space-3, 14px);
   box-sizing: border-box;
+  position: relative;
 }
 
-/* Efeito dourado premium aplicado ao grupo quando o input interno é focado */
+/* Efeito unificado: Quando qualquer item interno ganha foco, o bloco todo se acende */
 .input-group:focus-within {
   border-color: var(--accent-gold);
-  background-color: var(--bg-surface); /* Corrigido: Adapta-se ao Modo Claro e Escuro */
+  background-color: var(--bg-surface);
   box-shadow: 0 0 0 3px var(--accent-gold-glow);
 }
 
-/* Ícone da Esquerda (Prefixo) */
+/* Ícone da esquerda harmonizado */
 .input-icon {
   color: var(--text-muted);
-  transition: var(--transition-smooth);
+  transition: var(--transition-normal, all 0.2s ease);
   pointer-events: none;
-  order: -1; /* Mágica do CSS: força o ícone a aparecer ANTES do input no layout visual */
-  margin-right: 12px; /* Garante um espaço físico real que o texto nunca conseguirá invadir */
+  order: -1;
+  margin-right: var(--space-3, 12px);
   display: flex;
   align-items: center;
-  flex-shrink: 0; /* Impede o ícone de amassar em telas pequenas */
+  flex-shrink: 0;
+  font-size: 1.25rem !important;
 }
 
 .input-group:focus-within .input-icon {
   color: var(--accent-gold);
 }
 
-/* O Campo de Texto real: Fica limpo, invisível e herda o espaço central da linha */
+/* O input em si é totalmente invisível estruturalmente, preenchendo o vazio da caixa */
 .auth-input {
-  flex: 1; /* Ocupa dinamicamente todo o espaço restante do centro */
-  padding: 14px 0; /* Padding apenas vertical. As laterais dependem dos margins dos ícones */
-  background: transparent !important; /* Remove fundos nativos do browser */
-  border: none !important; /* Remove bordas nativas */
+  flex: 1;
+  padding: var(--space-3, 14px) 0;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 0.95em;
-  outline: none;
+  font-size: var(--font-size-sm, 0.95rem);
   box-sizing: border-box;
+  width: 100%;
+}
+
+.auth-input::placeholder {
+  color: var(--text-muted);
 }
 
 .auth-input:disabled {
   cursor: not-allowed;
-  color: #777777;
+  color: var(--text-muted);
 }
 
-/* Garantia de opacidade do grupo inteiro quando desativado */
 .input-group:has(.auth-input:disabled) {
   opacity: 0.6;
-  background-color: var(--bg-main); /* Corrigido: Adapta-se ao Modo Claro e Escuro */
+  background-color: var(--bg-main);
   cursor: not-allowed;
 }
 
-/* Botão de Revelar Senha (Sufixo) */
+/* Botão de Revelar Senha sem contornos avulsos */
 .btn-toggle-password {
-  background: none;
-  border: none;
+  background: none !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   color: var(--text-muted);
   cursor: pointer;
-  outline: none;
-  padding: 0;
+  padding: var(--space-1, 4px);
   display: flex;
   align-items: center;
-  transition: var(--transition-smooth);
-  margin-left: 12px; /* Garante espaço físico real entre o fim do texto e o olho */
+  transition: var(--transition-normal, all 0.2s ease);
+  margin-left: var(--space-2, 8px);
   flex-shrink: 0;
 }
 
-.btn-toggle-password:hover {
+.btn-toggle-password:hover,
+.btn-toggle-password:focus-visible {
   color: var(--text-primary);
 }
 
@@ -202,28 +244,31 @@
 /* --- BOTÕES DE SUBMIT --- */
 .btn-auth-submit {
   width: 100%;
-  padding: 14px;
+  min-height: var(--touch-target, 48px);
+  padding: var(--space-3, 14px) var(--space-4, 16px);
   background-color: var(--accent-gold);
   color: #000000;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md, 8px);
   font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 1em;
+  font-size: var(--font-size-base, 1rem);
   cursor: pointer;
-  transition: var(--transition-smooth);
-  margin-top: 10px;
-  box-shadow: 0 4px 12px rgba(214, 175, 55, 0.1);
+  transition: var(--transition-normal, all 0.2s ease);
+  margin-top: var(--space-2, 8px);
+  box-shadow: 0 4px 12px var(--accent-gold-glow);
   display: flex;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
+  outline: none;
 }
 
-.btn-auth-submit:hover:not(:disabled) {
+.btn-auth-submit:hover:not(:disabled),
+.btn-auth-submit:focus-visible:not(:disabled) {
   background-color: var(--accent-gold-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(214, 175, 55, 0.2);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
 }
 
 .btn-auth-submit:active:not(:disabled) {
@@ -231,21 +276,16 @@
 }
 
 .btn-auth-submit:disabled {
-  opacity: 0.8;
+  opacity: 0.7;
   cursor: not-allowed;
-  background-color: #b3942e;
-}
-
-.btn-security-action {
-  margin-top: 10px;
-  width: 100%;
+  background-color: var(--accent-gold);
 }
 
 /* --- SPINNER DE CARREGAMENTO --- */
 .auth-spinner {
   display: inline-block;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border: 3px solid rgba(0, 0, 0, 0.2);
   border-radius: 50%;
   border-top-color: #000000;
@@ -258,24 +298,24 @@
   }
 }
 
-/* --- OPÇÕES DE SESSÃO E RODAPÉ --- */
+/* --- OPÇÕES DE SESSÃO E TERMOS --- */
 .remember-me-container {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin-top: -5px;
-  margin-bottom: 5px;
+  margin-top: -2px;
 }
 
 .remember-me-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2, 10px);
   color: var(--text-secondary);
-  font-size: 0.9em;
+  font-size: var(--font-size-sm, 0.875rem);
   cursor: pointer;
   user-select: none;
-  transition: var(--transition-smooth);
+  transition: var(--transition-normal);
+  text-align: left;
 }
 
 .remember-me-label:hover:not([disabled]) {
@@ -288,16 +328,17 @@
   border: 1px solid var(--border-color);
   width: 18px;
   height: 18px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-smooth);
+  transition: var(--transition-fast);
   outline: none;
+  flex-shrink: 0;
 }
 
-.remember-me-checkbox:focus {
+.remember-me-checkbox:focus-visible {
   border-color: var(--accent-gold);
   box-shadow: 0 0 0 2px var(--accent-gold-glow);
 }
@@ -311,7 +352,7 @@
   content: '✓';
   color: #000000;
   font-weight: bold;
-  font-size: 0.85em;
+  font-size: 0.75rem;
 }
 
 .remember-me-checkbox:disabled,
@@ -320,27 +361,101 @@
   cursor: not-allowed;
 }
 
+.terms-container {
+  align-items: flex-start;
+  margin-top: 2px;
+}
+
+.terms-label {
+  align-items: flex-start;
+}
+
+.terms-checkbox {
+  margin-top: 2px;
+}
+
+.terms-text {
+  font-size: var(--font-size-sm, 0.85rem);
+  line-height: var(--line-height-normal);
+  color: var(--text-secondary);
+}
+
+.terms-text .auth-link {
+  margin-left: 0;
+}
+
+/* --- DIVISORES E LOGIN SOCIAL --- */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: var(--space-5, 20px) 0;
+  opacity: 0.6;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: var(--border-color);
+}
+
+.divider-text {
+  padding: 0 var(--space-3, 12px);
+  font-size: var(--font-size-xs, 0.8rem);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.social-login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  width: 100%;
+}
+
+.social-terms-notice {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: var(--space-1, 4px);
+  line-height: var(--line-height-normal);
+}
+
+.social-terms-notice .auth-link {
+  margin-left: 0;
+  font-size: inherit;
+}
+
+/* --- RODAPÉ E LINKS --- */
 .auth-footer {
-  margin-top: 25px;
-  font-size: 0.85em;
+  margin-top: var(--space-6, 24px);
+  font-size: var(--font-size-sm, 0.875rem);
   color: var(--text-secondary);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: var(--space-2, 8px);
 }
 
 .auth-link {
   color: var(--accent-gold);
   text-decoration: none;
   font-weight: 500;
-  transition: var(--transition-smooth);
-  margin-left: 5px;
+  transition: var(--transition-normal);
   cursor: pointer;
+  outline: none;
 }
 
-.auth-link:hover:not(.disabled-link) {
+.auth-link:hover:not(.disabled-link),
+.auth-link:focus-visible:not(.disabled-link) {
   color: var(--accent-gold-hover);
   text-decoration: underline;
+}
+
+.auth-link-bold {
+  font-weight: 700;
 }
 
 .disabled-link {
@@ -348,4 +463,27 @@
   cursor: not-allowed !important;
   pointer-events: none;
   text-decoration: none !important;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE (PWA MOBILE)
+   ========================================================================== */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: var(--space-6, 24px) var(--space-4, 16px);
+    border-radius: var(--radius-md, 8px);
+  }
+
+  .auth-logo-img {
+    max-width: 170px;
+    margin-bottom: var(--space-5, 20px);
+  }
+
+  .auth-tabs {
+    margin-bottom: var(--space-5, 20px);
+  }
+
+  .auth-tab {
+    font-size: var(--font-size-xs, 0.8rem);
+  }
 }

@@ -1,19 +1,22 @@
 /* ==========================================================================
-HERO BANNER (Capa e Resumo da Coleção)
-========================================================================== */
+   PAGE CSS - CollectionDashboard (Redesign Editorial VioDesign Pro)
+   Hero banner gamificado, barras XP interativas e mural em álbum de figurinhas.
+   ========================================================================== */
+
 .collection-hero-banner {
   position: relative;
-  min-height: 280px;
+  min-height: 300px;
   background-color: var(--bg-surface);
   background-size: cover;
   background-position: center;
-  border-radius: var(--radius-md);
-  margin-bottom: 40px;
+  border-radius: var(--radius-lg, 12px);
+  margin-bottom: var(--space-10, 40px);
   overflow: hidden;
   display: flex;
-  flex-direction: column; /* Agora organiza o topo e o conteúdo em pilha */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  flex-direction: column;
+  box-shadow: var(--shadow-float, 0 20px 25px -5px rgba(0, 0, 0, 0.6));
   border: 1px solid var(--border-color);
+  box-sizing: border-box;
 }
 
 .hero-gradient-overlay {
@@ -21,9 +24,9 @@ HERO BANNER (Capa e Resumo da Coleção)
   inset: 0;
   background: linear-gradient(
     to right,
-    rgba(18, 18, 18, 0.95) 15%,
-    rgba(18, 18, 18, 0.7) 60%,
-    rgba(18, 18, 18, 0.4) 100%
+    rgba(18, 18, 18, 0.96) 15%,
+    rgba(18, 18, 18, 0.75) 60%,
+    rgba(18, 18, 18, 0.45) 100%
   );
   z-index: 1;
 }
@@ -31,13 +34,12 @@ HERO BANNER (Capa e Resumo da Coleção)
 [data-theme='light'] .hero-gradient-overlay {
   background: linear-gradient(
     to right,
-    rgba(244, 244, 240, 0.95) 15%,
-    rgba(244, 244, 240, 0.8) 60%,
-    rgba(244, 244, 240, 0.5) 100%
+    rgba(244, 244, 240, 0.96) 15%,
+    rgba(244, 244, 240, 0.85) 60%,
+    rgba(244, 244, 240, 0.55) 100%
   );
 }
 
-/* Nova Barra Superior (Estrutural e Sem Sobreposição) */
 .hero-top-bar {
   position: relative;
   z-index: 10;
@@ -45,66 +47,83 @@ HERO BANNER (Capa e Resumo da Coleção)
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 20px;
+  padding: var(--space-5, 20px);
   box-sizing: border-box;
 }
 
 .btn-back-hero {
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-  padding: 8px 15px;
-  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  padding: 0 var(--space-4, 16px);
+  min-height: var(--touch-target-sm, 44px);
+  border-radius: var(--radius-full, 24px);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-2, 8px);
   cursor: pointer;
-  transition: var(--transition-smooth);
-  font-weight: 500;
-  font-size: 0.9em;
+  transition: all var(--transition-normal);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--font-size-sm, 0.875rem);
+  outline: none;
 }
 
-.btn-back-hero:hover {
+.btn-back-hero:hover,
+.btn-back-hero:focus-visible {
   background: var(--accent-gold);
-  color: #000;
+  color: #000000;
   border-color: var(--accent-gold);
+  transform: translateX(-4px);
+}
+
+.btn-back-hero .material-symbols-rounded {
+  font-size: 1.25rem !important;
 }
 
 .hero-owner-actions {
   display: flex;
-  gap: 10px;
+  gap: var(--space-3, 12px);
 }
 
 .hero-action-btn {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(5px);
-  padding: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  width: var(--touch-target, 48px);
+  height: var(--touch-target, 48px);
+  padding: 0;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-smooth);
+  transition: all var(--transition-normal);
 }
 
-.hero-action-btn:hover {
+.hero-action-btn:hover,
+.hero-action-btn:focus-visible {
   background: var(--bg-surface);
   color: var(--accent-gold);
   transform: translateY(-2px);
 }
 
 .hero-action-btn.delete-btn {
-  color: #ff4d4d;
+  color: var(--text-danger, #f87171);
 }
 
-.hero-action-btn.delete-btn:hover {
-  background: #ff4d4d;
-  color: #fff;
+.hero-action-btn.delete-btn:hover,
+.hero-action-btn.delete-btn:focus-visible {
+  background: var(--text-danger, #f87171);
+  color: #ffffff;
 }
 
-/* O Conteúdo Principal do Hero */
+.hero-action-btn .material-symbols-rounded {
+  font-size: 1.35rem !important;
+  margin: 0;
+}
+
 .hero-content {
   position: relative;
   z-index: 2;
@@ -112,120 +131,140 @@ HERO BANNER (Capa e Resumo da Coleção)
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 0 40px 40px 40px; /* Removido o padding superior para encaixar com a top-bar */
-  gap: 40px;
+  padding: 0 var(--space-10, 40px) var(--space-10, 40px) var(--space-10, 40px);
+  gap: var(--space-8, 32px);
   flex: 1;
+  box-sizing: border-box;
 }
 
 .hero-text-area {
   flex: 1;
+  min-width: 0;
 }
 
 .hero-title {
-  font-family: serif;
-  font-size: 3em;
+  font-family: var(--font-serif, serif);
+  font-size: var(--font-size-4xl, 2.75rem);
   color: var(--accent-gold);
-  margin: 0 0 15px 0;
-  line-height: 1.1;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  margin: 0 0 var(--space-4, 16px) 0;
+  line-height: var(--line-height-tight, 1.15);
+  font-weight: 700;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
 }
 
 .hero-desc {
-  font-size: 1.1em;
+  font-size: var(--font-size-lg, 1.125rem);
   color: var(--text-secondary);
-  margin: 0 0 25px 0;
-  max-width: 600px;
-  line-height: 1.5;
+  margin: 0 0 var(--space-6, 24px) 0;
+  max-width: 650px;
+  line-height: var(--line-height-relaxed, 1.6);
 }
 
 .hero-stats-pills {
   display: flex;
-  gap: 15px;
+  gap: var(--space-3, 12px);
+  flex-wrap: wrap;
 }
 
 .hero-progress-ring {
   position: relative;
-  width: 160px;
-  height: 160px;
+  width: 170px;
+  height: 170px;
   border-radius: 50%;
-  background: conic-gradient(var(--accent-gold) var(--progress), rgba(255, 255, 255, 0.1) 0deg);
+  background: conic-gradient(var(--accent-gold) var(--progress), rgba(255, 255, 255, 0.15) 0deg);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
   flex-shrink: 0;
 }
 
 [data-theme='light'] .hero-progress-ring {
-  background: conic-gradient(var(--accent-gold) var(--progress), rgba(0, 0, 0, 0.1) 0deg);
+  background: conic-gradient(var(--accent-gold) var(--progress), rgba(0, 0, 0, 0.12) 0deg);
 }
 
 .hero-progress-inner {
-  width: 140px;
-  height: 140px;
+  width: 146px;
+  height: 146px;
   background-color: var(--bg-surface);
   border-radius: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .hero-progress-value {
-  font-size: 2.2em;
+  font-size: 2.25rem;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1;
+  font-family: var(--font-sans);
 }
 
 .hero-progress-label {
-  font-size: 0.8em;
+  font-size: var(--font-size-xs, 0.75rem);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.1em;
   color: var(--accent-gold);
-  margin-top: 5px;
-  font-weight: 600;
+  margin-top: 6px;
+  font-weight: 700;
 }
 
 /* ==========================================================================
-PAINEL DE BARRAS DE EXPERIÊNCIA (XP BARS)
-========================================================================== */
+   PAINEL DE BARRAS DE EXPERIÊNCIA (XP BARS INTERATIVAS)
+   ========================================================================== */
 .xp-section {
-  margin-bottom: 50px;
+  margin-bottom: var(--space-12, 48px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section-header-clean {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+  margin-bottom: var(--space-6, 24px);
+  border-bottom: 2px solid var(--accent-gold);
+  padding-bottom: var(--space-3, 12px);
 }
 
 .xp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-6, 24px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .xp-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 25px;
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-6, 24px);
+  box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
 }
 
 .xp-card-title {
-  margin: 0 0 20px 0;
-  font-size: 1.1em;
+  margin: 0 0 var(--space-4, 16px) 0;
+  font-size: var(--font-size-lg, 1.125rem);
   color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 10px;
+  font-family: var(--font-serif, serif);
+  font-weight: 700;
+  padding-bottom: var(--space-3, 12px);
   border-bottom: 1px dashed var(--border-color);
 }
 
 .xp-bars-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  max-height: 260px;
+  gap: var(--space-2, 8px);
+  max-height: 280px;
   overflow-y: auto;
-  padding-right: 5px;
+  padding-right: var(--space-1, 4px);
   overscroll-behavior: contain;
 }
 
@@ -239,7 +278,7 @@ PAINEL DE BARRAS DE EXPERIÊNCIA (XP BARS)
 
 .xp-bars-list::-webkit-scrollbar-thumb {
   background-color: var(--border-color);
-  border-radius: 4px;
+  border-radius: var(--radius-full, 4px);
 }
 
 .xp-bars-list::-webkit-scrollbar-thumb:hover {
@@ -249,73 +288,94 @@ PAINEL DE BARRAS DE EXPERIÊNCIA (XP BARS)
 .xp-bar-container {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: 8px;
-  border-radius: 6px;
+  gap: 6px;
+  padding: var(--space-3, 12px);
+  border-radius: var(--radius-sm, 6px);
   cursor: pointer;
   border: 1px solid transparent;
-  transition: var(--transition-smooth);
+  transition: all var(--transition-normal);
+  outline: none;
+  box-sizing: border-box;
 }
 
-.xp-bar-container:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-[data-theme='light'] .xp-bar-container:hover {
-  background-color: rgba(0, 0, 0, 0.03);
+.xp-bar-container:hover,
+.xp-bar-container:focus-visible {
+  background-color: var(--bg-input);
+  border-color: var(--border-hover, rgba(255, 255, 255, 0.2));
+  transform: translateX(4px);
 }
 
 .xp-bar-container.active-filter {
-  background-color: var(--accent-gold-glow);
+  background-color: var(--accent-gold-subtle, rgba(212, 175, 55, 0.15));
   border-color: var(--accent-gold);
+  box-shadow: var(--shadow-sm);
 }
 
 .xp-bar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.9em;
+  font-size: var(--font-size-sm, 0.9rem);
+  gap: var(--space-2, 8px);
 }
 
 .xp-val-name {
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+}
+
+.xp-active-badge {
+  font-size: var(--font-size-xs, 0.7rem);
+  background: var(--accent-gold);
+  color: #000000;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm, 4px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .xp-val-numbers {
   color: var(--text-secondary);
-  font-size: 0.9em;
+  font-size: var(--font-size-sm, 0.85rem);
 }
 
 .xp-bar-track {
   width: 100%;
   height: 8px;
   background-color: var(--bg-input);
-  border-radius: 4px;
+  border-radius: var(--radius-full, 4px);
   overflow: hidden;
 }
 
 .xp-bar-fill {
   height: 100%;
   background-color: var(--accent-gold);
-  border-radius: 4px;
-  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-full, 4px);
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ==========================================================================
-MURAL DE ITENS (Figurinhas / Cartas) e FERRAMENTAS
-========================================================================== */
+   MURAL DE ITENS (ESTÉTICA ÁLBUM DE FIGURINHAS)
+   ========================================================================== */
 .mural-section {
-  margin-bottom: 50px;
+  margin-bottom: var(--space-12, 48px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mural-header {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-bottom: 25px;
-  padding-bottom: 20px;
+  gap: var(--space-4, 16px);
+  margin-bottom: var(--space-6, 24px);
+  padding-bottom: var(--space-5, 20px);
   border-bottom: 2px solid var(--accent-gold);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mural-header-top {
@@ -323,89 +383,163 @@ MURAL DE ITENS (Figurinhas / Cartas) e FERRAMENTAS
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-4, 16px);
+  width: 100%;
 }
 
 .mural-title-wrapper {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3, 12px);
 }
 
 .mural-hint-text {
-  font-size: 0.6em;
+  font-size: var(--font-size-xs, 0.75rem);
   color: var(--text-muted);
-  margin-left: 10px;
-  font-weight: normal;
+  font-weight: 500;
 }
 
 .mural-active-filter {
-  font-size: 0.75em;
+  font-size: var(--font-size-xs, 0.75rem);
   color: var(--accent-gold);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  background: var(--accent-gold-glow);
-  border-radius: 20px;
+  gap: 6px;
+  padding: 4px 12px;
+  background: var(--accent-gold-subtle, rgba(212, 175, 55, 0.15));
+  border-radius: var(--radius-full, 20px);
   border: 1px solid var(--accent-gold);
+  font-weight: 600;
 }
 
-.mural-active-filter .material-symbols-rounded {
-  font-size: 1.2em;
+.btn-remove-filter-pill {
+  background: transparent;
+  border: none;
+  color: inherit;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  outline: none;
+}
+
+.btn-remove-filter-pill:hover,
+.btn-remove-filter-pill:focus-visible {
+  transform: scale(1.15);
+}
+
+.btn-remove-filter-pill .material-symbols-rounded {
+  font-size: 1.125rem !important;
+}
+
+.btn-add-item-mural {
+  min-height: var(--touch-target, 48px);
 }
 
 .mural-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: var(--space-4, 16px);
   align-items: center;
   background: var(--bg-surface);
-  padding: 12px 15px;
-  border-radius: var(--radius-md);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  border-radius: var(--radius-md, 8px);
   border: 1px solid var(--border-color);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mural-search {
-  flex: 1 1 200px;
+  flex: 1 1 240px;
   display: flex;
   align-items: center;
   background: var(--bg-input);
-  border-radius: var(--radius-sm);
-  padding: 0 10px;
+  border-radius: var(--radius-sm, 6px);
+  padding: 0 var(--space-3, 12px);
   border: 1px solid var(--border-color);
+  height: var(--touch-target, 48px);
+  min-height: var(--touch-target, 48px);
+  max-height: 48px;
+  transition: var(--transition-normal);
+  box-sizing: border-box;
 }
 
-.mural-search .material-symbols-rounded {
+.mural-search:focus-within {
+  border-color: var(--accent-gold);
+  background-color: var(--bg-surface);
+  box-shadow: 0 0 0 3px var(--accent-gold-glow);
+}
+
+.mural-search .search-icon {
   color: var(--text-muted);
-  font-size: 1.2em;
+  font-size: 1.25rem !important;
+  margin-right: var(--space-2, 8px);
+  flex-shrink: 0;
+}
+
+.mural-search:focus-within .search-icon {
+  color: var(--accent-gold);
 }
 
 .mural-search-input {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base, 1rem);
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+}
+
+.mural-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.btn-clear-mural-search {
   background: transparent;
   border: none;
-  color: var(--text-primary);
-  padding: 10px 8px;
-  width: 100%;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
   outline: none;
-  font-size: 0.9em;
+  flex-shrink: 0;
+}
+
+.btn-clear-mural-search:hover,
+.btn-clear-mural-search:focus-visible {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .mural-checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2, 8px);
   cursor: pointer;
   color: var(--text-secondary);
-  font-size: 0.9em;
+  font-size: var(--font-size-sm, 0.9rem);
+  font-weight: 500;
   user-select: none;
+  min-height: var(--touch-target, 48px);
+  padding: 0 var(--space-2, 8px);
 }
 
 .mural-checkbox input {
   accent-color: var(--accent-gold);
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
 }
 
@@ -413,178 +547,200 @@ MURAL DE ITENS (Figurinhas / Cartas) e FERRAMENTAS
   flex: 1 1 320px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2, 8px);
 }
 
-.mural-sort .material-symbols-rounded {
+.mural-sort .sort-icon {
   color: var(--text-muted);
+  font-size: 1.25rem !important;
+  flex-shrink: 0;
 }
 
 .mural-sort-select {
   flex: 1;
-  min-width: 150px;
+  min-width: 160px;
 }
 
 .mural-sort-btn {
-  padding: 8px;
+  padding: 0 var(--space-3, 12px);
   border: 1px solid var(--border-color);
   margin: 0;
-  height: 38px;
+  min-height: var(--touch-target, 48px);
   flex-shrink: 0;
 }
 
 .mural-sort-btn .material-symbols-rounded {
-  font-size: 1.2em;
-  color: inherit;
+  font-size: 1.25rem !important;
 }
 
-.btn-empty-clear {
-  margin: 0 auto;
-}
-
-/* Grid de Itens */
+/* --- GRADE DE FIGURINHAS (STICKER ALBUM ITEMS) --- */
 .items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-6, 24px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .item-card {
   background: var(--bg-surface);
-  border-radius: var(--radius-md);
-  padding: 20px;
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-5, 20px);
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: var(--space-4, 16px);
   position: relative;
   overflow: hidden;
-  cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: all var(--transition-normal);
+  outline: none;
+  box-sizing: border-box;
 }
 
 .status-owned {
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
-.status-owned:hover {
+.status-owned:hover,
+.status-owned:focus-visible {
   border-color: var(--accent-gold);
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-float, 0 15px 30px rgba(0, 0, 0, 0.5));
 }
 
 .status-missing {
-  border: 2px dashed var(--border-color);
-  opacity: 0.7;
-  background: transparent;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(18, 18, 18, 0.4);
+  opacity: 0.75;
 }
 
-.status-missing:hover {
+.status-missing:hover,
+.status-missing:focus-visible {
   opacity: 1;
-  border-color: var(--text-secondary);
+  border-color: var(--accent-gold);
+  background: var(--bg-surface);
 }
 
 .item-missing-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  color: #fff;
-  font-weight: 600;
-  font-size: 1.1em;
+  gap: var(--space-2, 8px);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: var(--font-size-lg, 1.125rem);
+  letter-spacing: 0.05em;
   opacity: 0;
-  transition: var(--transition-smooth);
+  transition: opacity var(--transition-normal);
 }
 
 [data-theme='light'] .item-missing-overlay {
-  background: rgba(255, 255, 255, 0.4);
-  color: #000;
+  background: rgba(255, 255, 255, 0.75);
+  color: #000000;
 }
 
-.status-missing:hover .item-missing-overlay {
+.status-missing:hover .item-missing-overlay,
+.status-missing:focus-visible .item-missing-overlay {
   opacity: 1;
 }
 
-/* ==========================================================================
-CABEÇALHO DO ITEM (Ícones Laterais Refatorados)
-========================================================================== */
 .item-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--space-3, 12px);
 }
 
 .item-header-left {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--space-3, 12px);
   flex: 1;
+  min-width: 0;
 }
 
 .item-owned-icon {
   color: var(--accent-gold);
-  font-size: 1.5em !important;
+  font-size: 1.75rem !important;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
-/* Solução visual elegante sugerida: Opaco mas visível */
 .icon-placeholder {
   color: var(--text-muted);
-  opacity: 0.3;
+  opacity: 0.35;
 }
 
 .item-card-title {
   margin: 0;
-  font-size: 1.1em;
+  font-size: var(--font-size-lg, 1.125rem);
   color: var(--text-primary);
-  line-height: 1.3;
-  margin-top: 2px;
+  line-height: var(--line-height-tight, 1.25);
+  font-weight: 600;
+  font-family: var(--font-serif, serif);
 }
 
 .item-card-actions {
   display: flex;
-  gap: 8px;
   align-items: center;
   flex-shrink: 0;
 }
 
-.item-link-icon {
-  font-size: 1.3em !important;
-  transition: 0.2s;
+.item-link-btn {
+  background: transparent;
+  border: none;
+  padding: var(--space-1, 6px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  outline: none;
+  min-height: var(--touch-target-sm, 44px);
+  min-width: var(--touch-target-sm, 44px);
 }
 
-.item-link-icon.unlinked {
+.item-link-btn .material-symbols-rounded {
+  font-size: 1.35rem !important;
+}
+
+.item-link-btn.unlinked {
   color: var(--text-muted);
-  opacity: 0.3;
+  opacity: 0.25;
   cursor: default;
 }
 
-.item-link-icon.linked {
+.item-link-btn.linked {
   color: var(--accent-gold);
-  cursor: pointer;
+  background: var(--accent-gold-subtle);
 }
 
-.item-link-icon.linked:hover {
-  transform: scale(1.1);
+.item-link-btn.linked:hover,
+.item-link-btn.linked:focus-visible {
+  transform: scale(1.15);
+  background: var(--accent-gold);
+  color: #000000;
+  box-shadow: 0 4px 12px var(--accent-gold-glow);
 }
 
 .item-axis-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   margin-top: auto;
+  padding-top: var(--space-2, 8px);
 }
 
 .axis-chip {
   background: var(--bg-input);
   padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 0.8em;
+  border-radius: var(--radius-sm, 4px);
+  font-size: var(--font-size-xs, 0.75rem);
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
 }
@@ -594,10 +750,15 @@ CABEÇALHO DO ITEM (Ícones Laterais Refatorados)
 }
 
 /* ==========================================================================
-MODAL DE COLEÇÃO
-========================================================================== */
+   MODAL EDITORIAL DO ITEM (COM ERGONOMIA PWA MOBILE)
+   ========================================================================== */
 .collection-item-modal {
-  max-width: 550px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .modal-form-layout {
@@ -610,97 +771,113 @@ MODAL DE COLEÇÃO
 .legal-modal-content {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: var(--space-5, 20px);
+  overflow-y: auto;
+  padding: var(--space-6, 24px);
+  overscroll-behavior: contain;
 }
 
 .modal-link-block {
-  padding: 15px;
-  background: var(--accent-gold-glow);
-  border-radius: var(--radius-md);
+  padding: var(--space-5, 20px);
+  background: var(--accent-gold-subtle, rgba(212, 175, 55, 0.1));
+  border-radius: var(--radius-md, 8px);
   border: 1px solid var(--accent-gold);
 }
 
 .modal-link-header {
-  margin: 0 0 10px 0;
-  font-size: 0.9em;
+  margin: 0 0 var(--space-2, 8px) 0;
+  font-size: var(--font-size-base, 1rem);
   color: var(--accent-gold);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-2, 8px);
+  font-weight: 700;
 }
 
 .modal-link-header .material-symbols-rounded {
-  font-size: 1.2em;
+  font-size: 1.35rem !important;
 }
 
 .modal-link-desc {
-  font-size: 0.85em;
+  font-size: var(--font-size-sm, 0.875rem);
   color: var(--text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-4, 16px);
+  line-height: var(--line-height-normal);
 }
 
 .modal-link-actions {
   display: flex;
-  gap: 10px;
-  align-items: center;
+  gap: var(--space-3, 12px);
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.modal-select-wrapper {
+  flex: 1 1 260px;
 }
 
 .btn-modal-create {
   white-space: nowrap;
-  padding: 8px 12px;
-  font-size: 0.9em;
+  padding: 0 var(--space-4, 16px);
+  min-height: var(--touch-target, 48px);
 }
 
 .modal-category-block {
-  padding: 15px;
+  padding: var(--space-5, 20px);
   background: var(--bg-input);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md, 8px);
   border: 1px solid var(--border-color);
-  margin-top: 5px;
 }
 
 .modal-category-header {
-  margin: 0 0 10px 0;
-  font-size: 0.9em;
+  margin: 0 0 var(--space-4, 16px) 0;
+  font-size: var(--font-size-base, 1rem);
   color: var(--text-primary);
+  font-weight: 600;
 }
 
 .modal-category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px;
-}
-
-.modal-category-grid .form-label {
-  font-size: 0.8em;
-  color: var(--text-secondary);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4, 16px);
 }
 
 .legal-modal-footer {
   display: flex;
   justify-content: space-between;
-  padding: 15px 20px;
+  align-items: center;
+  padding: var(--space-4, 16px) var(--space-6, 24px);
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  flex-wrap: wrap;
+  gap: var(--space-3, 12px);
 }
 
 .btn-danger-outline {
-  color: var(--text-danger);
-  border-color: var(--text-danger);
+  color: var(--text-danger, #f87171) !important;
+  border-color: var(--text-danger, #f87171) !important;
+}
+
+.btn-danger-outline:hover:not(:disabled),
+.btn-danger-outline:focus-visible:not(:disabled) {
+  background: var(--text-danger, #f87171) !important;
+  color: #ffffff !important;
 }
 
 .modal-footer-actions {
   display: flex;
-  gap: 10px;
+  gap: var(--space-3, 12px);
 }
 
 /* ==========================================================================
-RESPONSIVIDADE (Mobile e Tablets)
-========================================================================== */
+   RESPONSIVIDADE E TRAVA DE ALTURA NO PWA MOBILE (REVISADO 5 VEZES)
+   ========================================================================== */
 @media (max-width: 900px) {
   .hero-content {
     flex-direction: column;
     text-align: center;
-    padding: 20px; /* Ajuste orgânico agora que a top-bar é independente */
-    gap: 30px;
+    padding: var(--space-6, 24px);
+    gap: var(--space-8, 32px);
   }
 
   .hero-stats-pills {
@@ -712,38 +889,105 @@ RESPONSIVIDADE (Mobile e Tablets)
   .collection-hero-banner {
     min-height: auto;
     border-radius: 0;
-    margin: -15px -15px 30px -15px;
+    margin: -16px -12px var(--space-8, 32px) -12px;
   }
 
   .hero-top-bar {
-    padding: 15px;
+    padding: var(--space-4, 16px);
   }
 
   .hero-content {
-    padding: 10px 20px 30px 20px; /* Garante que o texto tenha respiro após a barra de botões */
+    padding: var(--space-3, 12px) var(--space-5, 20px) var(--space-8, 32px) var(--space-5, 20px);
   }
 
   .hero-title {
-    font-size: 2.2em;
+    font-size: 2.25rem;
   }
 
   .items-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+    grid-template-columns: 1fr;
+    gap: var(--space-4, 16px);
   }
 
   .xp-grid {
     grid-template-columns: 1fr;
   }
 
+  /* CORREÇÃO MOBILE DEFINITIVA: Mural Toolbar e compactação */
   .mural-toolbar {
-    flex-direction: column;
-    align-items: stretch;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 10px !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: unset !important;
+    box-sizing: border-box !important;
   }
 
-  .mural-search,
+  /* Trava de altura e reset do flex-basis no input de busca */
+  .mural-search {
+    flex: unset !important;
+    width: 100% !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .mural-checkbox {
+    flex: unset !important;
+    width: 100% !important;
+    min-height: 36px !important;
+    margin: 0 !important;
+    padding: 0 4px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* MÁGICA CSS DEFINITIVA: Alinhamento horizontal estrito e estiramento no eixo cruzado! */
   .mural-sort {
-    flex: unset;
-    width: 100%;
+    flex: unset !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 44px !important;
+    max-height: unset !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .mural-sort .sort-icon {
+    display: none !important;
+  }
+
+  /* O select se estica sem quebrar a linha, com altura mínima de 44px */
+  .mural-sort-select {
+    flex: 1 1 auto !important;
+    width: calc(100% - 52px) !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+    height: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* O botão se transforma em um quadrado ergonômico perfeito de 44x44px */
+  .mural-sort-btn {
+    width: 44px !important;
+    height: auto !important;
+    min-height: 44px !important;
+    max-height: unset !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
   }
 
   .mural-title-wrapper {
@@ -753,5 +997,40 @@ RESPONSIVIDADE (Mobile e Tablets)
 
   .mural-hint-text {
     margin-left: 0;
+  }
+
+  .collection-item-modal {
+    max-height: 95vh;
+  }
+
+  .legal-modal-content {
+    padding: var(--space-4, 16px);
+  }
+
+  .legal-modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    padding: var(--space-4, 16px);
+  }
+
+  .modal-footer-actions {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+
+  .modal-footer-actions .btn-action,
+  .btn-danger-outline {
+    width: 100%;
+    justify-content: center;
+    min-height: var(--touch-target, 48px);
+  }
+
+  .modal-link-actions {
+    flex-direction: column;
+  }
+
+  .btn-modal-create {
+    width: 100%;
+    justify-content: center;
   }
 }

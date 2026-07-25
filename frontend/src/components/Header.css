@@ -1,17 +1,26 @@
 /* ==========================================================================
-   COMPONENT CSS - Header
-   Estilos do cabeçalho principal, logotipo e menu de ações (Desktop/Mobile).
+   COMPONENT CSS - Header & Share Modal (PWA Ergonomy & Safe Areas)
    ========================================================================== */
+
+:root {
+  /* Altura controlada para compensar o topo dos layouts e evitar sobreposição */
+  --header-height: 84px;
+}
 
 .dash-header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 2000;
-  background-color: var(--bg-main, #121212);
+  z-index: var(--z-header, 500);
+  background-color: var(--bg-main);
   border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-md);
+  transition:
+    background-color var(--transition-normal),
+    border-color var(--transition-normal);
+  /* Respeito às Safe Areas do iPhone / iOS PWA */
+  padding-top: env(safe-area-inset-top, 0);
 }
 
 .dash-header-inner {
@@ -19,47 +28,71 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: nowrap;
-  gap: 15px;
+  gap: var(--space-4);
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 20px 40px;
+  padding: var(--space-4) var(--space-8);
+  height: var(--header-height);
+  box-sizing: border-box;
 }
 
 .brand-container {
   display: flex;
   align-items: center;
-  gap: 15px;
-  /* Garante que o container não force um tamanho maior que o espaço disponível */
+  gap: var(--space-4);
   flex: 1 1 auto;
   min-width: 0;
 }
 
 .brand-logo {
-  height: 45px;
+  height: 42px;
   width: auto;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-  /* Impede que o logo encolha e fique distorcido */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
   flex-shrink: 0;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.brand-logo:hover {
+  transform: scale(1.02);
 }
 
 .library-switcher-wrapper {
-  /* Permite que o wrapper do select encolha, mas sem desaparecer */
   flex: 1 1 auto;
   min-width: 0;
 }
 
 .library-select {
-  min-width: 150px;
-  /* Garante que o select respeite o tamanho do pai e ative o truncamento (ellipsis) */
+  min-width: 180px;
   max-width: 100%;
+  background-color: var(--bg-input);
+  color: var(--accent-gold);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: var(--transition-normal);
+  height: var(--touch-target-sm);
+  outline: none;
+}
+
+.library-select:hover,
+.library-select:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 2px var(--accent-gold-glow);
 }
 
 .user-actions-container {
   display: flex;
   align-items: center;
   position: relative;
-  /* Garante que o menu nunca seja empurrado para fora da tela */
   flex-shrink: 0;
 }
 
@@ -69,104 +102,326 @@
 
 .header-actions {
   display: flex;
-  gap: 15px;
+  gap: var(--space-3);
   flex-wrap: wrap;
+  align-items: center;
 }
 
 /* --- Botões de Ação do Header --- */
 .btn-action {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  height: var(--touch-target-sm);
   border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-weight: 500;
+  font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: var(--transition-smooth);
-  background: transparent;
-  border: 1px solid var(--accent-gold);
+  transition: var(--transition-normal);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   color: var(--text-primary);
+  white-space: nowrap;
+  outline: none;
 }
 
-.btn-action:hover {
-  background: var(--accent-gold-glow);
-  transform: translateY(-2px);
+.btn-action:hover,
+.btn-action:focus-visible {
+  background: var(--bg-elevated);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
 }
 
 .btn-primary {
   background: var(--accent-gold);
-  color: #000;
+  color: #000000;
   border: none;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 4px 12px var(--accent-gold-glow);
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-primary:focus-visible {
   background: var(--accent-gold-hover);
   box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
+  color: #000000;
 }
 
 .btn-logout {
-  color: #ff4d4d;
+  color: var(--text-danger);
   border-color: transparent;
+  background: transparent;
 }
 
-.btn-logout:hover {
-  background: rgba(255, 77, 77, 0.1);
+.btn-logout:hover,
+.btn-logout:focus-visible {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.2);
+}
+
+.btn-action .material-symbols-rounded {
+  font-size: 1.25rem !important;
 }
 
 /* ==========================================================================
-   RESPONSIVIDADE - Header (Mobile)
+   MODAL DE COMPARTILHAMENTO (Ergonomia e Design System)
+   ========================================================================== */
+.share-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--z-modal, 1500);
+  padding: var(--space-4);
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.share-modal-card {
+  background-color: var(--bg-surface);
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-float);
+  box-sizing: border-box;
+}
+
+.share-modal-title {
+  color: var(--accent-gold);
+  margin-top: 0;
+  margin-bottom: var(--space-3);
+  font-family: var(--font-serif);
+  font-size: var(--font-size-2xl);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.share-modal-description {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  margin-bottom: var(--space-5);
+}
+
+.share-modal-alert {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-5);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.share-modal-input {
+  width: 100%;
+  height: var(--touch-target);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-5);
+  box-sizing: border-box;
+  outline: none;
+  transition: var(--transition-normal);
+}
+
+.share-modal-input:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 2px var(--accent-gold-glow);
+}
+
+.share-modal-permissions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  background: var(--bg-main);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-color);
+}
+
+.permission-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  user-select: none;
+}
+
+.permission-checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-input);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.permission-checkbox:checked {
+  background-color: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
+.permission-checkbox:checked::before {
+  content: '✓';
+  color: #000000;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.share-modal-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.btn-modal-cancel {
+  height: var(--touch-target-sm);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  transition: var(--transition-normal);
+}
+
+.btn-modal-cancel:hover {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.btn-modal-submit {
+  height: var(--touch-target-sm);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background-color: var(--accent-gold);
+  color: #000000;
+  border: none;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  transition: var(--transition-normal);
+  box-shadow: 0 4px 12px var(--accent-gold-glow);
+}
+
+.btn-modal-submit:hover:not(:disabled) {
+  background-color: var(--accent-gold-hover);
+  transform: translateY(-1px);
+}
+
+.btn-modal-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE - Header (Mobile & Tablet PWA)
    ========================================================================== */
 @media (max-width: 900px) {
+  :root {
+    --header-height: 72px;
+  }
+
   .dash-header-inner {
-    padding: 15px 20px;
+    padding: var(--space-3) var(--space-4);
   }
 }
 
 @media (max-width: 600px) {
+  :root {
+    --header-height: 64px;
+  }
+
   .dash-header-inner {
-    padding: 15px;
+    padding: var(--space-2) var(--space-3);
   }
 
   .brand-logo {
-    height: 35px;
+    height: 32px;
   }
 
+  .library-select {
+    min-width: 130px;
+    font-size: var(--font-size-xs);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  /* Touch target garantido no PWA Mobile (mínimo de 48x48px) */
   .mobile-menu-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     color: var(--accent-gold);
     cursor: pointer;
-    padding: 5px;
+    width: var(--touch-target);
+    height: var(--touch-target);
+    border-radius: var(--radius-md);
+    transition: var(--transition-fast);
+  }
+
+  .mobile-menu-toggle:hover,
+  .mobile-menu-toggle:focus-visible {
+    background-color: var(--bg-surface);
+    border-color: var(--border-color);
   }
 
   .mobile-menu-toggle .material-symbols-rounded {
-    font-size: 2.2em !important;
+    font-size: 1.75rem !important;
   }
 
   .header-actions {
     position: absolute;
-    top: calc(100% + 5px);
+    top: calc(100% + var(--space-2));
     right: 0;
-    width: 200px;
+    width: 240px;
     background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 10px;
+    border-radius: var(--radius-lg);
+    padding: var(--space-2);
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-    z-index: 1000;
+    gap: var(--space-1);
+    box-shadow: var(--shadow-float);
+    z-index: var(--z-drawer, 1000);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-15px);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(-10px);
+    transition: var(--transition-normal);
   }
 
   .header-actions.open {
@@ -177,19 +432,24 @@
 
   .header-actions .btn-action {
     width: 100%;
+    height: var(--touch-target);
     justify-content: flex-start;
-    padding: 12px 15px;
+    padding: 0 var(--space-4);
     background: transparent;
-    border: none !important;
-    box-shadow: none !important;
+    border: none;
+    box-shadow: none;
+    font-size: var(--font-size-base);
   }
 
-  .header-actions .btn-action:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
+  .header-actions .btn-action:hover,
+  .header-actions .btn-action:focus-visible {
+    background-color: var(--bg-elevated);
     transform: none;
   }
 
   .header-actions .btn-primary {
-    color: var(--accent-gold) !important;
+    background-color: var(--accent-gold-subtle);
+    color: var(--accent-gold);
+    font-weight: 600;
   }
 }

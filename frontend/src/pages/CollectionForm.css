@@ -1,23 +1,26 @@
 /* ==========================================================================
-   COMPONENT CSS - BookForm (Redesign Editorial VioDesign Pro)
-   Estilos mestre para o formulário modular de adição e edição de obras.
+   PAGE CSS - CollectionForm (Redesign Editorial VioDesign Pro)
+   Estilos autônomos para criação e edição de Coleções e Sagas.
    ========================================================================== */
 
-.form-container {
+.collection-form-container {
   padding: calc(var(--header-height, 72px) + var(--space-6, 24px)) var(--space-6, 24px)
     var(--space-12, 48px) var(--space-6, 24px);
   max-width: 960px;
   margin: 0 auto;
   box-sizing: border-box;
+  width: 100%;
 }
 
-.form-header {
+.collection-form-header {
   display: flex;
   align-items: flex-start;
   gap: var(--space-4, 16px);
   margin-bottom: var(--space-8, 32px);
   padding-bottom: var(--space-5, 20px);
   border-bottom: 2px solid var(--accent-gold);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-header-icon {
@@ -47,11 +50,6 @@
   font-size: var(--font-size-sm, 0.875rem);
   line-height: var(--line-height-normal);
   margin: 0;
-}
-
-.form-subtitle strong {
-  color: var(--text-primary);
-  font-weight: 600;
 }
 
 /* --- BANNER DE FEEDBACK --- */
@@ -95,6 +93,7 @@
   box-shadow: var(--shadow-float, 0 10px 25px -5px rgba(0, 0, 0, 0.4));
   transition: border-color var(--transition-normal);
   box-sizing: border-box;
+  width: 100%;
 }
 
 .form-section:focus-within {
@@ -127,7 +126,6 @@
   font-size: 1.5rem !important;
 }
 
-/* Pílula Semântica para Blocos Opcionais */
 .section-optional-pill {
   font-family: var(--font-sans);
   font-size: var(--font-size-xs, 0.75rem);
@@ -141,11 +139,23 @@
   border: 1px solid var(--border-color);
 }
 
+.section-helper-desc {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm, 0.9rem);
+  margin: 0 0 var(--space-5, 20px) 0;
+  line-height: var(--line-height-relaxed, 1.6);
+}
+
+.section-helper-desc strong {
+  color: var(--text-primary);
+}
+
 /* --- GRID DE CAMPOS --- */
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-5, 20px);
+  width: 100%;
 }
 
 .form-group {
@@ -156,10 +166,6 @@
 
 .form-group.full-width {
   grid-column: 1 / -1;
-}
-
-.form-group-spaced {
-  margin-top: var(--space-2, 8px);
 }
 
 .form-label {
@@ -179,19 +185,6 @@
   gap: var(--space-2, 8px);
 }
 
-.form-label .material-symbols-rounded {
-  font-size: 1.125rem !important;
-  color: var(--text-muted);
-}
-
-.label-helper-text,
-.label-optional-text {
-  font-size: var(--font-size-xs, 0.75rem);
-  color: var(--text-muted);
-  font-weight: 400;
-}
-
-/* Emblema Dourado para Campo Obrigatório */
 .label-required-badge {
   font-size: var(--font-size-xs, 0.75rem);
   font-weight: 700;
@@ -204,69 +197,12 @@
   box-shadow: 0 2px 4px var(--accent-gold-glow);
 }
 
-/* Destaque sutil na borda do input obrigatório */
 .input-required-highlight {
   border-left: 3px solid var(--accent-gold) !important;
 }
 
-/* --- AVISO DE OFFLINE SEMÂNTICO --- */
-.offline-notice-box {
-  padding: var(--space-3, 12px) var(--space-4, 16px);
-  background-color: rgba(248, 113, 113, 0.12);
-  color: var(--text-danger, #f87171);
-  border: 1px solid rgba(248, 113, 113, 0.3);
-  border-radius: var(--radius-sm, 6px);
-  margin-bottom: var(--space-4, 16px);
-  font-size: var(--font-size-sm, 0.875rem);
-  display: flex;
-  align-items: center;
-  gap: var(--space-3, 12px);
-  line-height: var(--line-height-normal);
-}
-
-.offline-notice-box .material-symbols-rounded {
-  font-size: 1.25rem !important;
-  flex-shrink: 0;
-}
-
-/* --- GRUPOS DE IMPULSO (ISBN E AMAZON) --- */
-.isbn-wrapper {
-  display: flex;
-  gap: var(--space-3, 12px);
-  margin-bottom: var(--space-3, 12px);
-  align-items: stretch;
-}
-
-.isbn-wrapper .form-input {
-  flex: 1;
-  min-width: 0;
-}
-
-.input-amazon {
-  border-left: 4px solid #ff9900 !important;
-}
-
-.btn-amazon-import {
-  background-color: #ff9900 !important;
-  color: #000000 !important;
-  border: none !important;
-  font-weight: 700 !important;
-}
-
-.btn-amazon-import:hover:not(:disabled),
-.btn-amazon-import:focus-visible:not(:disabled) {
-  background-color: #e68a00 !important;
-  box-shadow: 0 4px 12px rgba(255, 153, 0, 0.3) !important;
-}
-
-.btn-amazon-import:disabled {
-  background-color: var(--bg-input) !important;
-  color: var(--text-muted) !important;
-}
-
-/* --- INPUTS, SELECTS E TEXTAREAS (ERGONOMIA PWA) --- */
+/* --- INPUTS E TEXTAREAS --- */
 .form-input,
-.form-select,
 .form-textarea {
   width: 100%;
   min-height: var(--touch-target, 48px);
@@ -288,7 +224,6 @@
 }
 
 .form-input:focus,
-.form-select:focus,
 .form-textarea:focus {
   border-color: var(--accent-gold);
   box-shadow: 0 0 0 3px var(--accent-gold-glow);
@@ -296,7 +231,6 @@
 }
 
 .form-input:disabled,
-.form-select:disabled,
 .form-textarea:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -305,65 +239,66 @@
 
 .form-textarea {
   resize: vertical;
-  min-height: 140px;
+  min-height: 110px;
   line-height: var(--line-height-relaxed, 1.6);
 }
 
-/* --- ÁREA DA CAPA (UPLOAD E CÂMERA) --- */
-.cover-upload-area {
+/* --- UPLOAD DE BANNER DE COLEÇÃO --- */
+.banner-upload-area {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-8, 32px) var(--space-4, 16px);
+  padding: var(--space-6, 24px);
   border: 2px dashed var(--border-color);
   border-radius: var(--radius-md, 8px);
   background: var(--bg-input);
   transition: var(--transition-normal);
   text-align: center;
+  gap: var(--space-4, 16px);
 }
 
-.cover-upload-area:hover {
+.banner-upload-area:hover {
   border-color: var(--accent-gold);
   background: rgba(212, 175, 55, 0.02);
 }
 
-.cover-preview-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: var(--space-6, 24px);
-}
-
-.dropzone-icon {
-  font-size: 3.5rem !important;
-  color: var(--accent-gold);
-  margin-bottom: var(--space-2, 8px);
-}
-
-.dropzone-text {
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm, 0.875rem);
-  font-weight: 500;
-}
-
-.cover-preview {
-  height: 220px;
-  width: auto;
+.banner-preview-box {
+  width: 100%;
+  max-height: 220px;
+  overflow: hidden;
   border-radius: var(--radius-sm, 6px);
-  box-shadow: var(--shadow-float, 0 10px 20px rgba(0, 0, 0, 0.6));
-  margin-bottom: var(--space-4, 16px);
+  box-shadow: var(--shadow-md);
   border: 1px solid var(--border-color);
 }
 
-.cover-actions {
-  display: flex;
-  gap: var(--space-4, 16px);
-  flex-wrap: wrap;
-  justify-content: center;
+.banner-img-preview {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
 }
 
-.btn-cover-option {
+.banner-dropzone-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: var(--space-4, 16px) 0;
+}
+
+.banner-dropzone-empty .dropzone-icon {
+  font-size: 3.5rem !important;
+  color: var(--accent-gold);
+}
+
+.banner-dropzone-empty .dropzone-text {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm, 0.875rem);
+  max-width: 400px;
+}
+
+.btn-banner-select {
   background-color: var(--bg-surface);
   cursor: pointer;
   border: 1px solid var(--accent-gold);
@@ -371,7 +306,7 @@
   padding: 0 var(--space-5, 20px);
 }
 
-.btn-cover-option:hover {
+.btn-banner-select:hover {
   background-color: var(--accent-gold-glow);
   transform: translateY(-2px);
 }
@@ -380,13 +315,118 @@
   display: none;
 }
 
-@media (min-width: 601px) {
-  .mobile-camera-btn {
-    display: none !important;
-  }
+/* --- BARRA DE CRIAÇÃO DE EIXOS (PEÇA ÚNICA) --- */
+.axis-creation-toolbar {
+  display: flex;
+  align-items: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  padding: 0 var(--space-2, 8px) 0 var(--space-4, 16px);
+  min-height: var(--touch-target, 48px);
+  transition: var(--transition-normal);
+  box-sizing: border-box;
+  margin-bottom: var(--space-5, 20px);
+  width: 100%;
 }
 
-/* --- BOTÕES DO FORMULÁRIO --- */
+.axis-creation-toolbar:focus-within {
+  border-color: var(--accent-gold);
+  background-color: var(--bg-surface);
+  box-shadow: 0 0 0 3px var(--accent-gold-glow);
+}
+
+.axis-input-clean {
+  flex: 1;
+  width: 100%;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base, 1rem);
+  padding: var(--space-3, 12px) 0;
+}
+
+.axis-input-clean::placeholder {
+  color: var(--text-muted);
+}
+
+.btn-add-axis {
+  min-height: 36px !important;
+  padding: 0 var(--space-4, 16px) !important;
+  flex-shrink: 0;
+  font-size: var(--font-size-sm, 0.85rem) !important;
+}
+
+/* --- PÍLULAS DE EIXOS GAMIFICADAS --- */
+.axis-pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3, 12px);
+  min-height: 48px;
+  align-items: center;
+}
+
+.axis-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  background: var(--bg-elevated, #1e2736);
+  border: 1px solid var(--accent-gold);
+  padding: 6px 14px;
+  border-radius: var(--radius-full, 24px);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.axis-tag-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--accent-gold-glow);
+}
+
+.axis-name {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: var(--font-size-sm, 0.9rem);
+  font-family: var(--font-sans);
+}
+
+.btn-remove-axis {
+  background: transparent;
+  border: none;
+  color: var(--text-danger, #f87171);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  margin: 0;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+.btn-remove-axis:hover,
+.btn-remove-axis:focus-visible {
+  background: var(--text-danger, #f87171);
+  color: #ffffff;
+  transform: scale(1.15);
+}
+
+.btn-remove-axis .material-symbols-rounded {
+  font-size: 1.25rem !important;
+}
+
+.empty-axes-hint {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: var(--font-size-sm, 0.875rem);
+  padding: var(--space-2, 8px) 0;
+}
+
+/* --- BOTÕES DE AÇÃO DO FORMULÁRIO --- */
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -433,10 +473,10 @@
 }
 
 /* ==========================================================================
-   RESPONSIVIDADE (TABLET & PWA MOBILE)
+   RESPONSIVIDADE E PROPORÇÃO NO PWA MOBILE
    ========================================================================== */
 @media (max-width: 900px) {
-  .form-container {
+  .collection-form-container {
     padding: calc(var(--header-height, 64px) + var(--space-4, 16px)) var(--space-4, 16px)
       var(--space-10, 40px) var(--space-4, 16px);
   }
@@ -451,12 +491,12 @@
 }
 
 @media (max-width: 600px) {
-  .form-container {
+  .collection-form-container {
     padding: calc(var(--header-height, 64px) + var(--space-4, 16px)) var(--space-3, 12px)
       var(--space-12, 48px) var(--space-3, 12px);
   }
 
-  .form-header {
+  .collection-form-header {
     flex-direction: column;
     align-items: center;
     text-align: center;
@@ -477,28 +517,36 @@
     grid-template-columns: 1fr;
   }
 
-  .isbn-wrapper {
+  .axis-creation-toolbar {
     flex-direction: column;
+    align-items: stretch;
     gap: var(--space-2, 8px);
+    padding: var(--space-2, 8px);
+    height: auto;
   }
 
-  .isbn-wrapper .btn-action {
+  .axis-input-clean {
+    width: 100%;
+    padding: var(--space-2, 8px) var(--space-2, 8px);
+  }
+
+  .btn-add-axis {
     width: 100%;
     justify-content: center;
+    min-height: var(--touch-target, 48px) !important;
   }
 
-  .isbn-wrapper .btn-camera-trigger {
-    order: -1;
-    background-color: var(--accent-gold-subtle);
-    border-color: var(--accent-gold);
-  }
-
-  .cover-actions {
-    flex-direction: column;
+  .axis-tag-pill {
     width: 100%;
+    justify-content: space-between;
+    padding: 10px 16px;
   }
 
-  .btn-cover-option {
+  .banner-upload-area {
+    padding: var(--space-4, 16px);
+  }
+
+  .btn-banner-select {
     width: 100%;
     justify-content: center;
   }

@@ -9,10 +9,11 @@ import LegalModal from '../components/LegalModal';
 import './Auth.css';
 import logoImg from '../assets/violib-logo-full2.png';
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
 const Auth = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-
   const { login } = useContext(AuthContext);
 
   const [view, setView] = useState('login');
@@ -27,21 +28,18 @@ const Auth = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Novos estados para os Termos Legais
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-
     if (message.type === 'error') {
       setMessage({ type: '', text: '' });
     }
   };
 
   const switchView = (newView) => {
-    if (isLoading) return;
+    if (isLoading || view === newView) return;
     setView(newView);
     setFormData({ name: '', email: '', password: '', confirmPassword: '' });
     setMessage({ type: '', text: '' });
@@ -66,6 +64,13 @@ const Auth = () => {
       setMessage({ type: 'error', text: 'Não foi possível fazer login com o Google.' });
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleError = () => {
+    setMessage((prev) => {
+      if (prev.text === 'Ocorreu um erro ao comunicar com o Google.') return prev;
+      return { type: 'error', text: 'Ocorreu um erro ao comunicar com o Google.' };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -123,6 +128,7 @@ const Auth = () => {
       }
     } catch (error) {
       console.error('Erro de autenticação:', error);
+      // Aqui é onde a mensagem do 403 ("Por favor, confirme seu e-mail...") é injetada na tela
       setMessage({
         type: 'error',
         text: error.response?.data?.error || 'Ocorreu um erro inesperado. Tente novamente.'
@@ -130,8 +136,6 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
-
-  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
@@ -143,28 +147,63 @@ const Auth = () => {
             className="auth-logo-img"
           />
 
+          {view !== 'forgot' && (
+            <div className="auth-tabs" role="tablist" aria-label="Modo de autenticação">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={view === 'login'}
+                className={`auth-tab ${view === 'login' ? 'active' : ''}`}
+                onClick={() => switchView('login')}
+              >
+                {t('login', 'Login')}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={view === 'register'}
+                className={`auth-tab ${view === 'register' ? 'active' : ''}`}
+                onClick={() => switchView('register')}
+              >
+                {t('register', 'Criar Conta')}
+              </button>
+            </div>
+          )}
+
+          {view === 'forgot' && (
+            <div className="auth-view-title">
+              <h2>Recuperar Acesso</h2>
+              <p>Digite seu e-mail para receber o link de redefinição de senha.</p>
+            </div>
+          )}
+
           {message.text && (
             <div
               className={`auth-alert ${message.type === 'error' ? 'alert-error' : 'alert-success'}`}
+              role="alert"
             >
               {message.text}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="auth-form">
+          {/* O FORMULÁRIO TRADICIONAL (Apenas E-mail e Senha) */}
+          <form onSubmit={handleSubmit} className="auth-form" noValidate>
             {view === 'register' && (
               <div className="input-group">
                 <input
                   type="text"
                   name="name"
-                  placeholder="Seu Nome"
+                  placeholder="Seu Nome Completo"
                   value={formData.name}
                   onChange={handleChange}
                   required
                   className="auth-input"
                   disabled={isLoading}
+                  autoComplete="name"
                 />
-                <span className="material-symbols-rounded input-icon">person</span>
+                <span className="material-symbols-rounded input-icon" aria-hidden="true">
+                  person
+                </span>
               </div>
             )}
 
@@ -172,14 +211,17 @@ const Auth = () => {
               <input
                 type="email"
                 name="email"
-                placeholder={t('email')}
+                placeholder={t('email', 'E-mail profissional ou pessoal')}
                 value={formData.email}
                 onChange={handleChange}
                 required
                 className="auth-input"
                 disabled={isLoading}
+                autoComplete="email"
               />
-              <span className="material-symbols-rounded input-icon">mail</span>
+              <span className="material-symbols-rounded input-icon" aria-hidden="true">
+                mail
+              </span>
             </div>
 
             {(view === 'login' || view === 'register') && (
@@ -187,24 +229,28 @@ const Auth = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
-                  placeholder={t('password')}
+                  placeholder={t('password', 'Sua senha')}
                   value={formData.password}
                   onChange={handleChange}
                   required
                   className="auth-input"
                   disabled={isLoading}
+                  autoComplete={view === 'login' ? 'current-password' : 'new-password'}
                 />
-                <span className="material-symbols-rounded input-icon">lock</span>
+                <span className="material-symbols-rounded input-icon" aria-hidden="true">
+                  lock
+                </span>
 
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="btn-toggle-password"
                   title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                   disabled={isLoading}
                   tabIndex="-1"
                 >
-                  <span className="material-symbols-rounded">
+                  <span className="material-symbols-rounded" aria-hidden="true">
                     {showPassword ? 'visibility_off' : 'visibility'}
                   </span>
                 </button>
@@ -216,24 +262,28 @@ const Auth = () => {
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   name="confirmPassword"
-                  placeholder="Confirme a senha"
+                  placeholder="Confirme a sua senha"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
                   className="auth-input"
                   disabled={isLoading}
+                  autoComplete="new-password"
                 />
-                <span className="material-symbols-rounded input-icon">lock_reset</span>
+                <span className="material-symbols-rounded input-icon" aria-hidden="true">
+                  lock_reset
+                </span>
 
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="btn-toggle-password"
                   title={showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  aria-label={showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}
                   disabled={isLoading}
                   tabIndex="-1"
                 >
-                  <span className="material-symbols-rounded">
+                  <span className="material-symbols-rounded" aria-hidden="true">
                     {showConfirmPassword ? 'visibility_off' : 'visibility'}
                   </span>
                 </button>
@@ -250,36 +300,29 @@ const Auth = () => {
                     disabled={isLoading}
                     className="remember-me-checkbox"
                   />
-                  <span>Me mantenha conectado</span>
+                  <span>Manter conectado neste dispositivo</span>
                 </label>
               </div>
             )}
 
             {view === 'register' && (
-              <div
-                className="remember-me-container"
-                style={{ alignItems: 'flex-start', marginTop: '5px' }}
-              >
-                <label className="remember-me-label" style={{ alignItems: 'flex-start' }}>
+              <div className="remember-me-container terms-container">
+                <label className="remember-me-label terms-label">
                   <input
                     type="checkbox"
                     checked={termsAccepted}
                     onChange={(e) => setTermsAccepted(e.target.checked)}
                     disabled={isLoading}
-                    className="remember-me-checkbox"
-                    style={{ marginTop: '2px', flexShrink: 0 }}
+                    className="remember-me-checkbox terms-checkbox"
                   />
-                  <span
-                    style={{ fontSize: '0.9em', lineHeight: '1.4', color: 'var(--text-secondary)' }}
-                  >
-                    Li e concordo com os{' '}
+                  <span className="terms-text">
+                    Concordo com os{' '}
                     <span
                       className="auth-link"
                       onClick={(e) => {
                         e.preventDefault();
                         setActiveModal('terms');
                       }}
-                      style={{ marginLeft: 0 }}
                     >
                       Termos de Serviço
                     </span>{' '}
@@ -290,7 +333,6 @@ const Auth = () => {
                         e.preventDefault();
                         setActiveModal('privacy');
                       }}
-                      style={{ marginLeft: 0 }}
                     >
                       Política de Privacidade
                     </span>
@@ -302,126 +344,71 @@ const Auth = () => {
 
             <button type="submit" className="btn-auth-submit" disabled={isLoading}>
               {isLoading ? (
-                <span className="auth-spinner"></span>
+                <span className="auth-spinner" aria-label="Carregando"></span>
               ) : view === 'login' ? (
-                t('login')
+                t('login', 'Acessar Biblioteca')
               ) : view === 'register' ? (
-                t('register')
+                t('register', 'Concluir Cadastro')
               ) : (
-                'Enviar Link'
+                'Enviar Link de Redefinição'
               )}
             </button>
-
-            {(view === 'login' || view === 'register') && (
-              <>
-                <div
-                  style={{ display: 'flex', alignItems: 'center', margin: '20px 0', opacity: 0.6 }}
-                >
-                  <div
-                    style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}
-                  ></div>
-                  <span
-                    style={{
-                      padding: '0 10px',
-                      fontSize: '0.9rem',
-                      color: 'var(--text-secondary)'
-                    }}
-                  >
-                    ou
-                  </span>
-                  <div
-                    style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}
-                  ></div>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '10px'
-                  }}
-                >
-                  <GoogleLogin
-                    onSuccess={handleGoogleSuccess}
-                    onError={() =>
-                      setMessage({
-                        type: 'error',
-                        text: 'Ocorreu um erro ao comunicar com o Google.'
-                      })
-                    }
-                    theme="filled_black"
-                    text={view === 'login' ? 'signin_with' : 'signup_with'}
-                    shape="pill"
-                    width="100%"
-                  />
-
-                  {view === 'register' && (
-                    <span
-                      style={{
-                        fontSize: '0.75rem',
-                        color: 'var(--text-muted)',
-                        textAlign: 'center',
-                        marginTop: '5px'
-                      }}
-                    >
-                      Ao entrar com o Google, você aceita nossos{' '}
-                      <span
-                        className="auth-link"
-                        onClick={() => setActiveModal('terms')}
-                        style={{ marginLeft: 0, fontSize: 'inherit' }}
-                      >
-                        Termos
-                      </span>{' '}
-                      e{' '}
-                      <span
-                        className="auth-link"
-                        onClick={() => setActiveModal('privacy')}
-                        style={{ marginLeft: 0, fontSize: 'inherit' }}
-                      >
-                        Privacidade
-                      </span>
-                      .
-                    </span>
-                  )}
-                </div>
-              </>
-            )}
           </form>
+
+          {/* O BLOCO DO GOOGLE (Isolado de forma segura fora do form) */}
+          {(view === 'login' || view === 'register') && (
+            <>
+              <div className="auth-divider">
+                <div className="divider-line"></div>
+                <span className="divider-text">ou continue com</span>
+                <div className="divider-line"></div>
+              </div>
+
+              <div className="social-login-container">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  theme="filled_black"
+                  text={view === 'login' ? 'signin_with' : 'signup_with'}
+                  shape="pill"
+                  width="340"
+                />
+
+                {view === 'register' && (
+                  <span className="social-terms-notice">
+                    Ao entrar com o Google, você aceita nossos{' '}
+                    <span className="auth-link" onClick={() => setActiveModal('terms')}>
+                      Termos
+                    </span>{' '}
+                    e{' '}
+                    <span className="auth-link" onClick={() => setActiveModal('privacy')}>
+                      Privacidade
+                    </span>
+                    .
+                  </span>
+                )}
+              </div>
+            </>
+          )}
 
           <div className="auth-footer">
             {view === 'login' && (
-              <>
-                <span
-                  className={`auth-link ${isLoading ? 'disabled-link' : ''}`}
-                  onClick={() => switchView('forgot')}
-                  style={{ fontSize: '0.9em' }}
-                >
-                  Esqueceu sua senha?
-                </span>
-                <div>
-                  Não tem uma conta?{' '}
-                  <span
-                    className={`auth-link ${isLoading ? 'disabled-link' : ''}`}
-                    onClick={() => switchView('register')}
-                    style={{ fontWeight: 'bold' }}
-                  >
-                    Criar conta gratuita
-                  </span>
-                </div>
-              </>
+              <span
+                className={`auth-link ${isLoading ? 'disabled-link' : ''}`}
+                onClick={() => switchView('forgot')}
+              >
+                Esqueceu sua senha?
+              </span>
             )}
 
-            {(view === 'register' || view === 'forgot') && (
+            {view === 'forgot' && (
               <div>
                 Lembrou da senha?{' '}
                 <span
-                  className={`auth-link ${isLoading ? 'disabled-link' : ''}`}
+                  className={`auth-link auth-link-bold ${isLoading ? 'disabled-link' : ''}`}
                   onClick={() => switchView('login')}
-                  style={{ fontWeight: 'bold' }}
                 >
-                  Entrar no sistema
+                  Voltar para o Login
                 </span>
               </div>
             )}

@@ -1,96 +1,273 @@
 /* ==========================================================================
-COMPONENT CSS - GenreManager
-Grade de Cartões de Gêneros e listagem aninhada de Subgêneros.
-========================================================================== */
+   COMPONENT CSS - GenreManager (Redesign Editorial VioDesign Pro)
+   Grade responsiva de cartões de gênero e listagem aninhada com alvos PWA.
+   ========================================================================== */
+
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.panel-header-clean {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4, 16px);
+  margin-bottom: var(--space-6, 24px);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-4, 16px);
+}
+
+.panel-main-title {
+  font-family: var(--font-serif, serif);
+  color: var(--accent-gold);
+  margin: 0;
+  font-size: var(--font-size-2xl, 1.5rem);
+}
+
+.btn-add-main {
+  min-height: var(--touch-target, 48px);
+}
 
 .genres-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-6, 24px);
+  width: 100%;
 }
 
 .genre-card {
   background-color: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 20px;
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-6, 24px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-normal);
+  box-sizing: border-box;
 }
 
+.genre-card:focus-within {
+  border-color: var(--accent-gold);
+}
+
+.genre-card-adding {
+  border: 2px solid var(--accent-gold);
+  background-color: var(--bg-surface);
+  margin-bottom: var(--space-6, 24px);
+}
+
+/* Trava de Altura Mínima para evitar Layout Shift ao Editar */
 .genre-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
+  min-height: 56px;
+  margin-bottom: var(--space-4, 16px);
+  padding-bottom: var(--space-3, 12px);
   border-bottom: 1px solid var(--border-color);
-  gap: 15px;
+  gap: var(--space-4, 16px);
+  flex-wrap: wrap;
 }
 
 .subgenre-list {
   list-style: none;
-  padding-left: 15px;
+  padding-left: var(--space-4, 16px);
   margin: 0;
-  border-left: 2px solid var(--border-color);
+  border-left: 2px solid rgba(212, 175, 55, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
 }
 
+/* Trava de Altura Mínima no Subgênero */
 .sub-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  margin-bottom: 8px;
-  background-color: transparent;
+  min-height: 52px;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  gap: 10px;
+  border-radius: var(--radius-sm, 6px);
+  gap: var(--space-3, 12px);
+  transition: background-color var(--transition-fast);
+  box-sizing: border-box;
 }
 
-/* --- Estrutura de Informação (Textos e Badges) --- */
+.sub-item:hover {
+  background-color: var(--bg-elevated);
+}
+
+.subgenre-action-row {
+  margin-top: var(--space-2, 8px);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+/* --- ESTRUTURA DE INFORMAÇÃO E BADGES --- */
 .attribute-info {
   display: flex;
   align-items: center;
-  flex: 1; /* Ocupa todo o espaço que sobrar */
-  min-width: 0; /* Trava de segurança: permite que textos internos quebrem a linha */
+  flex: 1;
+  min-width: 0;
 }
 
 .attribute-name-text {
   margin: 0;
   color: var(--text-primary);
   font-weight: 500;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+  font-size: var(--font-size-base, 1rem);
   word-break: break-word;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
 }
 
 .genre-header .attribute-name-text {
-  font-size: 1.2rem;
+  font-size: var(--font-size-lg, 1.125rem);
+  font-weight: 600;
 }
 
-.attribute-badge {
-  font-size: 0.75rem;
-  background-color: var(--bg-surface);
-  color: var(--text-muted);
-  padding: 3px 8px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  white-space: nowrap; /* Impede o número de quebrar ao meio */
-  display: inline-block; /* Mágica: Permite que seja tratado como um "bloco" que flui com o texto */
-  margin-left: 8px; /* Espaço seguro entre a última letra do nome e a badge */
-  vertical-align: middle; /* Alinha o centro da badge com o meio das letras */
+/* Badge que é botão semântico limpo */
+.attribute-badge-link {
+  background: var(--bg-surface);
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+  border-radius: var(--radius-full, 12px);
+  padding: 2px 8px;
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  outline: none;
+  line-height: 1;
 }
 
-/* --- Grupo de Botões (Editar / Excluir) --- */
+.attribute-badge-link:hover,
+.attribute-badge-link:focus-visible {
+  background: var(--accent-gold);
+  color: #000000;
+  transform: scale(1.05);
+}
+
+/* --- BOTÕES E FORMULÁRIOS INLINE --- */
 .attribute-actions {
   display: flex;
-  gap: 8px;
-  flex-shrink: 0; /* Garante que os botões nunca diminuam de tamanho */
+  gap: var(--space-2, 8px);
+  flex-shrink: 0;
 }
 
-/* ==========================================================================
-RESPONSIVIDADE (Tablets e Mobile)
-========================================================================== */
+.btn-edit-taxonomy,
+.btn-delete-taxonomy,
+.btn-save-success,
+.btn-cancel-inline,
+.btn-save-inline,
+.btn-add-subgenre {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: var(--touch-target-sm, 44px);
+  padding: 0 var(--space-3, 12px);
+  border-radius: var(--radius-sm, 6px);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm, 0.85rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  outline: none;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
 
+.btn-edit-taxonomy {
+  background: transparent;
+  color: rgba(77, 166, 255, 0.9);
+  border: 1px solid rgba(77, 166, 255, 0.4);
+}
+
+.btn-edit-taxonomy:hover,
+.btn-edit-taxonomy:focus-visible {
+  background: rgba(77, 166, 255, 0.15);
+  border-color: #4da6ff;
+  color: #ffffff;
+}
+
+.btn-delete-taxonomy,
+.btn-cancel-inline {
+  background: transparent;
+  color: var(--text-danger, #f87171);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+}
+
+.btn-delete-taxonomy:hover,
+.btn-delete-taxonomy:focus-visible,
+.btn-cancel-inline:hover,
+.btn-cancel-inline:focus-visible {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: var(--text-danger, #f87171);
+  color: #ffffff;
+}
+
+.btn-save-success {
+  background: rgba(52, 211, 153, 0.15);
+  color: var(--text-success, #34d399);
+  border: 1px solid var(--text-success, #34d399);
+}
+
+.btn-save-success:hover,
+.btn-save-success:focus-visible {
+  background: var(--text-success, #34d399);
+  color: #000000;
+}
+
+.btn-save-inline {
+  padding: 0 var(--space-5, 20px);
+}
+
+.btn-add-subgenre {
+  background: transparent;
+  color: var(--accent-gold);
+  border: 1px dashed var(--accent-gold);
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0 var(--space-4, 16px);
+}
+
+.btn-add-subgenre:hover,
+.btn-add-subgenre:focus-visible {
+  background: var(--accent-gold-subtle);
+  border-style: solid;
+}
+
+.inline-edit-form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.inline-input {
+  flex: 1;
+  min-width: 150px;
+  min-height: var(--touch-target-sm, 44px);
+  padding: 0 var(--space-3, 12px);
+}
+
+.inline-form-actions {
+  display: flex;
+  gap: var(--space-2, 8px);
+  flex-shrink: 0;
+}
+
+/* --- RESPONSIVIDADE PWA MOBILE --- */
 @media (max-width: 900px) {
   .genres-container {
     grid-template-columns: 1fr;
@@ -98,17 +275,46 @@ RESPONSIVIDADE (Tablets e Mobile)
 }
 
 @media (max-width: 600px) {
-  /* No celular, quebramos as linhas de texto e botões para evitar espremer o layout */
+  .panel-header-clean {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .genre-card {
+    padding: var(--space-4, 16px);
+  }
+
+  /* No celular, empilhamos texto e botões para não espremer palavras */
   .genre-header,
   .sub-item {
     flex-direction: column;
     align-items: flex-start;
+    height: auto;
+    padding: var(--space-3, 12px);
   }
 
-  /* Os botões descem e alinham à direita para facilitar o clique com o polegar */
-  .attribute-actions {
+  .attribute-actions,
+  .inline-form-actions {
     width: 100%;
     justify-content: flex-end;
-    padding-top: 5px;
+    padding-top: var(--space-2, 8px);
+  }
+
+  .btn-edit-taxonomy,
+  .btn-delete-taxonomy,
+  .btn-save-success,
+  .btn-cancel-inline {
+    flex: 1;
+    min-height: var(--touch-target, 48px);
+  }
+
+  .inline-edit-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inline-input {
+    width: 100%;
   }
 }

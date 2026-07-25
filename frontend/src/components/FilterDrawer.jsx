@@ -115,8 +115,8 @@ const FilterDrawer = ({
             >
               <option value="">Todos os Livros</option>
               <option value="unread">Não Lidos</option>
-              <option value="reading">Estou Lendo</option>
-              <option value="read">Já Lidos</option>
+              <option value="reading">Lendo</option>
+              <option value="read">Lidos</option>
             </select>
           </div>
 

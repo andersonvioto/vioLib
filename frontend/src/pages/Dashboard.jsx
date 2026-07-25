@@ -15,7 +15,7 @@ import './dashboard.css';
 const SkeletonCard = ({ viewMode }) => {
   if (viewMode === 'list') {
     return (
-      <div className="skeleton-card-list">
+      <div className="skeleton-card-list" aria-hidden="true">
         <div className="skeleton-img-list"></div>
         <div className="skeleton-info-list">
           <div className="skeleton-line title" style={{ width: '40%' }}></div>
@@ -27,7 +27,7 @@ const SkeletonCard = ({ viewMode }) => {
   }
 
   return (
-    <div className="skeleton-card">
+    <div className="skeleton-card" aria-hidden="true">
       <div className="skeleton-img"></div>
       <div className="skeleton-info">
         <div className="skeleton-line title"></div>
@@ -268,47 +268,66 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <Header />
 
-      <div className="search-filter-bar">
+      <div className="search-filter-bar" role="search" aria-label="Pesquisar e filtrar obras">
         <div className="search-wrapper">
-          <span className="material-symbols-rounded search-icon">search</span>
+          <span className="material-symbols-rounded search-icon" aria-hidden="true">
+            search
+          </span>
           <input
             type="text"
             placeholder="Pesquisar por título ou autor..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="search-input"
+            aria-label="Campo de pesquisa bibliográfica"
           />
         </div>
 
-        <div className="view-mode-toggles">
+        <div className="view-mode-toggles" role="group" aria-label="Modo de visualização da grade">
           <button
+            type="button"
             className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
             onClick={() => setViewMode('grid')}
             title="Visualização Padrão"
+            aria-pressed={viewMode === 'grid'}
           >
-            <span className="material-symbols-rounded">grid_view</span>
+            <span className="material-symbols-rounded" aria-hidden="true">
+              grid_view
+            </span>
           </button>
           <button
+            type="button"
             className={`view-toggle-btn ${viewMode === 'compact' ? 'active' : ''}`}
             onClick={() => setViewMode('compact')}
             title="Visualização Compacta"
+            aria-pressed={viewMode === 'compact'}
           >
-            <span className="material-symbols-rounded">apps</span>
+            <span className="material-symbols-rounded" aria-hidden="true">
+              apps
+            </span>
           </button>
           <button
+            type="button"
             className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
             onClick={() => setViewMode('list')}
             title="Visualização em Lista"
+            aria-pressed={viewMode === 'list'}
           >
-            <span className="material-symbols-rounded">view_list</span>
+            <span className="material-symbols-rounded" aria-hidden="true">
+              view_list
+            </span>
           </button>
         </div>
 
         <button
+          type="button"
           onClick={() => setIsFilterDrawerOpen(!isFilterDrawerOpen)}
           className={`btn-action btn-filter-trigger ${isFilterDrawerOpen ? 'active' : ''}`}
+          aria-expanded={isFilterDrawerOpen}
         >
-          <span className="material-symbols-rounded">tune</span>
+          <span className="material-symbols-rounded" aria-hidden="true">
+            tune
+          </span>
           <span className="action-label">Filtros</span>
         </button>
       </div>
@@ -350,7 +369,7 @@ const Dashboard = () => {
 
       <div className="library-section">
         <div className="section-header">
-          <span className="material-symbols-rounded section-icon">
+          <span className="material-symbols-rounded section-icon" aria-hidden="true">
             {urlAuthor
               ? 'person'
               : urlTranslator
@@ -359,33 +378,28 @@ const Dashboard = () => {
                   ? 'folder_open'
                   : 'local_library'}
           </span>
-          <h2
-            className="section-title"
-            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
-          >
+          <h2 className="section-title">
             {renderSectionTitle()}
             <span className="title-count">
               ({isLoading && myBooks.length === 0 ? '...' : totalBooks})
             </span>
 
             {(urlAuthor || urlTranslator || urlReadingStatus) && (
-              <span
-                className="material-symbols-rounded"
+              <button
+                type="button"
+                className="btn-clear-filter"
                 onClick={() => {
                   if (urlAuthor) handleClearStrictFilter('author');
                   else if (urlTranslator) handleClearStrictFilter('translator');
                   else if (urlReadingStatus) handleClearStrictFilter('readingStatus');
                 }}
-                title="Limpar este filtro"
-                style={{
-                  fontSize: '20px',
-                  color: 'var(--text-danger)',
-                  cursor: 'pointer',
-                  marginLeft: '5px'
-                }}
+                title="Limpar este filtro específico"
+                aria-label="Limpar filtro ativo"
               >
-                cancel
-              </span>
+                <span className="material-symbols-rounded" aria-hidden="true">
+                  cancel
+                </span>
+              </button>
             )}
           </h2>
         </div>
@@ -397,7 +411,9 @@ const Dashboard = () => {
             ))}
           </div>
         ) : !Array.isArray(myBooks) || myBooks.length === 0 ? (
-          <p className="empty-message">Nenhum livro encontrado nesta prateleira.</p>
+          <p className="empty-message" role="status">
+            Nenhum livro encontrado nesta prateleira.
+          </p>
         ) : (
           <div className={`book-layout-${viewMode}`}>
             {myBooks.map((book) => (
@@ -414,7 +430,11 @@ const Dashboard = () => {
 
         {hasMore && !isLoading && (
           <div className="pagination-trigger-zone">
-            <button onClick={handleLoadMore} className="btn-action btn-primary btn-load-more">
+            <button
+              type="button"
+              onClick={handleLoadMore}
+              className="btn-action btn-primary btn-load-more"
+            >
               Carregar mais obras
             </button>
           </div>

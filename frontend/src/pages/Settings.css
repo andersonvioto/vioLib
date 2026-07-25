@@ -1,150 +1,272 @@
 /* ==========================================================================
-   PAGE CSS - Settings
-   Estilos estruturais da página de configurações, layout e navegação (Abas).
+   PAGE CSS - Settings (Redesign Editorial VioDesign Pro)
+   Estilos estruturais da página de configurações, layout acessível e abas PWA.
    ========================================================================== */
 
 .settings-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 20px;
+  /* CORREÇÃO: Removido o var(--header-height). A página começa do topo natural */
+  padding: var(--space-8, 32px) var(--space-6, 24px) var(--space-12, 48px) var(--space-6, 24px);
   color: var(--text-primary);
+  box-sizing: border-box;
+  width: 100%;
 }
 
+/* --- CABEÇALHO DA PÁGINA --- */
 .settings-header {
-  font-family: serif;
-  color: var(--accent-gold);
-  margin-bottom: 30px;
-  font-size: 2.5rem;
-  text-align: center;
-}
-
-.btn-back {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  color: var(--accent-gold);
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  margin-bottom: 20px;
-  padding: 0;
-  transition: color 0.2s;
-}
-
-.btn-back:hover {
-  color: #ffffff;
-}
-
-.settings-layout {
-  display: flex;
-  gap: 30px;
-  align-items: flex-start;
-}
-
-/* --------------------------------------------------------------------------
-   MENU LATERAL (SIDEBAR)
-   -------------------------------------------------------------------------- */
-.settings-sidebar {
-  flex: 0 0 250px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background-color: var(--bg-surface);
-  padding: 20px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
+  align-items: flex-start;
+  gap: var(--space-2, 8px);
+  margin-bottom: var(--space-8, 32px);
+  padding-bottom: var(--space-6, 24px);
+  border-bottom: 1px solid var(--border-color);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.settings-sidebar button {
+.btn-back-settings {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
   background: transparent;
   color: var(--text-secondary);
   border: none;
-  text-align: left;
-  padding: 12px 15px;
-  font-size: 1rem;
-  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  border-left: 3px solid transparent;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--font-size-sm, 0.875rem);
+  margin-bottom: var(--space-3, 12px);
+  padding: 0 var(--space-2, 8px);
+  min-height: var(--touch-target-sm, 44px);
+  transition:
+    color var(--transition-fast),
+    transform var(--transition-fast);
+  outline: none;
 }
 
-.settings-sidebar button:hover {
-  background-color: var(--bg-input);
-  color: var(--text-primary);
-}
-
-.settings-sidebar button.active {
-  background-color: var(--bg-input);
+.btn-back-settings:hover,
+.btn-back-settings:focus-visible {
   color: var(--accent-gold);
-  border-left: 3px solid var(--accent-gold);
-  font-weight: bold;
+  transform: translateX(-4px);
+}
+
+.btn-back-settings .material-symbols-rounded {
+  font-size: 1.25rem !important;
+}
+
+.settings-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  flex-wrap: wrap;
+}
+
+.settings-main-icon {
+  font-size: 2.5rem !important;
+  color: var(--accent-gold);
+}
+
+.settings-title {
+  font-family: var(--font-serif, serif);
+  color: var(--accent-gold);
+  margin: 0;
+  font-size: var(--font-size-3xl, 2.25rem);
+  font-weight: 700;
+  line-height: var(--line-height-tight, 1.15);
+}
+
+.settings-subtitle {
+  color: var(--text-secondary);
+  font-size: var(--font-size-base, 1rem);
+  line-height: var(--line-height-normal);
+  margin: 0;
+  max-width: 650px;
+}
+
+/* --- LAYOUT PRINCIPAL (SIDEBAR + CONTEÚDO) --- */
+.settings-layout {
+  display: flex;
+  gap: var(--space-8, 32px);
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* --------------------------------------------------------------------------
-   CONTEÚDO PRINCIPAL (Main Área)
+   MENU LATERAL EDITORIAL (DESKTOP SIDEBAR)
+   -------------------------------------------------------------------------- */
+.settings-sidebar {
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  background-color: var(--bg-surface);
+  padding: var(--space-4, 16px);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  box-sizing: border-box;
+}
+
+.settings-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  text-align: left;
+  padding: 0 var(--space-4, 16px);
+  min-height: var(--touch-target, 48px);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm, 0.9rem);
+  font-weight: 500;
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.settings-tab-btn .material-symbols-rounded {
+  font-size: 1.25rem !important;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.settings-tab-btn:hover:not(.active),
+.settings-tab-btn:focus-visible:not(.active) {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.settings-tab-btn:hover:not(.active) .material-symbols-rounded,
+.settings-tab-btn:focus-visible:not(.active) .material-symbols-rounded {
+  color: var(--text-primary);
+}
+
+.settings-tab-btn.active {
+  background-color: var(--bg-elevated, #1e2736);
+  color: var(--accent-gold);
+  border-color: rgba(212, 175, 55, 0.3);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+.settings-tab-btn.active .material-symbols-rounded {
+  color: var(--accent-gold);
+}
+
+/* --------------------------------------------------------------------------
+   CONTEÚDO PRINCIPAL (MAIN ÁREA COM FADE E BLINDAGEM DE LARGURA)
    -------------------------------------------------------------------------- */
 .settings-content {
-  flex: 1;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 100%;
   background-color: var(--bg-surface);
-  padding: 30px;
-  border-radius: var(--radius-md);
+  padding: var(--space-8, 32px);
+  border-radius: var(--radius-lg, 12px);
   border: 1px solid var(--border-color);
-  min-height: 400px;
+  min-height: 500px;
+  box-shadow: var(--shadow-float, 0 15px 30px rgba(0, 0, 0, 0.3));
+  box-sizing: border-box;
+  outline: none;
+}
+
+.settings-content-fade {
+  animation: settingsFadeIn 0.25s var(--ease-out);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@keyframes settingsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .settings-content h2 {
   color: var(--accent-gold);
   margin-top: 0;
-  margin-bottom: 5px;
-  font-family: serif;
+  margin-bottom: var(--space-2, 8px);
+  font-family: var(--font-serif, serif);
+  font-size: var(--font-size-2xl, 1.5rem);
 }
 
 .settings-hint {
   color: var(--text-muted);
-  font-size: 0.9rem;
-  margin-bottom: 25px;
+  font-size: var(--font-size-sm, 0.875rem);
+  margin-bottom: var(--space-6, 24px);
+  line-height: var(--line-height-normal);
 }
 
 /* --------------------------------------------------------------------------
-   ZONA DE PERIGO (DANGER ZONE)
+   ZONA DE PERIGO (DANGER ZONE EDITORIAL)
    -------------------------------------------------------------------------- */
 .danger-zone {
-  border: 1px solid rgba(255, 77, 77, 0.2);
-  background-color: rgba(255, 77, 77, 0.05);
-  padding: 25px;
-  border-radius: var(--radius-sm);
-  margin-top: 40px;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  background-color: rgba(248, 113, 113, 0.04);
+  padding: var(--space-6, 24px);
+  border-radius: var(--radius-md, 8px);
+  margin-top: var(--space-10, 40px);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .danger-zone h3 {
-  color: #ff4d4d;
+  color: var(--text-danger, #f87171);
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: var(--space-2, 8px);
   font-family: var(--font-sans);
+  font-size: var(--font-size-lg, 1.125rem);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
 }
 
 .danger-zone p {
   color: var(--text-secondary);
-  font-size: 0.95rem;
-  margin-bottom: 20px;
-  line-height: 1.5;
+  font-size: var(--font-size-sm, 0.875rem);
+  margin-bottom: var(--space-5, 20px);
+  line-height: var(--line-height-normal);
 }
 
 .btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2, 8px);
   background-color: transparent;
-  color: #ff4d4d;
-  border: 1px solid #ff4d4d;
-  padding: 10px 20px;
-  border-radius: var(--radius-sm);
+  color: var(--text-danger, #f87171);
+  border: 1px solid var(--text-danger, #f87171);
+  min-height: var(--touch-target, 48px);
+  padding: 0 var(--space-5, 20px);
+  border-radius: var(--radius-sm, 6px);
   cursor: pointer;
-  font-weight: bold;
-  transition: all 0.2s;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--font-size-sm, 0.875rem);
+  transition: all var(--transition-normal);
+  outline: none;
+  box-sizing: border-box;
 }
 
-.btn-danger:hover:not(:disabled) {
-  background-color: #ff4d4d;
-  color: #fff;
+.btn-danger:hover:not(:disabled),
+.btn-danger:focus-visible:not(:disabled) {
+  background-color: var(--text-danger, #f87171);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+  transform: translateY(-1px);
 }
 
 .btn-danger:disabled {
@@ -154,22 +276,28 @@
 
 .danger-confirm-box {
   background-color: var(--bg-surface);
-  padding: 20px;
-  border-radius: var(--radius-sm);
-  border: 1px dashed rgba(255, 77, 77, 0.4);
+  padding: var(--space-5, 20px);
+  border-radius: var(--radius-sm, 6px);
+  border: 1px dashed rgba(248, 113, 113, 0.4);
+  margin-top: var(--space-4, 16px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* --------------------------------------------------------------------------
-   RESPONSIVIDADE (Tablets e Celulares)
+   RESPONSIVIDADE E ESTIRAMENTO NO PWA MOBILE
    -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
   .settings-container {
-    padding: 20px 15px;
+    /* CORREÇÃO TABLET: Sem var(--header-height) */
+    padding: var(--space-6, 24px) var(--space-4, 16px) var(--space-8, 32px) var(--space-4, 16px);
   }
 
   .settings-layout {
     flex-direction: column;
-    gap: 20px;
+    align-items: stretch;
+    width: 100%;
+    gap: var(--space-6, 24px);
   }
 
   .settings-sidebar {
@@ -179,26 +307,77 @@
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 10px;
-    border-radius: var(--radius-md);
+    scroll-snap-type: x mandatory;
+    padding: var(--space-2, 8px);
+    border-radius: var(--radius-md, 8px);
     scrollbar-width: none;
+    gap: var(--space-2, 8px);
   }
 
   .settings-sidebar::-webkit-scrollbar {
     display: none;
   }
 
-  .settings-sidebar button {
+  .settings-tab-btn {
     flex: 0 0 auto;
-    text-align: center;
-    border-left: none;
-    border-bottom: 3px solid transparent;
-    padding: 10px 20px;
+    scroll-snap-align: start;
+    justify-content: center;
+    padding: 0 var(--space-4, 16px);
     white-space: nowrap;
   }
 
-  .settings-sidebar button.active {
-    border-left: none;
-    border-bottom: 3px solid var(--accent-gold);
+  .settings-content {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .settings-container {
+    /* CORREÇÃO MOBILE: Sem var(--header-height), topo limpo em 16px */
+    padding: var(--space-4, 16px) var(--space-3, 12px) var(--space-12, 48px) var(--space-3, 12px);
+  }
+
+  .settings-header {
+    margin-bottom: var(--space-6, 24px);
+  }
+
+  .settings-title {
+    font-size: 1.75rem;
+  }
+
+  .settings-main-icon {
+    font-size: 2rem !important;
+  }
+
+  .settings-sidebar {
+    padding: 6px;
+    border-radius: var(--radius-md, 8px);
+  }
+
+  .settings-tab-btn {
+    font-size: var(--font-size-xs, 0.8rem);
+    padding: 0 var(--space-3, 12px);
+    min-height: var(--touch-target-sm, 44px);
+  }
+
+  .settings-tab-btn .material-symbols-rounded {
+    font-size: 1.125rem !important;
+  }
+
+  .settings-content {
+    padding: var(--space-5, 20px) var(--space-4, 16px);
+    border-radius: var(--radius-md, 8px);
+    min-height: 400px;
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .danger-zone {
+    padding: var(--space-4, 16px);
+  }
+
+  .btn-danger {
+    width: 100%;
   }
 }

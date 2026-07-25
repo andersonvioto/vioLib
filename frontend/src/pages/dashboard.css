@@ -1,185 +1,260 @@
 /* ==========================================================================
-DASHBOARD CSS - vioLib
-Estilos estruturais da página principal (Dashboard).
-========================================================================== */
+   DASHBOARD CSS - vioLib (Redesign Editorial VioDesign Pro)
+   Estilos estruturais da página principal e barra de ferramentas unificada.
+   ========================================================================== */
 
 .dashboard-container {
-  padding: 120px 40px 40px 40px;
-  max-width: 1200px;
+  padding: calc(var(--header-height, 84px) + var(--space-6, 24px)) var(--space-8, 32px)
+    var(--space-10, 40px) var(--space-8, 32px);
+  max-width: 1400px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .btn-action {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: var(--radius-md);
+  gap: var(--space-2, 8px);
+  padding: 0 var(--space-5, 20px);
+  min-height: var(--touch-target, 48px);
+  border-radius: var(--radius-md, 8px);
   font-family: var(--font-sans);
   font-weight: 500;
+  font-size: var(--font-size-sm, 0.875rem);
   cursor: pointer;
-  transition: var(--transition-smooth);
-  background: transparent;
-  border: 1px solid var(--accent-gold);
+  transition: var(--transition-normal);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   color: var(--text-primary);
+  outline: none;
+  box-sizing: border-box;
+  white-space: nowrap;
 }
 
-.btn-action:hover {
-  background: var(--accent-gold-glow);
+.btn-action:hover,
+.btn-action:focus-visible {
+  background: var(--bg-elevated);
+  border-color: var(--border-hover);
   transform: translateY(-2px);
 }
 
 .btn-primary {
   background: var(--accent-gold);
-  color: #000;
+  color: #000000;
   border: none;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 4px 12px var(--accent-gold-glow);
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-primary:focus-visible {
   background: var(--accent-gold-hover);
   box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
+  color: #000000;
 }
 
-/* ==========================================================================
-BARRA DE PESQUISA E TOGGLES DE VISUALIZAÇÃO
-========================================================================== */
+/* --- BARRA DE PESQUISA E FERRAMENTAS UNIFICADAS --- */
 .search-filter-bar {
   display: flex;
-  gap: 15px;
-  margin-bottom: 35px;
+  gap: var(--space-3, 12px);
+  margin-bottom: var(--space-8, 32px);
   align-items: center;
   position: relative;
+  flex-wrap: wrap;
 }
 
+/* Container de Pesquisa com Foco Unificado (Peça Única) */
 .search-wrapper {
-  flex: 1;
+  flex: 1 1 300px;
   position: relative;
   display: flex;
   align-items: center;
-}
-
-.search-icon {
-  position: absolute;
-  left: 15px;
-  color: var(--text-muted);
-}
-
-.search-input {
-  width: 100%;
-  padding: 14px 20px 14px 50px;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 1em;
-  outline: none;
-  transition: var(--transition-smooth);
+  border-radius: var(--radius-md, 8px);
+  transition: var(--transition-normal);
+  padding: 0 var(--space-4, 16px);
+  height: var(--touch-target, 48px);
+  min-height: var(--touch-target, 48px);
+  max-height: 48px;
+  box-sizing: border-box;
 }
 
-.search-input:focus {
+.search-wrapper:focus-within {
   border-color: var(--accent-gold);
+  background-color: var(--bg-surface);
   box-shadow: 0 0 0 3px var(--accent-gold-glow);
 }
 
-/* Toggles de Visualização */
+.search-icon {
+  color: var(--text-muted);
+  transition: var(--transition-normal);
+  margin-right: var(--space-3, 12px);
+  font-size: 1.25rem !important;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.search-wrapper:focus-within .search-icon {
+  color: var(--accent-gold);
+}
+
+/* Input com height 100% e zero padding para evitar inchamento no mobile */
+.search-input {
+  width: 100%;
+  height: 100%;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base, 1rem);
+  box-sizing: border-box;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Toggles de Visualização com Ergonomia PWA */
 .view-mode-toggles {
   display: flex;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md, 8px);
   padding: 4px;
   gap: 4px;
+  height: var(--touch-target, 48px);
+  box-sizing: border-box;
 }
 
 .view-toggle-btn {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
+  border-radius: var(--radius-sm, 4px);
+  width: 38px;
+  height: 100%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-smooth);
+  transition: var(--transition-fast);
+  outline: none;
 }
 
-.view-toggle-btn:hover {
+.view-toggle-btn:hover,
+.view-toggle-btn:focus-visible {
   color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .view-toggle-btn.active {
-  background: var(--surface-container-highest);
+  background: var(--bg-surface);
   color: var(--accent-gold);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .btn-filter-trigger.active {
   background-color: var(--accent-gold);
-  color: #000;
+  color: #000000;
+  border-color: var(--accent-gold);
 }
 
-/* ==========================================================================
-MODOS DE LAYOUT (Grid, Compact, List)
-========================================================================== */
+/* --- SEÇÃO DO ACERVO --- */
 .library-section {
-  margin-bottom: 50px;
+  margin-bottom: var(--space-10, 40px);
 }
 
 .section-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 25px;
-  padding-bottom: 10px;
+  gap: var(--space-3, 12px);
+  margin-bottom: var(--space-6, 24px);
+  padding-bottom: var(--space-3, 12px);
   border-bottom: 2px solid var(--accent-gold);
 }
 
+.section-icon {
+  color: var(--accent-gold);
+  font-size: 1.75rem !important;
+}
+
 .section-title {
-  font-size: 1.5em;
+  font-size: var(--font-size-xl, 1.5rem);
+  font-family: var(--font-serif);
   color: var(--accent-gold);
   margin: 0;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
-  align-items: baseline;
-  gap: 10px;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  flex-wrap: wrap;
 }
 
 .title-count {
-  font-size: 0.6em;
+  font-size: var(--font-size-sm, 0.875rem);
+  font-family: var(--font-sans);
   color: var(--text-muted);
-  font-weight: normal;
+  font-weight: 500;
 }
 
-/* 1. Modo Grid (Clássico) */
+/* Botão de Limpar Filtro Acessível */
+.btn-clear-filter {
+  background: transparent;
+  border: none;
+  color: var(--text-danger, #f87171);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  margin-left: 4px;
+  border-radius: 50%;
+  transition:
+    transform var(--transition-fast),
+    background-color var(--transition-fast);
+  outline: none;
+}
+
+.btn-clear-filter:hover,
+.btn-clear-filter:focus-visible {
+  transform: scale(1.15);
+  background-color: rgba(248, 113, 113, 0.15);
+}
+
+.btn-clear-filter .material-symbols-rounded {
+  font-size: 1.25rem !important;
+}
+
+/* --- GRADES DO ACERVO --- */
 .book-layout-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 25px;
+  gap: var(--space-6, 24px);
 }
 
-/* 2. Modo Compacto (Apenas Capas / Pequenas) */
 .book-layout-compact {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 15px;
+  gap: var(--space-4, 16px);
 }
 
-/* 3. Modo Lista (Linhas Horizontais) */
 .book-layout-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: var(--space-4, 16px);
 }
 
-/* --- ESTILOS DO SKELETON CARDS PARA OS MODOS --- */
+/* --- ESTILOS DO SKELETON CARDS --- */
 .skeleton-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md, 8px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -198,58 +273,57 @@ MODOS DE LAYOUT (Grid, Compact, List)
 }
 
 .skeleton-info {
-  padding: 15px;
+  padding: var(--space-4, 16px);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-2, 8px);
 }
 
 .skeleton-line {
   background: var(--bg-input);
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   animation: skeletonPulse 1.5s infinite ease-in-out;
   height: 14px;
 }
 
 .skeleton-line.title {
-  width: 90%;
+  width: 85%;
   height: 18px;
 }
 
 .skeleton-line.author {
-  width: 60%;
+  width: 55%;
 }
 
 .skeleton-tags {
   display: flex;
-  gap: 5px;
-  margin-top: 5px;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .skeleton-tag {
   height: 20px;
-  width: 40px;
+  width: 44px;
   background: var(--bg-input);
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   animation: skeletonPulse 1.5s infinite ease-in-out;
 }
 
-/* Skeleton para o Modo Lista */
 .skeleton-card-list {
   display: flex;
-  gap: 20px;
+  gap: var(--space-4, 16px);
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 15px;
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-4, 16px);
   align-items: center;
 }
 
 .skeleton-img-list {
-  width: 60px;
-  height: 90px;
+  width: 56px;
+  height: 84px;
   background: var(--bg-input);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-sm, 4px);
   animation: skeletonPulse 1.5s infinite ease-in-out;
   flex-shrink: 0;
 }
@@ -263,46 +337,46 @@ MODOS DE LAYOUT (Grid, Compact, List)
 
 @keyframes skeletonPulse {
   0% {
-    opacity: 0.4;
+    opacity: 0.35;
   }
   50% {
-    opacity: 0.8;
+    opacity: 0.75;
   }
   100% {
-    opacity: 0.4;
+    opacity: 0.35;
   }
 }
 
-/* ==========================================================================
-PAGINAÇÃO E EMPTY STATES
-========================================================================== */
+/* --- PAGINAÇÃO E EMPTY STATES --- */
 .pagination-trigger-zone {
   text-align: center;
-  margin-top: 40px;
+  margin-top: var(--space-10, 40px);
 }
 
 .btn-load-more {
-  padding: 14px 40px;
+  padding: 0 var(--space-8, 32px);
   margin: 0 auto;
 }
 
 .empty-message {
   color: var(--text-muted);
   font-style: italic;
+  padding: var(--space-6, 24px) 0;
+  text-align: center;
 }
 
 /* ==========================================================================
-RESPONSIVIDADE E ADAPTAÇÃO MOBILE (Media Queries)
-========================================================================== */
-
+   RESPONSIVIDADE E ADAPTAÇÃO MOBILE (Media Queries)
+   ========================================================================== */
 @media (max-width: 900px) {
   .dashboard-container {
-    padding: 100px 20px 20px 20px;
+    padding: calc(var(--header-height, 72px) + var(--space-4, 16px)) var(--space-4, 16px)
+      var(--space-8, 32px) var(--space-4, 16px);
   }
 
   .book-layout-grid {
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-4, 16px);
   }
 
   .book-layout-compact {
@@ -319,43 +393,55 @@ RESPONSIVIDADE E ADAPTAÇÃO MOBILE (Media Queries)
 
 @media (max-width: 600px) {
   .dashboard-container {
-    padding: 90px 15px 15px 15px;
+    padding: calc(var(--header-height, 64px) + var(--space-4, 16px)) var(--space-3, 12px)
+      var(--space-6, 24px) var(--space-3, 12px);
   }
 
   .book-layout-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+    gap: var(--space-3, 12px);
   }
 
   .book-layout-compact {
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: var(--space-2, 8px);
   }
 
   .skeleton-img {
-    height: 190px;
+    height: 200px;
   }
   .book-layout-compact .skeleton-img {
-    height: 130px;
+    height: 140px;
   }
 
   .search-filter-bar {
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: var(--space-3, 12px);
   }
 
+  /* CORREÇÃO MOBILE: Trava milimétrica de 44px na barra de busca */
   .search-wrapper {
     width: 100%;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
   }
 
   .view-mode-toggles {
     justify-content: space-around;
+    width: 100%;
+    height: 44px;
+  }
+
+  .view-toggle-btn {
+    flex: 1;
   }
 
   .btn-filter-trigger {
     width: 100%;
     justify-content: center;
-    padding: 14px;
+    min-height: 44px;
+    padding: 0 var(--space-4, 16px);
   }
 }

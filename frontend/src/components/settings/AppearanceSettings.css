@@ -1,0 +1,139 @@
+/* ==========================================================================
+   COMPONENT CSS - AppearanceSettings (Redesign Editorial VioDesign Pro)
+   Grade responsiva de cartões interativos (Radio Cards) e controles visuais.
+   ========================================================================== */
+
+.appearance-settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8, 32px);
+  width: 100%;
+}
+
+.appearance-section-title {
+  font-family: var(--font-serif, serif);
+  color: var(--accent-gold);
+  margin: 0;
+  font-size: var(--font-size-2xl, 1.5rem);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-3, 12px);
+}
+
+.appearance-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+}
+
+.appearance-group-title {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-lg, 1.125rem);
+  color: var(--text-primary);
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Esconde o radio nativo preservando navegação por teclado e leitores de tela */
+.visually-hidden-radio {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* Grade Editorial de Cartões */
+.appearance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4, 16px);
+  width: 100%;
+}
+
+/* Cartão Interativo (Radio Card) */
+.appearance-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4, 16px);
+  padding: var(--space-5, 20px);
+  background-color: var(--bg-input);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  min-height: var(--touch-target, 48px);
+  box-sizing: border-box;
+  outline: none;
+}
+
+.appearance-card:hover {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-hover, rgba(255, 255, 255, 0.2));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Foco Acessível por Teclado */
+.appearance-card:has(.visually-hidden-radio:focus-visible) {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
+/* Cartão Ativo (Selecionado) */
+.appearance-card.active {
+  background-color: var(--accent-gold-subtle, rgba(212, 175, 55, 0.1));
+  border-color: var(--accent-gold);
+  box-shadow: 0 4px 12px var(--accent-gold-glow);
+}
+
+.appearance-card-icon {
+  font-size: 2.25rem !important;
+  color: var(--text-muted);
+  transition: color var(--transition-normal);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.appearance-card.active .appearance-card-icon {
+  color: var(--accent-gold);
+}
+
+.appearance-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 4px);
+  min-width: 0;
+}
+
+.appearance-card-title {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base, 1rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+
+.appearance-card-desc {
+  font-size: var(--font-size-sm, 0.85rem);
+  color: var(--text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+/* --- RESPONSIVIDADE PWA MOBILE --- */
+@media (max-width: 600px) {
+  .appearance-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3, 12px);
+  }
+
+  .appearance-card {
+    padding: var(--space-4, 16px);
+    align-items: center;
+  }
+
+  .appearance-card-icon {
+    font-size: 1.75rem !important;
+    margin-top: 0;
+  }
+}

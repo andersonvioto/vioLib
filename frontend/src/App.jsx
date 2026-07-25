@@ -21,6 +21,7 @@ import Collections from './pages/Collections';
 import CollectionForm from './pages/CollectionForm';
 import CollectionDashboard from './pages/CollectionDashboard';
 import ReloadPrompt from './components/ReloadPrompt';
+import './App.css';
 
 const PrivateRoute = ({ children }) => {
   const isAuthenticated = !!localStorage.getItem('token');
@@ -34,50 +35,95 @@ const PublicRoute = ({ children }) => {
 
 const SyncIndicator = () => {
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isOffline, setIsOffline] = useState(() => !navigator.onLine);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     const handleSync = (e) => {
-      if (e.detail.status === 'syncing') setIsSyncing(true);
+      if (e.detail.status === 'syncing') {
+        setIsSyncing(true);
+      }
       if (e.detail.status === 'done' || e.detail.status === 'error') {
-        setTimeout(() => setIsSyncing(false), 1500);
+        const timer = setTimeout(() => setIsSyncing(false), 1500);
+        return () => clearTimeout(timer);
       }
     };
 
+    const handleOnline = () => {
+      setIsOffline(false);
+      setIsDismissed(false);
+    };
+
+    const handleOffline = () => {
+      setIsOffline(true);
+      setIsDismissed(false);
+    };
+
     window.addEventListener('violib-offline-sync', handleSync);
-    return () => window.removeEventListener('violib-offline-sync', handleSync);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('violib-offline-sync', handleSync);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
-  if (!isSyncing) return null;
+  if (isOffline) {
+    if (isDismissed) {
+      return (
+        <button
+          type="button"
+          className="network-status-badge status-offline"
+          onClick={() => setIsDismissed(false)}
+          title="Modo Offline Ativo — Clique para expandir aviso"
+          aria-label="Modo Offline Ativo — Clique para expandir aviso de conectividade"
+        >
+          <span className="material-symbols-rounded" aria-hidden="true">
+            cloud_off
+          </span>
+        </button>
+      );
+    }
 
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: '20px',
-        left: '20px',
-        backgroundColor: 'var(--bg-surface)',
-        border: '1px solid var(--border-color)',
-        padding: '8px 16px',
-        borderRadius: '20px',
-        fontSize: '0.85em',
-        color: 'var(--text-secondary)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        zIndex: 9999,
-        boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
-        animation: 'authFadeDown 0.3s ease-out'
-      }}
-    >
-      <span
-        className="material-symbols-rounded spinner-icon"
-        style={{ fontSize: '1.2em', animation: 'authSpin 1s linear infinite reverse' }}
-      >
-        sync
-      </span>
-      Sincronizando cache local...
-    </div>
-  );
+    return (
+      <div className="network-status-bar status-offline" role="status" aria-live="polite">
+        <div className="network-status-content">
+          <span className="material-symbols-rounded" aria-hidden="true">
+            cloud_off
+          </span>
+          <span>Modo Offline — Acervo em Cache Local</span>
+        </div>
+        <button
+          type="button"
+          className="btn-status-close"
+          onClick={() => setIsDismissed(true)}
+          title="Minimizar aviso"
+          aria-label="Minimizar aviso de modo offline para emblema flutuante"
+        >
+          <span className="material-symbols-rounded" aria-hidden="true">
+            close
+          </span>
+        </button>
+      </div>
+    );
+  }
+
+  if (isSyncing) {
+    return (
+      <div className="network-status-bar status-syncing" role="status" aria-live="polite">
+        <div className="network-status-content">
+          <span className="material-symbols-rounded" aria-hidden="true">
+            sync
+          </span>
+          <span>Sincronizando com a nuvem...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 function App() {

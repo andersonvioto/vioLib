@@ -4,17 +4,16 @@ import api from '../../services/api';
 import './TaxonomyManager.css';
 
 /**
- * Gerenciador genérico de taxonomias com Edição Inline e Busca Textual.
- * @param {string} endpoint - Caminho da API (ex: 'authors')
- * @param {string} title - Título do painel
- * @param {string} itemLabel - Rótulo para placeholders e botões
+ * Gerenciador genérico de taxonomias com Edição Inline, Busca Textual e Alvos PWA.
+ * @param {string} props.endpoint - Caminho da API ('authors' | 'translators')
+ * @param {string} props.title - Título do painel editorial
+ * @param {string} props.itemLabel - Rótulo para placeholders e botões
  */
 const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
-  const [searchTerm, setSearchTerm] = useState(''); // Estado da barra de busca
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Estados para controle da interface de Edição Inline
   const [isAdding, setIsAdding] = useState(false);
   const [addName, setAddName] = useState('');
 
@@ -31,7 +30,6 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
   }, [endpoint]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchItems();
   }, [fetchItems]);
 
@@ -89,7 +87,6 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
     }
   };
 
-  // Função utilitária para remover acentos e transformar em minúsculas
   const normalizeText = (text) => {
     return text
       .normalize('NFD')
@@ -101,53 +98,35 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
     normalizeText(item.name).includes(normalizeText(searchTerm))
   );
 
-  // Mapeia dinamicamente o parâmetro da URL correto com base no endpoint
   const getFilterParam = () => {
     if (endpoint === 'authors') return 'author';
     if (endpoint === 'translators') return 'translator';
-    return 'search'; // Fallback de segurança
+    return 'search';
   };
 
   return (
     <div className="settings-panel">
-      <h2>{title}</h2>
+      <header className="panel-header-clean">
+        <h2 className="panel-main-title">{title}</h2>
+      </header>
 
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '15px',
-          marginBottom: '20px',
-          alignItems: 'center'
-        }}
-      >
+      <div className="taxonomy-toolbar">
         {!isAdding && (
           <button
+            type="button"
             onClick={() => setIsAdding(true)}
-            className="btn-action btn-primary"
-            style={{ margin: 0 }}
+            className="btn-action btn-primary btn-add-main"
           >
-            <span className="material-symbols-rounded">add</span> Adicionar {itemLabel}
+            <span className="material-symbols-rounded" aria-hidden="true">
+              add
+            </span>
+            <span>Adicionar {itemLabel}</span>
           </button>
         )}
 
         {items.length > 0 && (
-          <div
-            style={{
-              flex: 1,
-              minWidth: '200px',
-              display: 'flex',
-              alignItems: 'center',
-              background: 'var(--bg-input)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '0 15px'
-            }}
-          >
-            <span
-              className="material-symbols-rounded"
-              style={{ color: 'var(--text-muted)', marginRight: '10px' }}
-            >
+          <div className="search-wrapper-clean" role="search">
+            <span className="material-symbols-rounded search-icon" aria-hidden="true">
               search
             </span>
             <input
@@ -155,72 +134,44 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
               placeholder={`Pesquisar ${itemLabel.toLowerCase()}...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                flex: 1,
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-primary)',
-                padding: '12px 0',
-                outline: 'none',
-                fontSize: '0.95rem'
-              }}
+              className="search-input-clean"
+              aria-label={`Pesquisar na lista de ${itemLabel.toLowerCase()}s`}
             />
             {searchTerm && (
-              <span
-                className="material-symbols-rounded"
-                style={{
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                  marginLeft: '10px',
-                  fontSize: '1.2rem'
-                }}
+              <button
+                type="button"
+                className="btn-clear-search"
                 onClick={() => setSearchTerm('')}
                 title="Limpar busca"
+                aria-label="Limpar termo de busca"
               >
-                close
-              </span>
+                <span className="material-symbols-rounded" aria-hidden="true">
+                  close
+                </span>
+              </button>
             )}
           </div>
         )}
       </div>
 
-      <ul className="attribute-list">
+      <ul className="attribute-list" role="list" aria-label={`Lista de ${title}`}>
         {isAdding && (
-          <li className="attribute-item" style={{ borderLeft: '3px solid var(--accent-gold)' }}>
-            <form
-              onSubmit={handleSubmitAdd}
-              style={{
-                display: 'flex',
-                width: '100%',
-                gap: '10px',
-                alignItems: 'center',
-                flexWrap: 'wrap'
-              }}
-            >
+          <li className="attribute-item attribute-item-adding">
+            <form onSubmit={handleSubmitAdd} className="inline-edit-form">
               <input
                 autoFocus
                 type="text"
                 value={addName}
                 onChange={(e) => setAddName(e.target.value)}
-                className="auth-input"
-                style={{ padding: '8px', fontSize: '0.95rem', flex: 1, minWidth: '150px' }}
-                placeholder={`Nome do novo ${itemLabel.toLowerCase()}`}
+                className="form-input inline-input"
+                placeholder={`Nome do novo ${itemLabel.toLowerCase()}...`}
               />
-              <div className="attribute-actions">
-                <button
-                  type="submit"
-                  className="btn-edit"
-                  style={{ color: '#4dff4d', borderColor: '#4dff4d' }}
-                >
-                  Salvar
+              <div className="inline-form-actions">
+                <button type="submit" className="btn-action btn-save-success">
+                  <span>Salvar</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={cancelAdd}
-                  className="btn-disable-small"
-                  style={{ color: '#aaa', borderColor: '#aaa' }}
-                >
-                  Cancelar
+                <button type="button" onClick={cancelAdd} className="btn-action btn-cancel-inline">
+                  <span>Cancelar</span>
                 </button>
               </div>
             </form>
@@ -230,39 +181,24 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
         {filteredItems.map((item) => (
           <li key={item.id} className="attribute-item">
             {editingId === item.id ? (
-              <form
-                onSubmit={handleSubmitEdit}
-                style={{
-                  display: 'flex',
-                  width: '100%',
-                  gap: '10px',
-                  alignItems: 'center',
-                  flexWrap: 'wrap'
-                }}
-              >
+              <form onSubmit={handleSubmitEdit} className="inline-edit-form">
                 <input
                   autoFocus
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="auth-input"
-                  style={{ padding: '8px', fontSize: '0.95rem', flex: 1, minWidth: '150px' }}
+                  className="form-input inline-input"
                 />
-                <div className="attribute-actions">
-                  <button
-                    type="submit"
-                    className="btn-edit"
-                    style={{ color: '#4dff4d', borderColor: '#4dff4d' }}
-                  >
-                    Salvar
+                <div className="inline-form-actions">
+                  <button type="submit" className="btn-action btn-save-success">
+                    <span>Salvar</span>
                   </button>
                   <button
                     type="button"
                     onClick={cancelEdit}
-                    className="btn-disable-small"
-                    style={{ color: '#aaa', borderColor: '#aaa' }}
+                    className="btn-action btn-cancel-inline"
                   >
-                    Cancelar
+                    <span>Cancelar</span>
                   </button>
                 </div>
               </form>
@@ -270,31 +206,36 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
               <>
                 <div className="attribute-info">
                   <span className="attribute-name-text">
-                    {item.name}
-                    {/* Badge clicável gerando a URL exata do filtro estrito */}
-                    <span
-                      className="attribute-badge"
+                    <span>{item.name}</span>
+                    <button
+                      type="button"
+                      className="attribute-badge-link"
                       title="Ver livros associados na Biblioteca"
-                      style={{
-                        cursor: 'pointer',
-                        color: 'var(--accent-gold)',
-                        borderColor: 'var(--accent-gold)'
-                      }}
                       onClick={() =>
                         navigate(`/biblioteca?${getFilterParam()}=${encodeURIComponent(item.name)}`)
                       }
                     >
-                      ({item.bookCount || 0})
-                    </span>
+                      <span>({item.bookCount || 0})</span>
+                    </button>
                   </span>
                 </div>
 
                 <div className="attribute-actions">
-                  <button onClick={() => startEditing(item.id, item.name)} className="btn-edit">
-                    Editar
+                  <button
+                    type="button"
+                    onClick={() => startEditing(item.id, item.name)}
+                    className="btn-action btn-edit-taxonomy"
+                    aria-label={`Editar ${itemLabel.toLowerCase()} ${item.name}`}
+                  >
+                    <span>Editar</span>
                   </button>
-                  <button onClick={() => handleDisable(item.id)} className="btn-disable-small">
-                    Excluir
+                  <button
+                    type="button"
+                    onClick={() => handleDisable(item.id)}
+                    className="btn-action btn-delete-taxonomy"
+                    aria-label={`Excluir ${itemLabel.toLowerCase()} ${item.name}`}
+                  >
+                    <span>Excluir</span>
                   </button>
                 </div>
               </>
@@ -303,12 +244,16 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
         ))}
 
         {items.length === 0 && !isAdding && (
-          <li className="empty-msg">Nenhum registro encontrado.</li>
+          <li className="empty-msg" role="status">
+            <span>Nenhum registro cadastrado nesta taxonomia.</span>
+          </li>
         )}
 
         {items.length > 0 && filteredItems.length === 0 && !isAdding && (
-          <li className="empty-msg">
-            Nenhum {itemLabel.toLowerCase()} encontrado para &quot;{searchTerm}&quot;.
+          <li className="empty-msg" role="status">
+            <span>
+              Nenhum {itemLabel.toLowerCase()} encontrado para &quot;{searchTerm}&quot;.
+            </span>
           </li>
         )}
       </ul>

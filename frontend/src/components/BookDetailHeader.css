@@ -1,44 +1,54 @@
 /* ==========================================================================
-   COMPONENT CSS - BookDetailHeader
-   Estilos dos botões de ação e do menu dropdown de citações.
+   COMPONENT CSS - BookDetailHeader (Redesign Editorial VioDesign Pro)
+   Barra de ferramentas encapsulada da ficha técnica da obra.
    ========================================================================== */
 
-.details-header {
+.details-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
-
-  /* EFEITO CABEÇALHO FIXO (APP BAR) */
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background-color: var(--bg-main);
-
-  /* Truque mágico: o fundo expande para cobrir o scroll nas laterais */
-  margin: -40px -40px -11px -40px;
-  padding: 40px 40px 20px 40px;
-  border-bottom: 1px solid var(--border-color);
+  flex-wrap: nowrap;
+  gap: var(--space-4, 16px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
+/* Botão Voltar Limpo e Acetinado */
 .btn-back-clean {
-  border: none;
-  padding-left: 0;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 var(--space-2, 8px) !important;
   color: var(--text-secondary);
-  transition: all 0.2s ease;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--font-size-sm, 0.875rem);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    transform var(--transition-fast);
+  min-height: var(--touch-target-sm, 44px);
+  outline: none;
+  flex-shrink: 0;
 }
 
-.btn-back-clean:hover {
-  background: transparent;
+.btn-back-clean:hover,
+.btn-back-clean:focus-visible {
   color: var(--accent-gold);
-  transform: translateX(-3px);
+  transform: translateX(-4px);
+}
+
+.btn-back-clean .material-symbols-rounded {
+  font-size: 1.25rem !important;
 }
 
 .owner-actions-container {
   display: flex;
   align-items: center;
   position: relative;
+  flex-shrink: 0;
 }
 
 .mobile-menu-toggle {
@@ -47,17 +57,57 @@
 
 .header-actions {
   display: flex;
-  gap: 15px;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  flex-wrap: wrap;
+}
+
+/* Estilos Específicos para Botões de Ação do Header */
+.header-actions .btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: 0 var(--space-4, 16px);
+  height: var(--touch-target-sm, 44px);
+  border-radius: var(--radius-md, 8px);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--font-size-sm, 0.875rem);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  outline: none;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.header-actions .btn-action:hover,
+.header-actions .btn-action:focus-visible {
+  background: var(--bg-elevated);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
 }
 
 .edit-btn {
-  border-color: var(--accent-gold);
-  color: var(--accent-gold);
+  border-color: var(--accent-gold) !important;
+  color: var(--accent-gold) !important;
+}
+
+.edit-btn:hover,
+.edit-btn:focus-visible {
+  background: var(--accent-gold-subtle, rgba(212, 175, 55, 0.1)) !important;
 }
 
 .delete-btn {
-  border-color: var(--text-danger);
-  color: var(--text-danger);
+  border-color: var(--text-danger, #f87171) !important;
+  color: var(--text-danger, #f87171) !important;
+}
+
+.delete-btn:hover,
+.delete-btn:focus-visible {
+  background: rgba(248, 113, 113, 0.12) !important;
 }
 
 /* --- CONTAINER E MENU DE CITAÇÕES DROPDOWN --- */
@@ -69,76 +119,89 @@
 .citation-trigger-btn .arrow-icon {
   font-size: 1.1em !important;
   color: var(--text-muted);
+  transition: transform var(--transition-fast);
 }
 
 .citation-dropdown-menu {
   position: absolute;
-  top: calc(100% + 5px);
-  left: 0;
-  width: 250px;
+  top: calc(100% + 6px);
+  right: 0;
+  left: auto;
+  width: 260px;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 6px;
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-1, 6px);
   display: flex;
   flex-direction: column;
   gap: 4px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-  z-index: 1005;
-  animation: citationFadeDown 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-float, 0 20px 25px -5px rgba(0, 0, 0, 0.6));
+  z-index: var(--z-drawer, 1000);
+  animation: citationFadeDown 0.2s var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  box-sizing: border-box;
+  backdrop-filter: blur(8px);
 }
 
 .citation-menu-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3, 12px);
   width: 100%;
-  padding: 10px 12px;
+  min-height: var(--touch-target-sm, 44px);
+  padding: 0 var(--space-3, 12px);
   background: transparent;
   border: none !important;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-sm, 6px);
   color: var(--text-secondary);
   font-family: var(--font-sans);
-  font-size: 0.9em;
+  font-size: var(--font-size-sm, 0.875rem);
   cursor: pointer;
   text-align: left;
-  transition: var(--transition-smooth);
+  transition: var(--transition-fast);
+  outline: none;
+  box-sizing: border-box;
 }
 
-.citation-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+.citation-menu-item:hover,
+.citation-menu-item:focus-visible {
+  background-color: var(--bg-elevated);
   color: var(--text-primary);
 }
 
 .badge-format {
-  font-size: 0.75em;
-  font-weight: bold;
-  color: #000;
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 700;
+  color: #000000;
   background-color: var(--accent-gold);
-  padding: 3px 6px;
-  border-radius: 4px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm, 4px);
   min-width: 65px;
   text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes citationFadeDown {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-8px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
+/* ==========================================================================
+   RESPONSIVIDADE (PWA MOBILE)
+   ========================================================================== */
 @media (max-width: 600px) {
-  .details-header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    margin: -15px -15px -11px -15px;
-    padding: 15px 20px 15px 15px;
+  .details-toolbar {
+    gap: var(--space-2, 8px);
+  }
+
+  .btn-back-clean {
+    min-height: var(--touch-target, 48px);
+    padding: 0 var(--space-2, 8px) !important;
   }
 
   .mobile-menu-toggle {
@@ -146,35 +209,46 @@
     align-items: center;
     justify-content: center;
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     color: var(--accent-gold);
     cursor: pointer;
-    padding: 5px;
+    width: var(--touch-target, 48px);
+    height: var(--touch-target, 48px);
+    border-radius: var(--radius-md, 8px);
+    transition: var(--transition-fast);
+    outline: none;
+  }
+
+  .mobile-menu-toggle:hover,
+  .mobile-menu-toggle:focus-visible {
+    background-color: var(--bg-surface);
+    border-color: var(--border-color);
   }
 
   .mobile-menu-toggle .material-symbols-rounded {
-    font-size: 2.2em !important;
+    font-size: 1.75rem !important;
     margin: 0;
   }
 
   .header-actions {
     position: absolute;
-    top: calc(100% + 5px);
+    top: calc(100% + 8px);
     right: 0;
-    width: 220px;
+    width: 250px;
     background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 10px;
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-2, 8px);
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-    z-index: 1000;
+    gap: var(--space-1, 4px);
+    box-shadow: var(--shadow-float, 0 20px 25px -5px rgba(0, 0, 0, 0.7));
+    z-index: var(--z-drawer, 1000);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-15px);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(-10px);
+    transition: var(--transition-normal);
+    backdrop-filter: blur(12px);
   }
 
   .header-actions.open {
@@ -185,15 +259,17 @@
 
   .header-actions .btn-action {
     width: 100%;
+    height: var(--touch-target, 48px);
     justify-content: flex-start;
-    padding: 12px 15px;
+    padding: 0 var(--space-4, 16px);
     background: transparent;
     border: none !important;
     box-shadow: none !important;
   }
 
-  .header-actions .btn-action:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
+  .header-actions .btn-action:hover,
+  .header-actions .btn-action:focus-visible {
+    background-color: var(--bg-elevated) !important;
     transform: none;
   }
 
@@ -202,20 +278,21 @@
     width: 100%;
   }
 
+  /* No mobile, o menu de citações abre como um acordeão interno suave */
   .citation-dropdown-menu {
     position: static;
     width: 100%;
     box-shadow: none;
-    background-color: rgba(0, 0, 0, 0.15);
-    border-radius: var(--radius-sm);
-    border: none;
-    padding: 5px;
-    margin: 5px 0;
+    background-color: var(--bg-main);
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid var(--border-color);
+    padding: var(--space-1, 6px);
+    margin: 4px 0 6px 0;
     animation: none;
   }
 
   .citation-menu-item {
-    padding: 8px 10px;
-    font-size: 0.85em;
+    min-height: var(--touch-target, 48px);
+    padding: 0 var(--space-3, 12px);
   }
 }

@@ -8,9 +8,8 @@ import AppearanceSettings from '../components/settings/AppearanceSettings';
 import './Settings.css';
 
 /**
- * Página principal de Configurações.
- * Orquestra a navegação lateral e gerencia o carregamento sob demanda (Lazy Fetching)
- * dos módulos internos.
+ * Página principal de Configurações do Acervo e da Conta.
+ * Orquestra a navegação acessível por abas e gerencia a renderização sob demanda dos módulos internos.
  */
 const Settings = () => {
   const navigate = useNavigate();
@@ -43,53 +42,139 @@ const Settings = () => {
 
   return (
     <div className="settings-container">
-      <button onClick={() => navigate('/biblioteca')} className="btn-back">
-        <span className="material-symbols-rounded">arrow_back</span> Voltar para a Biblioteca
-      </button>
+      <header className="settings-header">
+        <button
+          type="button"
+          onClick={() => navigate('/biblioteca')}
+          className="btn-back-settings"
+          aria-label="Voltar para a biblioteca principal"
+        >
+          <span className="material-symbols-rounded" aria-hidden="true">
+            arrow_back
+          </span>
+          <span>Voltar para a Biblioteca</span>
+        </button>
 
-      <h1 className="settings-header">Configurações da Conta</h1>
+        <div className="settings-title-wrapper">
+          <span className="material-symbols-rounded settings-main-icon" aria-hidden="true">
+            manage_accounts
+          </span>
+          <h1 className="settings-title">Configurações da Conta</h1>
+        </div>
+        <p className="settings-subtitle">
+          Gerencie suas preferências de exibição, permissões de acesso e catalogação de autores e
+          gêneros.
+        </p>
+      </header>
 
       <div className="settings-layout">
-        <aside className="settings-sidebar">
+        <nav
+          className="settings-sidebar"
+          role="tablist"
+          aria-label="Módulos de configuração do sistema"
+        >
           <button
-            className={activeTab === 'profile' ? 'active' : ''}
+            type="button"
+            role="tab"
+            id="tab-profile"
+            aria-selected={activeTab === 'profile'}
+            aria-controls="settings-tabpanel"
+            className={`settings-tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
           >
-            Meu Perfil
+            <span className="material-symbols-rounded" aria-hidden="true">
+              person
+            </span>
+            <span>Meu Perfil</span>
           </button>
+
           <button
-            className={activeTab === 'appearance' ? 'active' : ''}
+            type="button"
+            role="tab"
+            id="tab-appearance"
+            aria-selected={activeTab === 'appearance'}
+            aria-controls="settings-tabpanel"
+            className={`settings-tab-btn ${activeTab === 'appearance' ? 'active' : ''}`}
             onClick={() => setActiveTab('appearance')}
           >
-            Aparência
+            <span className="material-symbols-rounded" aria-hidden="true">
+              palette
+            </span>
+            <span>Aparência</span>
           </button>
+
           <button
-            className={activeTab === 'shares' ? 'active' : ''}
+            type="button"
+            role="tab"
+            id="tab-shares"
+            aria-selected={activeTab === 'shares'}
+            aria-controls="settings-tabpanel"
+            className={`settings-tab-btn ${activeTab === 'shares' ? 'active' : ''}`}
             onClick={() => setActiveTab('shares')}
           >
-            Compartilhamento
+            <span className="material-symbols-rounded" aria-hidden="true">
+              group
+            </span>
+            <span>Compartilhamento</span>
           </button>
+
           <button
-            className={activeTab === 'authors' ? 'active' : ''}
+            type="button"
+            role="tab"
+            id="tab-authors"
+            aria-selected={activeTab === 'authors'}
+            aria-controls="settings-tabpanel"
+            className={`settings-tab-btn ${activeTab === 'authors' ? 'active' : ''}`}
             onClick={() => setActiveTab('authors')}
           >
-            Meus Autores
+            <span className="material-symbols-rounded" aria-hidden="true">
+              history_edu
+            </span>
+            <span>Meus Autores</span>
           </button>
+
           <button
-            className={activeTab === 'translators' ? 'active' : ''}
+            type="button"
+            role="tab"
+            id="tab-translators"
+            aria-selected={activeTab === 'translators'}
+            aria-controls="settings-tabpanel"
+            className={`settings-tab-btn ${activeTab === 'translators' ? 'active' : ''}`}
             onClick={() => setActiveTab('translators')}
           >
-            Meus Tradutores
+            <span className="material-symbols-rounded" aria-hidden="true">
+              translate
+            </span>
+            <span>Meus Tradutores</span>
           </button>
+
           <button
-            className={activeTab === 'genres' ? 'active' : ''}
+            type="button"
+            role="tab"
+            id="tab-genres"
+            aria-selected={activeTab === 'genres'}
+            aria-controls="settings-tabpanel"
+            className={`settings-tab-btn ${activeTab === 'genres' ? 'active' : ''}`}
             onClick={() => setActiveTab('genres')}
           >
-            Gêneros e Subgêneros
+            <span className="material-symbols-rounded" aria-hidden="true">
+              category
+            </span>
+            <span>Gêneros e Subgêneros</span>
           </button>
-        </aside>
+        </nav>
 
-        <main className="settings-content">{renderContent()}</main>
+        <main
+          id="settings-tabpanel"
+          role="tabpanel"
+          aria-labelledby={`tab-${activeTab}`}
+          className="settings-content"
+          tabIndex="0"
+        >
+          <div className="settings-content-fade" key={activeTab}>
+            {renderContent()}
+          </div>
+        </main>
       </div>
     </div>
   );

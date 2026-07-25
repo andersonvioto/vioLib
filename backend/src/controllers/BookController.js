@@ -7,7 +7,8 @@ const {
   Subgenre,
   Tag,
   Loan,
-  LibraryAccess
+  LibraryAccess,
+  GlobalBook // Importado o modelo Global
 } = require('../models');
 
 /**
@@ -18,7 +19,8 @@ const normalizeText = (text) => {
   return text
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
+    .toLowerCase()
+    .trim();
 };
 
 /**
@@ -89,7 +91,10 @@ exports.createBook = async (req, res) => {
       publicationLocation,
       acquisitionDate,
       notes,
-      readingStatus
+      readingStatus,
+      pageCount, // Novo Metadado
+      language, // Novo Metadado
+      format // Novo Metadado
     } = req.body;
 
     const authors = req.body.authors ? JSON.parse(req.body.authors) : [];
@@ -105,9 +110,12 @@ exports.createBook = async (req, res) => {
       releaseYear: releaseYear ? parseInt(releaseYear, 10) : null,
       publicationLocation: publicationLocation || null,
       publisher: publisher || null,
+      pageCount: pageCount ? parseInt(pageCount, 10) : null, // Salvando no BD
+      language: language || null, // Salvando no BD
+      format: format || null, // Salvando no BD
       acquisitionDate: acquisitionDate || null,
       notes: notes || null,
-      coverImage: req.file ? req.file.path : null,
+      coverImage: req.file ? req.file.path : req.body.coverImage || null,
       readingStatus: readingStatus || 'unread',
       UserId: userId
     });
@@ -117,6 +125,31 @@ exports.createBook = async (req, res) => {
     await processRelations(book, tags, Tag, userId, 'addTags');
 
     await processCategories(book, genres, subgenres, userId, 'add');
+
+    // NOVO: Alimentando o Catálogo Global (GlobalBooks) silenciosamente
+    if (title && authors.length > 0) {
+      try {
+        // Criando a Impressão Digital única (Fingerprint)
+        const fingerprint = normalizeText(`${title}-${authors.join(',')}`);
+
+        await GlobalBook.findOrCreate({
+          where: { fingerprint },
+          defaults: {
+            title,
+            authors: JSON.stringify(authors),
+            isbn: isbn || null,
+            publisher: publisher || null,
+            coverImage: req.file ? req.file.path : req.body.coverImage || null,
+            pageCount: pageCount ? parseInt(pageCount, 10) : null,
+            language: language || null,
+            format: format || null
+          }
+        });
+      } catch (globalError) {
+        // Engole o erro caso haja problema de constraints ou duplicidade
+        console.error('⚠️ Erro silencioso ao salvar na GlobalBooks:', globalError.message);
+      }
+    }
 
     res.status(201).json({ message: 'Livro cadastrado com sucesso!', book });
   } catch (error) {
@@ -301,7 +334,10 @@ exports.updateBook = async (req, res) => {
       publicationLocation,
       acquisitionDate,
       notes,
-      readingStatus
+      readingStatus,
+      pageCount, // Novo Metadado
+      language, // Novo Metadado
+      format // Novo Metadado
     } = req.body;
 
     const book = await Book.findOne({ where: { id, UserId: userId } });
@@ -314,6 +350,9 @@ exports.updateBook = async (req, res) => {
       releaseYear: releaseYear ? parseInt(releaseYear, 10) : null,
       publicationLocation: publicationLocation || null,
       publisher: publisher || null,
+      pageCount: pageCount ? parseInt(pageCount, 10) : null, // Atualizando no BD
+      language: language || null, // Atualizando no BD
+      format: format || null, // Atualizando no BD
       acquisitionDate: acquisitionDate || null,
       notes: notes || null,
       coverImage: req.file ? req.file.path : req.body.coverImage || book.coverImage,

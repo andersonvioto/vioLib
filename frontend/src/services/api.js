@@ -105,14 +105,20 @@ api.interceptors.response.use(
 
       if (method === 'get') {
         const isSingleBook = /\/books\/-?\d+/.test(url);
+        const isHybridSearch = url.includes('/search-hybrid');
 
-        if (url.includes('/books') && !url.includes('/access/') && !isSingleBook) {
+        // Ignora a rota de busca híbrida no armazenamento do cache de biblioteca principal
+        if (
+          url.includes('/books') &&
+          !url.includes('/access/') &&
+          !isSingleBook &&
+          !isHybridSearch
+        ) {
           const booksData = Array.isArray(response.data)
             ? response.data
             : response.data.books || [];
           const isPageOne = url.includes('page=1');
 
-          // Se tiver qualquer filtro ativo na URL, nós NÃO queremos sobrescrever a base offline completa!
           const hasFilters =
             url.includes('search=') ||
             url.includes('genre=') ||
@@ -148,6 +154,12 @@ api.interceptors.response.use(
       if (config && config.method === 'get') {
         try {
           const url = config.url || '';
+          const isHybridSearch = url.includes('/search-hybrid');
+
+          // Falha a Busca Híbrida elegantemente no modo offline (não tenta usar o mock server)
+          if (isHybridSearch) {
+            return Promise.reject(error);
+          }
 
           if (url.includes('/books') && !url.includes('/access/')) {
             const cachedBooks = await getBooksCache();
@@ -169,7 +181,7 @@ api.interceptors.response.use(
               return Promise.reject(error);
             }
 
-            // O MINI-SERVIDOR
+            // O MINI-SERVIDOR OFFLINE
             const dummyUrl = new URL('http://localhost' + url);
             const params = dummyUrl.searchParams;
 
@@ -200,7 +212,6 @@ api.interceptors.response.use(
             if (tag) filtered = filtered.filter((b) => b.Tags?.some((t) => t.name === tag));
             if (borrowed) filtered = filtered.filter((b) => b.Loans?.some((l) => !l.returnDate));
 
-            // Novos filtros estritos
             if (author)
               filtered = filtered.filter((b) => b.Authors?.some((a) => a.name === author));
             if (translator)
@@ -303,7 +314,9 @@ api.interceptors.response.use(
             } else if (typeof config.data === 'string') {
               try {
                 payload = JSON.parse(config.data);
-              } catch (e) {}
+              } catch (e) {
+                console.error('Erro ao analisar payload JSON:', e);
+              }
             }
 
             await addToOutbox({
@@ -321,6 +334,7 @@ api.interceptors.response.use(
                   const arr = typeof fieldData === 'string' ? JSON.parse(fieldData) : fieldData;
                   return arr.map((item) => ({ name: item }));
                 } catch (e) {
+                  console.error('Erro ao analisar campo de array:', e);
                   return [];
                 }
               };
@@ -338,8 +352,12 @@ api.interceptors.response.use(
                   releaseYear: payload.releaseYear ? parseInt(payload.releaseYear, 10) : null,
                   edition: payload.edition || '',
                   publicationLocation: payload.publicationLocation || '',
+                  pageCount: payload.pageCount ? parseInt(payload.pageCount, 10) : null, // Novo Metadado
+                  language: payload.language || '', // Novo Metadado
+                  format: payload.format || '', // Novo Metadado
                   acquisitionDate: payload.acquisitionDate || null,
                   notes: payload.notes || '',
+                  readingStatus: payload.readingStatus || 'unread',
                   coverImage: '',
                   isOwner: true,
                   Authors: parseArrayField(payload.authors),
@@ -369,9 +387,17 @@ api.interceptors.response.use(
                     if (payload.edition !== undefined) existingBook.edition = payload.edition;
                     if (payload.publicationLocation !== undefined)
                       existingBook.publicationLocation = payload.publicationLocation;
+                    if (payload.pageCount !== undefined)
+                      existingBook.pageCount = payload.pageCount
+                        ? parseInt(payload.pageCount, 10)
+                        : null;
+                    if (payload.language !== undefined) existingBook.language = payload.language;
+                    if (payload.format !== undefined) existingBook.format = payload.format;
                     if (payload.acquisitionDate !== undefined)
                       existingBook.acquisitionDate = payload.acquisitionDate;
                     if (payload.notes !== undefined) existingBook.notes = payload.notes;
+                    if (payload.readingStatus !== undefined)
+                      existingBook.readingStatus = payload.readingStatus;
 
                     if (payload.authors !== undefined)
                       existingBook.Authors = parseArrayField(payload.authors);

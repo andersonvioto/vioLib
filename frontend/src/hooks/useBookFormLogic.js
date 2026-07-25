@@ -54,10 +54,13 @@ const useBookFormLogic = () => {
     releaseYear: '',
     publisher: '',
     publicationLocation: '',
+    pageCount: '',
+    language: '',
+    format: '',
     acquisitionDate: '',
     notes: '',
     coverImage: '',
-    readingStatus: 'unread', // Adicionado Status de Leitura
+    readingStatus: 'unread',
     authors: [],
     translators: [],
     tags: '',
@@ -71,14 +74,16 @@ const useBookFormLogic = () => {
   const [availableAuthors, setAvailableAuthors] = useState([]);
   const [availableTranslators, setAvailableTranslators] = useState([]);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
+
   const [coverFile, setCoverFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [imageSrcForCrop, setImageSrcForCrop] = useState(null);
 
   const [isLoadingIsbn, setIsLoadingIsbn] = useState(false);
-  const [amazonUrl, setAmazonUrl] = useState('');
-  const [isLoadingAmazon, setIsLoadingAmazon] = useState(false);
-
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -124,10 +129,13 @@ const useBookFormLogic = () => {
             releaseYear: b.releaseYear || '',
             publicationLocation: b.publicationLocation || '',
             publisher: b.publisher || '',
+            pageCount: b.pageCount || '',
+            language: b.language || '',
+            format: b.format || '',
             acquisitionDate: b.acquisitionDate ? b.acquisitionDate.split('T')[0] : '',
             notes: b.notes || '',
             coverImage: b.coverImage || '',
-            readingStatus: b.readingStatus || 'unread', // Carrego o status do banco
+            readingStatus: b.readingStatus || 'unread',
             authors: bookAuthors.map((a) => ({ value: a.name, label: a.name })),
             translators: bookTranslators.map((t) => ({ value: t.name, label: t.name })),
             tags: bookTags.map((t) => t.name).join(', '),
@@ -211,12 +219,6 @@ const useBookFormLogic = () => {
     setImageSrcForCrop(null);
   };
 
-  const handleScanSuccess = (decodedIsbn) => {
-    setIsScannerOpen(false);
-    setFormData((prev) => ({ ...prev, isbn: formatIsbnInput(decodedIsbn) }));
-    setTimeout(() => handleIsbnSearch(decodedIsbn), 100);
-  };
-
   const processFetchedAuthors = (fetchedAuthorsArray) => {
     const removeAccents = (str) =>
       str
@@ -249,56 +251,72 @@ const useBookFormLogic = () => {
     });
   };
 
-  const handleAmazonImport = async () => {
-    if (!amazonUrl) return;
-    setIsLoadingAmazon(true);
-    setFeedback({ type: '', message: '' });
+  const handleHybridSearch = async () => {
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    const cleanQuery = query.replace(/\D/g, '');
+    if (cleanQuery.length === 10 || cleanQuery.length === 13) {
+      handleIsbnSearch(cleanQuery);
+      setSearchQuery('');
+      return;
+    }
+
+    setIsLoadingSearch(true);
+    // Feedback visual claro para o utilizador enquanto aguarda as APIs
+    setFeedback({
+      type: 'info',
+      message: 'A pesquisar nas bases de dados globais... Aguarde um momento.'
+    });
 
     try {
-      const response = await api.post('/amazon-scrape', { url: amazonUrl });
-      const fetchedData = response.data;
-      const processedAuthors = processFetchedAuthors(fetchedData.authors || []);
+      const res = await api.get(`/books/search-hybrid?q=${encodeURIComponent(query)}`);
+      setSearchResults(res.data);
 
-      setFormData((prev) => ({
-        ...prev,
-        isbn: fetchedData.isbn ? formatIsbnInput(fetchedData.isbn) : prev.isbn,
-        title: buildFullTitle(fetchedData.title, fetchedData.subtitle) || prev.title,
-        publisher: fetchedData.publisher || prev.publisher,
-        releaseYear: fetchedData.releaseYear || prev.releaseYear,
-        edition: fetchedData.edition || prev.edition,
-        authors: processedAuthors.length > 0 ? processedAuthors : prev.authors,
-        coverImage: !coverFile && fetchedData.coverImage ? fetchedData.coverImage : prev.coverImage
-      }));
-
-      if (fetchedData.coverImage && !coverFile) {
-        try {
-          const imgRes = await fetch(fetchedData.coverImage);
-          if (imgRes.ok) {
-            const blob = await imgRes.blob();
-            const file = new File([blob], 'cover_amazon.jpg', { type: blob.type });
-            setCoverFile(file);
-            setPreviewUrl(URL.createObjectURL(file));
-            setFormData((prev) => ({ ...prev, coverImage: '' }));
-          } else {
-            setPreviewUrl(fetchedData.coverImage);
-          }
-        } catch (err) {
-          console.warn('Falha no download da capa, usando URL externa', err);
-          setPreviewUrl(fetchedData.coverImage);
-        }
+      if (res.data.length === 0) {
+        setFeedback({ type: 'error', message: 'Nenhuma edição encontrada com este termo.' });
+      } else {
+        setFeedback({ type: '', message: '' }); // Limpa o banner ao abrir o modal
+        setIsSelectionModalOpen(true);
       }
-
-      setFeedback({ type: 'info', message: 'Dados da Amazon importados com sucesso!' });
-      setAmazonUrl('');
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
+      console.error('Erro na busca híbrida:', e);
       setFeedback({
         type: 'error',
-        message: error.response?.data?.error || 'Erro ao extrair dados da Amazon.'
+        message: 'Erro ao conectar com as bibliotecas. Tente novamente.'
       });
     } finally {
-      setIsLoadingAmazon(false);
+      setIsLoadingSearch(false);
     }
+  };
+
+  const handleSelectBook = (book) => {
+    const processedAuthors = processFetchedAuthors(book.authors || []);
+
+    setFormData((prev) => ({
+      ...prev,
+      title: book.title || prev.title,
+      isbn: book.isbn ? formatIsbnInput(book.isbn) : prev.isbn,
+      publisher: book.publisher || prev.publisher,
+      releaseYear: book.releaseYear || prev.releaseYear,
+      pageCount: book.pageCount || prev.pageCount,
+      language: book.language || prev.language,
+      format: book.format || prev.format,
+      authors: processedAuthors.length > 0 ? processedAuthors : prev.authors
+    }));
+
+    if (book.coverImage) {
+      setPreviewUrl(book.coverImage);
+      setCoverFile(null);
+      setFormData((prev) => ({ ...prev, coverImage: book.coverImage }));
+    }
+
+    setIsSelectionModalOpen(false);
+    setSearchQuery('');
+    setFeedback({
+      type: 'info',
+      message: 'Dados preenchidos com sucesso! Pode continuar a editar.'
+    });
   };
 
   const handleIsbnSearch = async (directIsbn = null) => {
@@ -306,7 +324,7 @@ const useBookFormLogic = () => {
     if (!targetIsbn) return;
 
     setIsLoadingIsbn(true);
-    setFeedback({ type: '', message: '' });
+    setFeedback({ type: 'info', message: 'A pesquisar pelo código de barras...' });
 
     const cleanIsbn = targetIsbn.replace(/\D/g, '');
     let fetchedData = null;
@@ -322,7 +340,9 @@ const useBookFormLogic = () => {
             releaseYear: data.year ? String(data.year) : '',
             location: data.location || '',
             coverUrl: data.cover_url || '',
-            authors: data.authors || []
+            authors: data.authors || [],
+            pageCount: data.page_count || '',
+            format: data.format || ''
           };
         }
       } catch (e) {
@@ -346,7 +366,9 @@ const useBookFormLogic = () => {
                 releaseYear: info.publishedDate ? info.publishedDate.substring(0, 4) : '',
                 location: '',
                 coverUrl: cUrl,
-                authors: info.authors || []
+                authors: info.authors || [],
+                pageCount: info.pageCount || '',
+                language: info.language || ''
               };
             }
           }
@@ -371,7 +393,8 @@ const useBookFormLogic = () => {
                 releaseYear: info.publish_date ? info.publish_date.match(/\d{4}/)?.[0] || '' : '',
                 location: info.publish_places ? info.publish_places[0].name : '',
                 coverUrl: info.cover ? info.cover.large || info.cover.medium || '' : '',
-                authors: info.authors ? info.authors.map((a) => a.name) : []
+                authors: info.authors ? info.authors.map((a) => a.name) : [],
+                pageCount: info.number_of_pages || ''
               };
             }
           }
@@ -390,6 +413,9 @@ const useBookFormLogic = () => {
           publisher: fetchedData.publisher || prev.publisher,
           releaseYear: fetchedData.releaseYear || prev.releaseYear,
           publicationLocation: fetchedData.location || prev.publicationLocation,
+          pageCount: fetchedData.pageCount || prev.pageCount,
+          language: fetchedData.language || prev.language,
+          format: fetchedData.format || prev.format,
           authors: processedAuthors.length > 0 ? processedAuthors : prev.authors,
           coverImage: !coverFile && fetchedData.coverUrl ? fetchedData.coverUrl : prev.coverImage
         }));
@@ -411,11 +437,11 @@ const useBookFormLogic = () => {
             setPreviewUrl(fetchedData.coverUrl);
           }
         }
-        setFeedback({ type: 'info', message: 'Dados do livro preenchidos com sucesso!' });
+        setFeedback({ type: 'success', message: 'Dados do livro preenchidos com sucesso!' });
       } else {
         setFeedback({
           type: 'error',
-          message: 'Livro não encontrado nas bases de dados. Preencha manualmente.'
+          message: 'ISBN não encontrado. Tente buscar pelo Título ou preencha manualmente.'
         });
       }
     } catch (error) {
@@ -427,6 +453,12 @@ const useBookFormLogic = () => {
     } finally {
       setIsLoadingIsbn(false);
     }
+  };
+
+  const handleScanSuccess = (decodedIsbn) => {
+    setIsScannerOpen(false);
+    setFormData((prev) => ({ ...prev, isbn: formatIsbnInput(decodedIsbn) }));
+    setTimeout(() => handleIsbnSearch(decodedIsbn), 100);
   };
 
   const handleSubmit = async (e) => {
@@ -441,9 +473,12 @@ const useBookFormLogic = () => {
     payloadForm.append('releaseYear', formData.releaseYear);
     payloadForm.append('publicationLocation', formData.publicationLocation);
     payloadForm.append('publisher', formData.publisher);
+    payloadForm.append('pageCount', formData.pageCount);
+    payloadForm.append('language', formData.language);
+    payloadForm.append('format', formData.format);
     payloadForm.append('acquisitionDate', formData.acquisitionDate);
     payloadForm.append('notes', formData.notes);
-    payloadForm.append('readingStatus', formData.readingStatus); // Vinculando o campo ao payload
+    payloadForm.append('readingStatus', formData.readingStatus);
 
     payloadForm.append(
       'authors',
@@ -518,13 +553,19 @@ const useBookFormLogic = () => {
     handleScanSuccess,
     handleIsbnSearch,
     handleSubmit,
-    amazonUrl,
-    setAmazonUrl,
-    isLoadingAmazon,
-    handleAmazonImport,
     imageSrcForCrop,
     handleCropComplete,
-    handleCropCancel
+    handleCropCancel,
+
+    // Exports da Busca Híbrida e Modal
+    searchQuery,
+    setSearchQuery,
+    isLoadingSearch,
+    handleHybridSearch,
+    searchResults,
+    isSelectionModalOpen,
+    setIsSelectionModalOpen,
+    handleSelectBook
   };
 };
 

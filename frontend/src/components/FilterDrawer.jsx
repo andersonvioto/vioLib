@@ -1,26 +1,25 @@
 import './FilterDrawer.css';
 
-/**
- * Componente da gaveta lateral de filtros e ordenação.
- * Permite ao usuário refinar a busca de livros na biblioteca.
- *
- * @param {Object} props
- * @param {boolean} props.isOpen - Controla a visibilidade da gaveta.
- * @param {Function} props.onClose - Função para fechar a gaveta.
- * @param {string} props.sortBy - Critério de ordenação atual.
- * @param {Function} props.setSortBy - Função para atualizar o critério de ordenação.
- * @param {string} props.sortOrder - Ordem (ASC/DESC).
- * @param {Function} props.setSortOrder - Função para atualizar a ordem.
- * @param {string} props.selectedTag - Tag atualmente filtrada.
- * @param {Function} props.setSelectedTag - Função para atualizar a tag filtrada.
- * @param {string} props.readingStatus - Status de leitura atualmente filtrado.
- * @param {Function} props.setReadingStatus - Função para atualizar o status de leitura filtrado.
- * @param {Array} props.availableTags - Lista de tags disponíveis para o dropdown.
- * @param {boolean} props.showOnlyBorrowed - Estado do toggle de livros emprestados.
- * @param {Function} props.setShowOnlyBorrowed - Função para atualizar o toggle de empréstimo.
- * @param {boolean} props.showTagsOnCards - Estado do toggle de exibição de tags nos cards.
- * @param {Function} props.setShowTagsOnCards - Função para atualizar o toggle de exibição de tags.
- */
+/* 
+Componente da gaveta lateral de filtros e ordenação.
+Permite ao usuário refinar a busca de livros na biblioteca.
+@param {Object} props
+@param {boolean} props.isOpen - Controla a visibilidade da gaveta.
+@param {Function} props.onClose - Função para fechar a gaveta.
+@param {string} props.sortBy - Critério de ordenação atual.
+@param {Function} props.setSortBy - Função para atualizar o critério de ordenação.
+@param {string} props.sortOrder - Ordem (ASC/DESC).
+@param {Function} props.setSortOrder - Função para atualizar a ordem.
+@param {string} props.selectedTag - Tag atualmente filtrada.
+@param {Function} props.setSelectedTag - Função para atualizar a tag filtrada.
+@param {string} props.readingStatus - Status de leitura atualmente filtrado.
+@param {Function} props.setReadingStatus - Função para atualizar o status de leitura filtrado.
+@param {Array} props.availableTags - Lista de tags disponíveis para o dropdown.
+@param {boolean} props.showOnlyBorrowed - Estado do toggle de livros emprestados.
+@param {Function} props.setShowOnlyBorrowed - Função para atualizar o toggle de empréstimo.
+@param {boolean} props.showTagsOnCards - Estado do toggle de exibição de tags nos cards.
+@param {Function} props.setShowTagsOnCards - Função para atualizar o toggle de exibição de tags.*/
+
 const FilterDrawer = ({
   isOpen,
   onClose,
@@ -42,30 +41,35 @@ const FilterDrawer = ({
 
   return (
     <>
-      <div className="filter-drawer-backdrop" onClick={onClose}></div>
-
       <div className="filter-drawer-container">
         <div className="filter-drawer-header">
           <h3>
-            <span className="material-symbols-rounded">tune</span> Refinamento
+            <span className="material-symbols-rounded" aria-hidden="true">
+              tune
+            </span>{' '}
+            Refinamento
           </h3>
           <button className="close-drawer-btn" onClick={onClose}>
-            <span className="material-symbols-rounded">close</span>
+            <span className="material-symbols-rounded" aria-hidden="true">
+              close
+            </span>
           </button>
         </div>
 
         <div className="filter-drawer-grid">
-          {/* Ordenação */}
-          <div className="filter-field-group">
+          {/* Ordenação - Agora ocupa 2 colunas no Desktop com a classe span-2 */}
+          <div className="filter-field-group span-2">
             <label className="form-label">
-              <span className="material-symbols-rounded">sort</span> Ordenar por
+              <span className="material-symbols-rounded" aria-hidden="true">
+                sort
+              </span>{' '}
+              Ordenar por
             </label>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="sort-inputs-group">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="form-select"
-                style={{ flex: 1 }}
+                className="form-select select-sort-field"
               >
                 <option value="title">Título</option>
                 <option value="author">Autor Principal</option>
@@ -76,7 +80,7 @@ const FilterDrawer = ({
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
-                className="form-select"
+                className="form-select select-sort-order"
               >
                 <option value="ASC">Crescente</option>
                 <option value="DESC">Decrescente</option>
@@ -87,7 +91,10 @@ const FilterDrawer = ({
           {/* Filtro por Tag */}
           <div className="filter-field-group">
             <label className="form-label">
-              <span className="material-symbols-rounded">style</span> Filtrar por Tag
+              <span className="material-symbols-rounded" aria-hidden="true">
+                style
+              </span>{' '}
+              Filtrar por Tag
             </label>
             <select
               value={selectedTag}
@@ -106,7 +113,10 @@ const FilterDrawer = ({
           {/* Filtro por Status de Leitura */}
           <div className="filter-field-group">
             <label className="form-label">
-              <span className="material-symbols-rounded">menu_book</span> Status de Leitura
+              <span className="material-symbols-rounded" aria-hidden="true">
+                menu_book
+              </span>{' '}
+              Status de Leitura
             </label>
             <select
               value={readingStatus}

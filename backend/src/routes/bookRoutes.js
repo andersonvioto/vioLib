@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bookController = require('../controllers/BookController');
+const SearchController = require('../controllers/SearchController');
 const AmazonController = require('../controllers/AmazonScraperController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -25,6 +26,7 @@ router
  */
 router.get('/authors', bookController.getAllAuthors);
 router.get('/translators', bookController.getAllTranslators);
+router.get('/search-hybrid', SearchController.search);
 
 router.post('/amazon-scrape', AmazonController.importFromAmazon);
 

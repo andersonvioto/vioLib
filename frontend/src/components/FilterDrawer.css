@@ -1,7 +1,7 @@
 /* ==========================================================================
-   COMPONENT CSS - FilterDrawer
-   Estilos da gaveta lateral de filtros (Desktop) e Bottom Sheet (Mobile).
-   ========================================================================== */
+COMPONENT CSS - FilterDrawer
+Estilos da gaveta lateral de filtros (Desktop) e Bottom Sheet (Mobile).
+========================================================================== */
 
 .filter-drawer-container {
   position: absolute;
@@ -46,8 +46,10 @@
 
 .filter-drawer-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* Divisão em 4 colunas no Desktop */
+  /* Aumentamos ligeiramente o mínimo para dar mais respiro a todas as colunas */
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 20px;
+  align-items: start;
 }
 
 .filter-field-group {
@@ -56,8 +58,33 @@
   gap: 8px;
 }
 
+/* SOBRESCRITA LOCAL: Garante que os labels fiquem alinhados à esquerda nesta gaveta */
+.filter-drawer-grid .form-label {
+  justify-content: flex-start;
+}
+
+/* Mágica do Grid: Permite que o bloco de ordenação ocupe 2 colunas no Desktop */
+@media (min-width: 901px) {
+  .filter-field-group.span-2 {
+    grid-column: span 2;
+  }
+}
+
 .filter-field-group.full-width {
   grid-column: 1 / -1;
+}
+
+.sort-inputs-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Como o pai (span-2) agora tem o dobro da largura, ambos os selects podem ter flex: 1 (50%) */
+.select-sort-field,
+.select-sort-order {
+  flex: 1;
+  min-width: 0; /* Permite o flexbox encolher corretamente se necessário */
 }
 
 .toggles-row {
@@ -96,17 +123,13 @@
 }
 
 /* ==========================================================================
-   RESPONSIVIDADE - FilterDrawer (Mobile Bottom Sheet)
-   ========================================================================== */
+RESPONSIVIDADE - FilterDrawer (Mobile Bottom Sheet)
+========================================================================== */
 @media (max-width: 900px) {
   .filter-drawer-container {
     left: 20px;
     right: 20px;
     top: 115px;
-  }
-
-  .filter-drawer-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -131,7 +154,7 @@
     right: 0;
     bottom: 0;
     width: 100%;
-    max-height: 80vh;
+    max-height: 85vh;
     overflow-y: auto;
     border-radius: 20px 20px 0 0; /* Arredondamento apenas superior */
     border: none;
@@ -144,6 +167,18 @@
   .filter-drawer-grid {
     grid-template-columns: 1fr; /* Força 1 coluna no telemóvel */
     gap: 15px;
+  }
+
+  .sort-inputs-group {
+    flex-direction: column; /* Evita que os dois selects fiquem apertados no telemóvel */
+    gap: 8px;
+  }
+
+  /* Restaura as larguras no mobile para que não herdem o flex-ratio do desktop */
+  .select-sort-field,
+  .select-sort-order {
+    flex: none;
+    width: 100%;
   }
 
   .toggles-row {

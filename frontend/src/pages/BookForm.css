@@ -412,6 +412,7 @@
   justify-content: center;
 }
 
+/* --- ANIMAÇÕES --- */
 @keyframes filterFadeDown {
   from {
     opacity: 0;
@@ -429,6 +430,20 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+.spinner-icon {
+  display: inline-block;
+  animation: spinReverse 1s linear infinite;
+}
+
+@keyframes spinReverse {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
   }
 }
 

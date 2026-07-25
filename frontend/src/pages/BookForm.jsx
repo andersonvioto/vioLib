@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import CreatableSelect from 'react-select/creatable';
 import BarcodeScanner from '../components/BarcodeScanner';
 import ImageCropperModal from '../components/ImageCropperModal';
+import BookSelectionModal from '../components/BookSelectionModal';
 import useBookFormLogic from '../hooks/useBookFormLogic';
 import useNetworkStatus from '../hooks/useNetworkStatus';
 import './BookForm.css';
@@ -85,7 +86,7 @@ const customSelectStyles = {
 
 /**
  * Componente do formulário de criação e edição de livros.
- * Orquestra importação inteligente (ISBN/Amazon) e sinaliza visualmente a flexibilidade dos metadados opcionais.
+ * Orquestra importação inteligente em cascata e formatação de dados.
  */
 const BookForm = () => {
   const { t } = useTranslation();
@@ -101,7 +102,6 @@ const BookForm = () => {
     availableAuthors,
     availableTranslators,
     previewUrl,
-    isLoadingIsbn,
     isSaving,
     feedback,
     isScannerOpen,
@@ -109,15 +109,20 @@ const BookForm = () => {
     handleChange,
     handleFileChange,
     handleScanSuccess,
-    handleIsbnSearch,
     handleSubmit,
-    amazonUrl,
-    setAmazonUrl,
-    isLoadingAmazon,
-    handleAmazonImport,
     imageSrcForCrop,
     handleCropComplete,
-    handleCropCancel
+    handleCropCancel,
+
+    // Exports da Busca Híbrida e Modal
+    searchQuery,
+    setSearchQuery,
+    isLoadingSearch,
+    handleHybridSearch,
+    searchResults,
+    isSelectionModalOpen,
+    setIsSelectionModalOpen,
+    handleSelectBook
   } = useBookFormLogic();
 
   return (
@@ -129,6 +134,13 @@ const BookForm = () => {
           onCancel={handleCropCancel}
         />
       )}
+
+      <BookSelectionModal
+        isOpen={isSelectionModalOpen}
+        onClose={() => setIsSelectionModalOpen(false)}
+        results={searchResults}
+        onSelect={handleSelectBook}
+      />
 
       <header className="form-header">
         <span className="material-symbols-rounded form-header-icon" aria-hidden="true">
@@ -230,13 +242,12 @@ const BookForm = () => {
           <div className="form-grid">
             <div className="form-group full-width">
               <label className="form-label">
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  magic_button
-                </span>
-                <span>Importação Inteligente de Metadados</span>
-                <span className="label-helper-text">
-                  (Preenche autores, editora e ano automaticamente)
-                </span>
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    search
+                  </span>
+                  <span>Procurar por ISBN, Título ou Autor</span>
+                </div>
               </label>
 
               {!isOnline && (
@@ -245,8 +256,8 @@ const BookForm = () => {
                     wifi_off
                   </span>
                   <span>
-                    <strong>Modo Offline:</strong> As buscas por ISBN e Amazon estão indisponíveis
-                    sem internet. Preencha os campos manualmente.
+                    <strong>Modo Offline:</strong> As buscas externas estão indisponíveis sem
+                    internet. Preencha os campos manualmente.
                   </span>
                 </div>
               )}
@@ -254,20 +265,19 @@ const BookForm = () => {
               <div className="isbn-wrapper">
                 <input
                   type="text"
-                  name="isbn"
-                  value={formData.isbn}
-                  onChange={handleChange}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
-                      if (isOnline) handleIsbnSearch();
+                      if (isOnline) handleHybridSearch();
                     }
                   }}
                   className="form-input"
                   placeholder={
                     !isOnline
                       ? 'Busca indisponível offline'
-                      : 'Pesquisar por código ISBN (10 ou 13 dígitos)...'
+                      : 'Ex: Dom Casmurro, J.R.R. Tolkien, 97885...'
                   }
                   disabled={!isOnline || isSaving}
                 />
@@ -288,10 +298,10 @@ const BookForm = () => {
                 <button
                   type="button"
                   className="btn-action btn-primary btn-search-trigger"
-                  onClick={() => handleIsbnSearch()}
-                  disabled={isLoadingIsbn || !formData.isbn || !isOnline || isSaving}
+                  onClick={handleHybridSearch}
+                  disabled={isLoadingSearch || !searchQuery || !isOnline || isSaving}
                 >
-                  {isLoadingIsbn ? (
+                  {isLoadingSearch ? (
                     <span className="material-symbols-rounded spinner-icon" aria-hidden="true">
                       sync
                     </span>
@@ -300,46 +310,7 @@ const BookForm = () => {
                       search
                     </span>
                   )}
-                  <span>Buscar ISBN</span>
-                </button>
-              </div>
-
-              <div className="isbn-wrapper">
-                <input
-                  type="url"
-                  value={amazonUrl}
-                  onChange={(e) => setAmazonUrl(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      if (isOnline) handleAmazonImport();
-                    }
-                  }}
-                  className="form-input input-amazon"
-                  placeholder={
-                    !isOnline
-                      ? 'Importação indisponível offline'
-                      : 'Ou cole a URL do livro na Amazon (Ex: https://amazon.com.br/dp/...)'
-                  }
-                  disabled={!isOnline || isSaving}
-                />
-
-                <button
-                  type="button"
-                  className="btn-action btn-amazon-import"
-                  onClick={handleAmazonImport}
-                  disabled={isLoadingAmazon || !amazonUrl || !isOnline || isSaving}
-                >
-                  {isLoadingAmazon ? (
-                    <span className="material-symbols-rounded spinner-icon" aria-hidden="true">
-                      sync
-                    </span>
-                  ) : (
-                    <span className="material-symbols-rounded" aria-hidden="true">
-                      shopping_cart
-                    </span>
-                  )}
-                  <span>Importar</span>
+                  <span>Pesquisar</span>
                 </button>
               </div>
             </div>
@@ -428,10 +399,12 @@ const BookForm = () => {
           <div className="form-grid">
             <div className="form-group">
               <label className="form-label">
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  sell
-                </span>
-                <span>Gênero Principal</span>
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    sell
+                  </span>
+                  <span>Gênero Principal</span>
+                </div>
               </label>
               <CreatableSelect
                 isClearable
@@ -450,10 +423,12 @@ const BookForm = () => {
 
             <div className="form-group">
               <label className="form-label">
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  list
-                </span>
-                <span>Subgênero</span>
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    list
+                  </span>
+                  <span>Subgênero</span>
+                </div>
               </label>
               <CreatableSelect
                 isClearable
@@ -478,10 +453,12 @@ const BookForm = () => {
 
             <div className="form-group">
               <label htmlFor="tags" className="form-label">
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  style
-                </span>
-                <span>Etiquetas (Tags)</span>
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    style
+                  </span>
+                  <span>Etiquetas (Tags)</span>
+                </div>
               </label>
               <input
                 id="tags"
@@ -490,17 +467,19 @@ const BookForm = () => {
                 value={formData.tags}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="Separadas por vírgula (Ex: favorito, clássico, capa dura)"
+                placeholder="Separadas por vírgula (Ex: favorito, clássico)"
                 disabled={isSaving}
               />
             </div>
 
             <div className="form-group">
               <label htmlFor="readingStatus" className="form-label">
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  menu_book
-                </span>
-                <span>Status de Leitura</span>
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    menu_book
+                  </span>
+                  <span>Status de Leitura</span>
+                </div>
               </label>
               <select
                 id="readingStatus"
@@ -524,36 +503,103 @@ const BookForm = () => {
               <span className="material-symbols-rounded" aria-hidden="true">
                 domain
               </span>
-              <span>Detalhes Editoriais</span>
+              <span>Detalhes Editoriais e Metadados</span>
             </div>
             <span className="section-optional-pill">Opcional</span>
           </h2>
           <div className="form-grid">
             <div className="form-group">
-              <label htmlFor="publicationLocation" className="form-label">
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  location_on
-                </span>
-                <span>Local de Publicação</span>
+              <label htmlFor="isbn" className="form-label">
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    barcode
+                  </span>
+                  <span>Código ISBN</span>
+                </div>
               </label>
               <input
-                id="publicationLocation"
+                id="isbn"
                 type="text"
-                name="publicationLocation"
-                value={formData.publicationLocation}
+                name="isbn"
+                value={formData.isbn}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="Ex: São Paulo, SP"
+                placeholder="Ex: 978-85-359-0277-8"
+                disabled={isSaving}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="pageCount" className="form-label">
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    menu_book
+                  </span>
+                  <span>Número de Páginas</span>
+                </div>
+              </label>
+              <input
+                id="pageCount"
+                type="number"
+                name="pageCount"
+                value={formData.pageCount}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="Ex: 320"
+                disabled={isSaving}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="language" className="form-label">
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    language
+                  </span>
+                  <span>Idioma</span>
+                </div>
+              </label>
+              <input
+                id="language"
+                type="text"
+                name="language"
+                value={formData.language}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="Ex: Português"
+                disabled={isSaving}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="format" className="form-label">
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    book
+                  </span>
+                  <span>Formato</span>
+                </div>
+              </label>
+              <input
+                id="format"
+                type="text"
+                name="format"
+                value={formData.format}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="Ex: Capa Dura, E-book..."
                 disabled={isSaving}
               />
             </div>
 
             <div className="form-group">
               <label htmlFor="publisher" className="form-label">
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  business
-                </span>
-                <span>Editora</span>
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    business
+                  </span>
+                  <span>Editora</span>
+                </div>
               </label>
               <input
                 id="publisher"
@@ -568,11 +614,34 @@ const BookForm = () => {
             </div>
 
             <div className="form-group">
+              <label htmlFor="publicationLocation" className="form-label">
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    location_on
+                  </span>
+                  <span>Local de Publicação</span>
+                </div>
+              </label>
+              <input
+                id="publicationLocation"
+                type="text"
+                name="publicationLocation"
+                value={formData.publicationLocation}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="Ex: São Paulo, SP"
+                disabled={isSaving}
+              />
+            </div>
+
+            <div className="form-group">
               <label htmlFor="releaseYear" className="form-label">
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  calendar_month
-                </span>
-                <span>Ano de Publicação</span>
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    calendar_month
+                  </span>
+                  <span>Ano de Publicação</span>
+                </div>
               </label>
               <input
                 id="releaseYear"
@@ -588,10 +657,12 @@ const BookForm = () => {
 
             <div className="form-group">
               <label htmlFor="edition" className="form-label">
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  format_list_numbered
-                </span>
-                <span>Edição / Volume</span>
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    format_list_numbered
+                  </span>
+                  <span>Edição / Volume</span>
+                </div>
               </label>
               <input
                 id="edition"
@@ -607,10 +678,12 @@ const BookForm = () => {
 
             <div className="form-group">
               <label htmlFor="acquisitionDate" className="form-label">
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  shopping_cart
-                </span>
-                <span>Data de Aquisição</span>
+                <div className="label-main-text">
+                  <span className="material-symbols-rounded" aria-hidden="true">
+                    shopping_cart
+                  </span>
+                  <span>Data de Aquisição</span>
+                </div>
               </label>
               <input
                 id="acquisitionDate"

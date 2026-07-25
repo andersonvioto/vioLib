@@ -1,37 +1,37 @@
 /* ==========================================================================
-   COMPONENT CSS - BookCard (Redesign Editorial VioDesign Pro)
-   Estilos específicos do cartão de livro e seus 3 Modos de Visualização.
+   COMPONENT CSS - BookCard (Engine 3D Hiper-Realista & Ergonomia Editorial)
    ========================================================================== */
 
 /* --- MODO GRELHA (PADRÃO) E COMPACTO --- */
 .book-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-lg, 12px);
   cursor: pointer;
   position: relative;
   display: flex;
   flex-direction: column;
   transition:
-    transform var(--transition-normal, 0.3s ease),
-    box-shadow var(--transition-normal, 0.3s ease),
-    border-color var(--transition-normal, 0.3s ease);
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.25s ease;
   height: 100%;
   outline: none;
   box-sizing: border-box;
+  z-index: 1;
 }
 
 .book-card:hover,
 .book-card:focus-visible {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-float, 0 15px 30px rgba(0, 0, 0, 0.5));
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-float, 0 20px 30px -10px rgba(0, 0, 0, 0.6));
   border-color: var(--accent-gold);
-  z-index: 10;
+  z-index: 20;
 }
 
 [data-theme='light'] .book-card:hover,
 [data-theme='light'] .book-card:focus-visible {
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15);
 }
 
 .book-cover-wrapper {
@@ -40,20 +40,18 @@
   aspect-ratio: 2 / 3;
   background-color: transparent;
   border-bottom: 1px solid var(--border-color);
-  border-radius: var(--radius-md, 8px) var(--radius-md, 8px) 0 0;
+  border-radius: var(--radius-lg, 12px) var(--radius-lg, 12px) 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   overflow: hidden;
-  transition: padding var(--transition-normal, 0.3s ease);
 }
 
 .book-volume {
   width: 100%;
   height: 100%;
   position: relative;
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .book-cover-img {
@@ -66,6 +64,8 @@
 .book-cover-overlay,
 .book-spine,
 .book-pages,
+.book-pages-top,
+.book-pages-bottom,
 .book-back {
   display: none;
 }
@@ -88,139 +88,252 @@
   text-overflow: ellipsis;
 }
 
-/* --- MODO LIVRO REALISTA (3D ISOMÉTRICO) --- */
+/* ==========================================================================
+   ENGINE 3D HIPER-REALISTA (O SÓLIDO DE 6 FACES & OCLUSÃO ÓPTICA)
+   ========================================================================== */
 [data-cover-style='book'] .book-cover-wrapper {
-  perspective: 1200px;
+  perspective: 1400px;
   border-bottom: none;
   overflow: visible;
-  padding: var(--space-5, 20px) var(--space-6, 24px) var(--space-6, 24px) var(--space-5, 20px);
+  padding: var(--space-6, 24px) var(--space-8, 32px) var(--space-8, 32px) var(--space-6, 24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 [data-cover-style='book'] .book-card.is-compact .book-cover-wrapper {
-  padding: var(--space-3, 12px) var(--space-4, 16px) var(--space-4, 16px) var(--space-3, 12px);
+  padding: var(--space-4, 16px) var(--space-5, 20px) var(--space-5, 20px) var(--space-4, 16px);
 }
 
 [data-cover-style='book'] .book-volume {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transform: rotateY(-20deg) rotateX(6deg);
+  transform: rotateY(-20deg) rotateX(5deg) translateZ(0);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
 }
 
+/* --- SOMBRA ÓPTICA DUPLA DE OCLUSÃO (FIM DAS MANCHAS SUJAS NO MODO CLARO) --- */
 [data-cover-style='book'] .book-volume::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  transform: translateZ(-20px) translate(10px, 10px);
-  filter: blur(10px);
+  inset: 4% -2% -5% 4%;
+  transform: translateZ(-16px) rotateY(4deg);
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0) 75%);
+  filter: blur(12px);
   border-radius: var(--radius-sm, 4px);
-  transition:
-    transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
-    filter 0.4s ease,
-    background-color 0.4s ease;
+  transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: -1;
 }
 
 [data-theme='light'][data-cover-style='book'] .book-volume::after {
-  background: rgba(0, 0, 0, 0.18);
+  background:
+    radial-gradient(ellipse at 50% 80%, rgba(100, 90, 75, 0.28) 0%, rgba(0, 0, 0, 0) 70%),
+    radial-gradient(ellipse at center, rgba(30, 25, 20, 0.1) 0%, rgba(0, 0, 0, 0) 80%);
   filter: blur(8px);
+  inset: 6% -1% -6% 6%;
 }
 
 [data-cover-style='book'] .book-card:hover .book-volume,
 [data-cover-style='book'] .book-card:focus-visible .book-volume {
-  transform: rotateY(-4deg) rotateX(0deg) scale(1.03);
+  transform: rotateY(-4deg) rotateX(1deg) scale(1.04);
 }
 
 [data-cover-style='book'] .book-card:hover .book-volume::after,
 [data-cover-style='book'] .book-card:focus-visible .book-volume::after {
-  transform: translateZ(-25px) translate(6px, 12px);
-  filter: blur(14px);
-  background: rgba(0, 0, 0, 0.3);
+  transform: translateZ(-24px) translate(8px, 14px);
+  filter: blur(16px);
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 80%);
 }
 
 [data-theme='light'][data-cover-style='book'] .book-card:hover .book-volume::after {
-  background: rgba(0, 0, 0, 0.12);
+  background: radial-gradient(ellipse at 55% 85%, rgba(100, 90, 75, 0.18) 0%, rgba(0, 0, 0, 0) 75%);
+  filter: blur(12px);
 }
 
+/* Ativação e Blindagem Geométrica (FIM DA ILUSÃO DE LOMBADA SEPARADA) */
 [data-cover-style='book'] .book-cover-overlay,
 [data-cover-style='book'] .book-spine,
 [data-cover-style='book'] .book-pages,
-[data-cover-style='book'] .book-back {
+[data-cover-style='book'] .book-pages-top,
+[data-cover-style='book'] .book-pages-bottom,
+[data-cover-style='book'] .book-back,
+[data-cover-style='book'] .book-cover-img {
   display: block;
   position: absolute;
+  pointer-events: none;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
+/* 1. Capa Frontal (Com acabamento anti-sangramento no Modo Claro) */
 [data-cover-style='book'] .book-cover-img {
-  position: absolute;
   inset: 0;
   transform: translateZ(10px);
   border-radius: 2px 4px 4px 2px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
+[data-theme='light'][data-cover-style='book'] .book-cover-img {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+/* 2. Capa Traseira */
 [data-cover-style='book'] .book-back {
   inset: 0;
   transform: translateZ(-10px) rotateY(180deg);
-  background-color: var(--bg-input);
+  background-color: #1a1a1a;
   border-radius: 4px 2px 2px 4px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-[data-cover-style='book'] .book-pages {
-  top: 1%;
-  bottom: 1%;
-  right: 0;
-  width: 20px;
-  transform-origin: right center;
-  transform: translateZ(10px) rotateY(90deg);
-  background-color: #e6e3d1;
-  background-image: repeating-linear-gradient(
-    to right,
-    rgba(0, 0, 0, 0.06) 0px,
-    rgba(0, 0, 0, 0.06) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.1);
+[data-theme='light'][data-cover-style='book'] .book-back {
+  background-color: #dedad0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
+/* 3. A Lombada (Cilindro de Tecido Editorial Acetinado) */
 [data-cover-style='book'] .book-spine {
   top: 0;
   bottom: 0;
   left: 0;
   width: 20px;
   transform-origin: left center;
-  transform: translateZ(10px) rotateY(-90deg);
-  background-color: #222222;
+  transform: translateX(-10px) rotateY(-90deg);
+  background: linear-gradient(
+    to right,
+    #111111 0%,
+    #2a2a2a 35%,
+    #333333 50%,
+    #2a2a2a 65%,
+    #111111 100%
+  );
+  border-radius: 2px 0 0 2px;
 }
 
+[data-theme='light'][data-cover-style='book'] .book-spine {
+  background: linear-gradient(
+    to right,
+    #7d786d 0%,
+    #a6a092 35%,
+    #b5afa0 50%,
+    #a6a092 65%,
+    #7d786d 100%
+  );
+}
+
+/* 4. Bloco de Páginas Lateral (Recuado no Beiral da Capa Dura) */
+[data-cover-style='book'] .book-pages {
+  top: 3px;
+  bottom: 3px;
+  right: 2px;
+  width: 18px;
+  transform-origin: right center;
+  transform: translateX(9px) rotateY(90deg);
+  background-color: #dce1d8;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.08) 0px,
+    rgba(0, 0, 0, 0.08) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  box-shadow: inset 3px 0 5px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme='light'][data-cover-style='book'] .book-pages {
+  background-color: #f2efe9;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.05) 0px,
+    rgba(0, 0, 0, 0.05) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  box-shadow: inset 3px 0 5px rgba(0, 0, 0, 0.12);
+}
+
+/* 5 & 6. Fechamentos de Páginas Topo e Fundo (O Sólido Hermético) */
+[data-cover-style='book'] .book-pages-top {
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  height: 18px;
+  transform-origin: top center;
+  transform: translateY(-9px) rotateX(90deg);
+  background-color: #d0d5cc;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.08) 0px,
+    rgba(0, 0, 0, 0.08) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme='light'][data-cover-style='book'] .book-pages-top {
+  background-color: #e8e4dc;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+[data-cover-style='book'] .book-pages-bottom {
+  bottom: 3px;
+  left: 3px;
+  right: 3px;
+  height: 18px;
+  transform-origin: bottom center;
+  transform: translateY(9px) rotateX(-90deg);
+  background-color: #c4c9c0;
+  box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='light'][data-cover-style='book'] .book-pages-bottom {
+  background-color: #dedad0;
+  box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.15);
+}
+
+/* --- A CALHA DA CAPA (HINGE GROOVE) & ILUMINAÇÃO ESPECULAR --- */
 [data-cover-style='book'] .book-cover-overlay {
   inset: 0;
   transform: translateZ(10.5px);
   border-radius: 2px 4px 4px 2px;
-  pointer-events: none;
-  box-shadow: inset 4px 0 8px rgba(0, 0, 0, 0.2);
   background: linear-gradient(
     to right,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0) 4%,
-    rgba(255, 255, 255, 0) 90%
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(255, 255, 255, 0.15) 3.5%,
+    rgba(0, 0, 0, 0.1) 7%,
+    rgba(255, 255, 255, 0) 14%,
+    rgba(255, 255, 255, 0) 85%,
+    rgba(0, 0, 0, 0.15) 100%
   );
-  transition:
-    box-shadow 0.4s ease,
-    background 0.4s ease;
+  transition: background 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme='light'][data-cover-style='book'] .book-cover-overlay {
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.22) 0%,
+    rgba(255, 255, 255, 0.4) 3.5%,
+    rgba(0, 0, 0, 0.08) 7%,
+    rgba(255, 255, 255, 0) 14%,
+    rgba(255, 255, 255, 0) 85%,
+    rgba(0, 0, 0, 0.08) 100%
+  );
 }
 
 [data-cover-style='book'] .book-card:hover .book-cover-overlay,
 [data-cover-style='book'] .book-card:focus-visible .book-cover-overlay {
-  box-shadow:
-    inset 8px 0 16px rgba(0, 0, 0, 0.45),
-    inset -1px 0 2px rgba(255, 255, 255, 0.1);
   background: linear-gradient(
     to right,
     rgba(0, 0, 0, 0.25) 0%,
-    rgba(255, 255, 255, 0.18) 3%,
-    rgba(255, 255, 255, 0) 8%,
-    rgba(255, 255, 255, 0) 90%
+    rgba(255, 255, 255, 0.25) 3.5%,
+    rgba(0, 0, 0, 0.05) 7%,
+    rgba(255, 255, 255, 0.12) 25%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(0, 0, 0, 0.2) 100%
   );
 }
 

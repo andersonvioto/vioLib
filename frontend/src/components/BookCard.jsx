@@ -3,8 +3,9 @@ import { getCoverUrl } from '../utils/bookHelpers';
 import './BookCard.css';
 
 /**
- * Componente visual de um cartão de livro individual.
- * Suporta 3 Modos de Visualização: 'grid' (clássico), 'compact' (capa/título menor) e 'list' (horizontal).
+ * Componente visual de cartão bibliográfico com suporte a 3 Modos de Visualização.
+ * No modo 'grid' com atributo global [data-cover-style="book"], renderiza um sólido 3D de 6 faces
+ * hiper-realista com oclusão óptica e beiral de capa dura.
  */
 const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
   const navigate = useNavigate();
@@ -102,6 +103,8 @@ const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
           <div className="book-cover-overlay" aria-hidden="true"></div>
           <div className="book-spine" aria-hidden="true"></div>
           <div className="book-pages" aria-hidden="true"></div>
+          <div className="book-pages-top" aria-hidden="true"></div>
+          <div className="book-pages-bottom" aria-hidden="true"></div>
           <div className="book-back" aria-hidden="true"></div>
         </div>
       </div>

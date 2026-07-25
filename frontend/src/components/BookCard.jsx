@@ -1,13 +1,14 @@
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCoverUrl } from '../utils/bookHelpers';
 import './BookCard.css';
 
 /**
  * Componente visual de cartão bibliográfico com suporte a 3 Modos de Visualização.
- * No modo 'grid' com atributo global [data-cover-style="book"], renderiza um sólido 3D de 6 faces
- * hiper-realista com oclusão óptica e beiral de capa dura.
+ * Inclui detecção avançada de cliques com botão direito e toque longo (Long Press)
+ * para acionamento de Menus de Contexto em PWAs.
  */
-const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
+const BookCard = ({ book, showTags, viewMode = 'grid', onContextMenu }) => {
   const navigate = useNavigate();
 
   const isBorrowed = book.Loans?.some((loan) => !loan.returnDate);
@@ -16,27 +17,73 @@ const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
   const authorName = book.Authors?.length > 0 ? book.Authors[0].name : 'Autor Desconhecido';
   const releaseYear = book.releaseYear ? book.releaseYear : '';
 
-  const handleCardClick = () => {
+  // ==========================================
+  // LÓGICA DE INTERAÇÃO E TOQUE LONGO (PWA)
+  // ==========================================
+  const isLongPressRef = useRef(false);
+  const touchTimerRef = useRef(null);
+
+  const handleTouchStart = (e) => {
+    if (!onContextMenu) return;
+    isLongPressRef.current = false;
+
+    touchTimerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      if (navigator.vibrate) navigator.vibrate(50);
+      onContextMenu(e, book, true);
+    }, 600);
+  };
+
+  const handleTouchMove = () => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+  };
+
+  const handleClick = (e) => {
+    // Previne a navegação se o clique foi apenas a finalização de um toque longo
+    if (isLongPressRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      isLongPressRef.current = false;
+      return;
+    }
     navigate(`/livro/${book.id}`);
+  };
+
+  const handleContextMenuClick = (e) => {
+    if (onContextMenu) {
+      e.preventDefault();
+      onContextMenu(e, book, false);
+    }
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      handleCardClick();
+      handleClick(e);
     }
+  };
+
+  // Empacotamento de propriedades compartilhadas por ambos os layouts (Grid e List)
+  const interactionProps = {
+    onClick: handleClick,
+    onContextMenu: handleContextMenuClick,
+    onTouchStart: handleTouchStart,
+    onTouchMove: handleTouchMove,
+    onTouchEnd: handleTouchEnd,
+    onTouchCancel: handleTouchEnd,
+    onKeyDown: handleKeyDown,
+    role: 'button',
+    tabIndex: '0',
+    'aria-label': `Ver detalhes de ${book.title}, por ${authorName}`
   };
 
   if (viewMode === 'list') {
     return (
-      <div
-        className="book-card-list-view"
-        onClick={handleCardClick}
-        role="button"
-        tabIndex="0"
-        onKeyDown={handleKeyDown}
-        aria-label={`Ver detalhes de ${book.title}, por ${authorName}`}
-      >
+      <div className="book-card-list-view" {...interactionProps}>
         <img src={getCoverUrl(book.coverImage)} alt={book.title} className="list-cover-img" />
 
         <div className="list-main-info">
@@ -91,11 +138,7 @@ const BookCard = ({ book, showTags, viewMode = 'grid' }) => {
   return (
     <div
       className={`book-card ${viewMode === 'compact' ? 'is-compact' : ''}`}
-      onClick={handleCardClick}
-      role="button"
-      tabIndex="0"
-      onKeyDown={handleKeyDown}
-      aria-label={`Ver detalhes do livro ${book.title}`}
+      {...interactionProps}
     >
       <div className="book-cover-wrapper">
         <div className="book-volume">

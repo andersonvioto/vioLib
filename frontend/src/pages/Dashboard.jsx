@@ -2,16 +2,23 @@ import { useState, useEffect, useCallback, useContext } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 
+// Contextos
 import { LibraryContext } from '../contexts/LibraryContext';
 import { ThemeContext } from '../contexts/ThemeContext';
 
+// Componentes
 import Header from '../components/Header';
 import FilterDrawer from '../components/FilterDrawer';
 import Shelf from '../components/Shelf';
 import BookCard from '../components/BookCard';
+import BookContextMenu from '../components/BookContextMenu';
 
+// Estilos
 import './dashboard.css';
 
+/**
+ * Componente interno do Skeleton Screen, adaptado para os 3 modos de visualização.
+ */
 const SkeletonCard = ({ viewMode }) => {
   if (viewMode === 'list') {
     return (
@@ -43,12 +50,17 @@ const SkeletonCard = ({ viewMode }) => {
   );
 };
 
+/**
+ * Tela Principal da Biblioteca (Dashboard).
+ */
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { currentLibrary } = useContext(LibraryContext);
   const { viewMode, setViewMode } = useContext(ThemeContext);
+
+  const isGuest = !!currentLibrary;
 
   const [myBooks, setMyBooks] = useState([]);
   const [page, setPage] = useState(1);
@@ -81,6 +93,92 @@ const Dashboard = () => {
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [availableGenres, setAvailableGenres] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
+
+  // =========================================================================
+  // ESTADO DO MENU DE CONTEXTO (Right-Click / Long Press)
+  // =========================================================================
+  const [contextMenu, setContextMenu] = useState(null);
+
+  // Agora o scroll só fecha o menu se o utilizador estiver num PC.
+  // No mobile, permitimos o scroll porque a gaveta inferior (Bottom Sheet)
+  // necessita de rolagem caso tenha muitas opções.
+  useEffect(() => {
+    const handleScroll = () => {
+      if (contextMenu && window.innerWidth > 600) {
+        setContextMenu(null);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [contextMenu]);
+
+  // Função para abrir o menu garantindo limites da tela (Desktop)
+  const handleContextMenu = useCallback((e, book, isTouch = false) => {
+    e.preventDefault();
+    let x = e.clientX;
+    let y = e.clientY;
+
+    if (isTouch && e.touches && e.touches.length > 0) {
+      x = e.touches[0].clientX;
+      y = e.touches[0].clientY;
+    }
+
+    const menuWidth = 260; // Nova largura
+    const menuHeight = 400; // Estimativa com o submenu aberto
+
+    if (window.innerWidth > 600) {
+      if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
+      if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
+    }
+
+    setContextMenu({ x, y, book });
+  }, []);
+
+  // Lógica de Atualização Otimista do Status de Leitura
+  const handleUpdateStatus = async (book, newStatus) => {
+    try {
+      const payloadForm = new FormData();
+      payloadForm.append('title', book.title);
+      payloadForm.append('readingStatus', newStatus);
+
+      // Preserva relacionamentos durante a atualização parcial
+      if (book.Authors)
+        payloadForm.append('authors', JSON.stringify(book.Authors.map((a) => a.name)));
+      if (book.Translators)
+        payloadForm.append('translators', JSON.stringify(book.Translators.map((t) => t.name)));
+      if (book.Tags) payloadForm.append('tags', JSON.stringify(book.Tags.map((t) => t.name)));
+      if (book.Genres) payloadForm.append('genres', JSON.stringify(book.Genres.map((g) => g.name)));
+      if (book.Subgenres)
+        payloadForm.append('subgenres', JSON.stringify(book.Subgenres.map((s) => s.name)));
+
+      await api.put(`/books/${book.id}`, payloadForm);
+
+      // UI Otimista: Atualiza visualmente o card instantaneamente
+      setMyBooks((prev) =>
+        prev.map((b) => (b.id === book.id ? { ...b, readingStatus: newStatus } : b))
+      );
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao atualizar status de leitura.');
+    }
+  };
+
+  // Lógica de Exclusão com Atualização Otimista
+  const handleDeleteBook = async (book) => {
+    if (window.confirm(`Deseja realmente excluir permanentemente "${book.title}" da biblioteca?`)) {
+      try {
+        await api.delete(`/books/${book.id}`);
+        // Remove da lista instantaneamente
+        setMyBooks((prev) => prev.filter((b) => b.id !== book.id));
+        setTotalBooks((prev) => prev - 1);
+      } catch (error) {
+        console.error(error);
+        alert('Erro ao excluir a obra.');
+      }
+    }
+  };
+
+  // =========================================================================
 
   useEffect(() => {
     setSearchInput(urlSearch);
@@ -378,7 +476,10 @@ const Dashboard = () => {
                   ? 'folder_open'
                   : 'local_library'}
           </span>
-          <h2 className="section-title">
+          <h2
+            className="section-title"
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
             {renderSectionTitle()}
             <span className="title-count">
               ({isLoading && myBooks.length === 0 ? '...' : totalBooks})
@@ -417,7 +518,13 @@ const Dashboard = () => {
         ) : (
           <div className={`book-layout-${viewMode}`}>
             {myBooks.map((book) => (
-              <BookCard key={book.id} book={book} showTags={showTagsOnCards} viewMode={viewMode} />
+              <BookCard
+                key={book.id}
+                book={book}
+                showTags={showTagsOnCards}
+                viewMode={viewMode}
+                onContextMenu={handleContextMenu}
+              />
             ))}
 
             {isLoading &&
@@ -440,6 +547,14 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      <BookContextMenu
+        contextMenu={contextMenu}
+        onClose={() => setContextMenu(null)}
+        onUpdateStatus={handleUpdateStatus}
+        onDeleteBook={handleDeleteBook}
+        isGuest={isGuest}
+      />
     </div>
   );
 };

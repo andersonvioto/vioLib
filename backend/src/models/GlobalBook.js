@@ -13,7 +13,7 @@ const GlobalBook = sequelize.define(
     pageCount: { type: DataTypes.INTEGER },
     language: { type: DataTypes.STRING },
     format: { type: DataTypes.STRING },
-    fingerprint: { type: DataTypes.STRING, allowNull: false, unique: true }
+    fingerprint: { type: DataTypes.STRING(2000), allowNull: false, unique: true }
   },
   {
     tableName: 'GLOBAL_BOOKS',

@@ -8,7 +8,7 @@ const {
   Tag,
   Loan,
   LibraryAccess,
-  GlobalBook // Importado o modelo Global
+  GlobalBook
 } = require('../models');
 
 /**
@@ -92,9 +92,9 @@ exports.createBook = async (req, res) => {
       acquisitionDate,
       notes,
       readingStatus,
-      pageCount, // Novo Metadado
-      language, // Novo Metadado
-      format // Novo Metadado
+      pageCount,
+      language,
+      format
     } = req.body;
 
     const authors = req.body.authors ? JSON.parse(req.body.authors) : [];
@@ -110,9 +110,9 @@ exports.createBook = async (req, res) => {
       releaseYear: releaseYear ? parseInt(releaseYear, 10) : null,
       publicationLocation: publicationLocation || null,
       publisher: publisher || null,
-      pageCount: pageCount ? parseInt(pageCount, 10) : null, // Salvando no BD
-      language: language || null, // Salvando no BD
-      format: format || null, // Salvando no BD
+      pageCount: pageCount ? parseInt(pageCount, 10) : null,
+      language: language || null,
+      format: format || null,
       acquisitionDate: acquisitionDate || null,
       notes: notes || null,
       coverImage: req.file ? req.file.path : req.body.coverImage || null,
@@ -126,11 +126,12 @@ exports.createBook = async (req, res) => {
 
     await processCategories(book, genres, subgenres, userId, 'add');
 
-    // NOVO: Alimentando o Catálogo Global (GlobalBooks) silenciosamente
+    // ALIMENTAÇÃO DA GLOBALBOOKS
     if (title && authors.length > 0) {
       try {
-        // Criando a Impressão Digital única (Fingerprint)
-        const fingerprint = normalizeText(`${title}-${authors.join(',')}`);
+        const rawFingerprint = normalizeText(`${title}-${authors.join(',')}`);
+        // SOLUÇÃO AQUI: Trava de segurança cortando o texto em 1990 caracteres
+        const fingerprint = rawFingerprint.substring(0, 1990);
 
         await GlobalBook.findOrCreate({
           where: { fingerprint },
@@ -146,7 +147,6 @@ exports.createBook = async (req, res) => {
           }
         });
       } catch (globalError) {
-        // Engole o erro caso haja problema de constraints ou duplicidade
         console.error('⚠️ Erro silencioso ao salvar na GlobalBooks:', globalError.message);
       }
     }
@@ -158,9 +158,6 @@ exports.createBook = async (req, res) => {
   }
 };
 
-/**
- * Busca livros com suporte a filtros estritos e busca em memória tolerante a falhas.
- */
 exports.getAllBooks = async (req, res) => {
   try {
     const {
@@ -202,7 +199,6 @@ exports.getAllBooks = async (req, res) => {
 
     const needsMemorySearch = search.trim().length > 0;
 
-    // Constrói a Query utilizando Filtros Estritos com Inner Joins (required: !!value)
     const queryOptions = {
       where: bookWhere,
       include: [
@@ -335,9 +331,9 @@ exports.updateBook = async (req, res) => {
       acquisitionDate,
       notes,
       readingStatus,
-      pageCount, // Novo Metadado
-      language, // Novo Metadado
-      format // Novo Metadado
+      pageCount,
+      language,
+      format
     } = req.body;
 
     const book = await Book.findOne({ where: { id, UserId: userId } });
@@ -350,9 +346,9 @@ exports.updateBook = async (req, res) => {
       releaseYear: releaseYear ? parseInt(releaseYear, 10) : null,
       publicationLocation: publicationLocation || null,
       publisher: publisher || null,
-      pageCount: pageCount ? parseInt(pageCount, 10) : null, // Atualizando no BD
-      language: language || null, // Atualizando no BD
-      format: format || null, // Atualizando no BD
+      pageCount: pageCount ? parseInt(pageCount, 10) : null,
+      language: language || null,
+      format: format || null,
       acquisitionDate: acquisitionDate || null,
       notes: notes || null,
       coverImage: req.file ? req.file.path : req.body.coverImage || book.coverImage,

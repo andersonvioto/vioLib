@@ -100,14 +100,14 @@ const PublicProfile = () => {
             setCollections(colRes.data || []);
           } catch (colErr) {
             if (colErr.response?.status === 403) {
-              setColErrorMsg('Este utilizador configurou as suas coleções como privadas.');
+              setColErrorMsg('Este usuário configurou as suas coleções como privadas.');
             }
           }
         }
       } catch (err) {
         if (err.response?.status === 403) {
           setErrorMsg(
-            'Acesso negado ou restrito pelas configurações de privacidade deste utilizador.'
+            'Acesso negado ou restrito pelas configurações de privacidade deste usuário.'
           );
         } else {
           setErrorMsg('Erro ao carregar perfil.');
@@ -141,7 +141,7 @@ const PublicProfile = () => {
       await api.post('/blocks', { blockedId: friendId });
       navigate('/comunidade'); // Redirecionamento limpo sem alert()
     } catch (error) {
-      setBlockError(error.response?.data?.error || 'Erro ao bloquear utilizador.');
+      setBlockError(error.response?.data?.error || 'Erro ao bloquear usuário.');
       setIsBlockLoading(false);
     }
   };
@@ -205,7 +205,7 @@ const PublicProfile = () => {
                 gap: '8px'
               }}
             >
-              <span className="material-symbols-rounded">block</span> Bloquear Utilizador
+              <span className="material-symbols-rounded">block</span> Bloquear Usuário
             </h2>
             <p style={{ color: 'var(--text-secondary)', lineHeight: '1.5', margin: '15px 0' }}>
               Tem a certeza que deseja bloquear <strong>{owner?.name}</strong>? Vocês deixarão de
@@ -320,7 +320,7 @@ const PublicProfile = () => {
                   padding: '12px'
                 }}
               >
-                <span className="material-symbols-rounded">block</span> Bloquear Utilizador
+                <span className="material-symbols-rounded">block</span> Bloquear Usuário
               </button>
             </div>
           )}
@@ -400,7 +400,7 @@ const PublicProfile = () => {
               {colErrorMsg}
             </div>
           ) : collections.length === 0 ? (
-            <div className="profile-empty">Este utilizador ainda não criou coleções.</div>
+            <div className="profile-empty">Este usuário ainda não criou coleções.</div>
           ) : (
             <div className="collections-grid">
               {collections.map((col) => {

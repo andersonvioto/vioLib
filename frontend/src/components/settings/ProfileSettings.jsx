@@ -211,7 +211,7 @@ const ProfileSettings = () => {
         </div>
 
         <div className="input-group">
-          <label>Nome de Utilizador (@username)</label>
+          <label>Nome de Usuário (@username)</label>
           <input
             type="text"
             value={profileData.username}

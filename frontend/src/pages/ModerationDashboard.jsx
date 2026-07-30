@@ -193,11 +193,11 @@ const ModerationDashboard = () => {
                           handleResolve(
                             report.id,
                             'ban_user',
-                            `Atenção: Tem certeza que deseja BANIR PERMANENTEMENTE o utilizador ${targetIsProfile ? report.ReportedUser?.name : report.Comment?.User?.name}? Ele perderá o acesso à conta imediatamente.`
+                            `Atenção: Tem certeza que deseja BANIR PERMANENTEMENTE o usuário ${targetIsProfile ? report.ReportedUser?.name : report.Comment?.User?.name}? Ele perderá o acesso à conta imediatamente.`
                           )
                         }
                       >
-                        <span className="material-symbols-rounded">block</span> Banir Utilizador
+                        <span className="material-symbols-rounded">block</span> Banir Usuário
                       </button>
                     </div>
                   )}

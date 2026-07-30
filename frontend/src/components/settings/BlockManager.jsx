@@ -17,7 +17,7 @@ const BlockManager = () => {
       const response = await api.get('/blocks');
       setBlockedUsers(response.data);
     } catch (error) {
-      console.error('Erro ao buscar utilizadores bloqueados.', error);
+      console.error('Erro ao buscar usuários bloqueados.', error);
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +37,7 @@ const BlockManager = () => {
       await api.delete(`/blocks/${blockedId}`);
       setBlockedUsers((prev) => prev.filter((b) => b.blockedId !== blockedId));
     } catch (error) {
-      alert('Erro ao desbloquear utilizador.');
+      alert('Erro ao desbloquear usuário.');
       console.error(error);
     }
   };
@@ -45,7 +45,7 @@ const BlockManager = () => {
   return (
     <div className="settings-panel">
       <header className="panel-header-clean">
-        <h2 className="panel-main-title">Utilizadores Bloqueados</h2>
+        <h2 className="panel-main-title">Usuários Bloqueados</h2>
       </header>
 
       <p
@@ -70,7 +70,7 @@ const BlockManager = () => {
           >
             verified_user
           </span>
-          Você não tem nenhum utilizador bloqueado.
+          Você não tem nenhum usuário bloqueado.
         </div>
       ) : (
         <ul className="attribute-list">

@@ -14,7 +14,7 @@ async function populateCatalog() {
   try {
     await sequelize.authenticate();
     console.log('✅ Conexão com o banco estabelecida com sucesso.\n');
-    console.log('⏳ A iniciar a leitura da base de dados dos utilizadores...');
+    console.log('⏳ A iniciar a leitura da base de dados dos usuários...');
 
     const books = await Book.findAll({
       include: [{ model: Author }]

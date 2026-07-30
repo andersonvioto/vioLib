@@ -266,7 +266,7 @@ const Community = () => {
             {isSearching && <div className="comm-empty">A pesquisar...</div>}
 
             {!isSearching && searchQuery.length >= 3 && searchResults.length === 0 && (
-              <div className="comm-empty">Nenhum utilizador encontrado.</div>
+              <div className="comm-empty">Nenhum usuário encontrado.</div>
             )}
 
             {!isSearching &&

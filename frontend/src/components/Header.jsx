@@ -311,7 +311,7 @@ const Header = () => {
                 aria-label="Menu do Perfil"
               >
                 {avatarSrc ? (
-                  <img src={avatarSrc} alt="Avatar do Utilizador" className="avatar-image" />
+                  <img src={avatarSrc} alt="Avatar do Usuário" className="avatar-image" />
                 ) : (
                   <span className="avatar-initials">{getInitials(user?.name)}</span>
                 )}

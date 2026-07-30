@@ -1,6 +1,6 @@
 # 📚 vioLib - Gestão Inteligente de Biblioteca Pessoal
 
-A vioLib é uma aplicação Full-Stack (PWA) desenvolvida para a gestão moderna, categorização e acompanhamento de leitura de acervos bibliográficos pessoais. Concebida com uma arquitetura Offline-First, garante que o utilizador possa gerir, editar e pesquisar a sua biblioteca a partir de qualquer dispositivo, mesmo sem acesso à internet.
+A vioLib é uma aplicação Full-Stack (PWA) desenvolvida para a gestão moderna, categorização e acompanhamento de leitura de acervos bibliográficos pessoais. Concebida com uma arquitetura Offline-First, garante que o usuário possa gerir, editar e pesquisar a sua biblioteca a partir de qualquer dispositivo, mesmo sem acesso à internet.
 
 ## ✨ Funcionalidades Principais
 
@@ -19,7 +19,7 @@ A vioLib possui uma Extensão de Navegador Oficial (Chrome / Firefox) projetada 
 
 ### Como funciona a integração?
 
-1. O utilizador faz login na extensão, que armazena localmente o token JWT.
+1. O usuário faz login na extensão, que armazena localmente o token JWT.
 2. Ao navegar numa página de livro da Amazon, a extensão (via Content Script) realiza a extração do DOM (Título, Autor, Capa, ISBN, Editora, Ano).
 3. Com um clique, a extensão envia um pacote JSON diretamente para a nossa API REST (POST /api/books), fazendo o livro surgir instantaneamente na biblioteca.
 

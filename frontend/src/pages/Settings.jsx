@@ -130,7 +130,7 @@ const Settings = () => {
             <span className="material-symbols-rounded" aria-hidden="true">
               block
             </span>
-            <span>Utilizadores Bloqueados</span>
+            <span>Usuários Bloqueados</span>
           </button>
 
           <button

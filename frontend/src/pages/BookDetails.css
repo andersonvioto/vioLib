@@ -161,6 +161,153 @@
 }
 
 /* ==========================================================================
+   COMUNIDADE: COMENTÁRIOS E FEEDBACK
+   ========================================================================== */
+.comments-section {
+  margin-top: 20px;
+  padding-top: 30px;
+  border-top: 1px solid var(--border-color);
+}
+
+.comments-title {
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comments-title .material-symbols-rounded {
+  color: var(--accent-gold);
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+  align-items: flex-end;
+}
+
+.comment-form textarea {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  padding: 15px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  resize: vertical;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.comment-form textarea:focus {
+  border-color: var(--accent-gold);
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comments-empty {
+  text-align: center;
+  padding: 30px;
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-style: italic;
+  border: 1px dashed var(--border-color);
+}
+
+.comment-item {
+  display: flex;
+  gap: 15px;
+  background: var(--bg-surface);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  transition: border-color var(--transition-fast);
+}
+
+.comment-item:hover {
+  border-color: var(--accent-gold-glow);
+}
+
+.comment-avatar img,
+.comment-avatar .comment-initials {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.comment-avatar .comment-initials {
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.comment-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.comment-author {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.comment-time {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.comment-text {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.btn-delete-comment {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: var(--text-danger);
+  font-size: 0.8rem;
+  padding: 0;
+  cursor: pointer;
+  margin-top: 5px;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-delete-comment:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
    RESPONSIVIDADE: TABLETS E CELULARES (PWA ERGONOMY)
    ========================================================================== */
 @media (max-width: 900px) {
@@ -235,5 +382,16 @@
     flex: 1;
     justify-content: center;
     min-height: var(--touch-target, 48px);
+  }
+
+  .comment-item {
+    padding: 15px;
+    flex-direction: column;
+  }
+
+  .comment-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
   }
 }

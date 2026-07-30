@@ -1,46 +1,34 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Header from '../components/Header';
-import { LibraryContext } from '../contexts/LibraryContext';
 import { getCoverUrl } from '../utils/bookHelpers';
 import './Collections.css';
 
-/**
- * Página principal de listagem das Coleções (Sagas, Objetivos e Álbuns).
- * Exibe cartões gamificados com anéis de progresso percentual.
- */
 const Collections = () => {
   const navigate = useNavigate();
-  const { currentLibrary } = useContext(LibraryContext);
-  const isGuest = !!currentLibrary;
 
   const [collections, setCollections] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCollections = useCallback(async () => {
     try {
-      const endpoint = currentLibrary
-        ? `/access/${currentLibrary.ownerId}/collections`
-        : '/collections';
-      const response = await api.get(endpoint);
+      const response = await api.get('/collections');
       setCollections(response.data);
     } catch (error) {
       console.error('Erro ao carregar coleções:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [currentLibrary]);
+  }, []);
 
   useEffect(() => {
-    fetchCollections();
+    const init = async () => {
+      await Promise.resolve();
+      fetchCollections();
+    };
+    init();
   }, [fetchCollections]);
-
-  const ownerName =
-    currentLibrary?.ownerName ||
-    currentLibrary?.Owner?.name ||
-    currentLibrary?.User?.name ||
-    'Convidado';
 
   const handleCardKeyDown = (e, colId) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -59,28 +47,23 @@ const Collections = () => {
             <span className="material-symbols-rounded" aria-hidden="true">
               workspace_premium
             </span>
-            <span>{isGuest ? `Coleções de ${ownerName}` : 'Minhas Coleções'}</span>
+            <span>Minhas Coleções</span>
           </h1>
           <p className="collections-subtitle">
-            {isGuest
-              ? `Acompanhe o progresso das coleções e sagas catalogadas por ${ownerName}.`
-              : 'Acompanhe o seu progresso de leitura e complete suas sagas bibliográficas.'}
+            Acompanhe o seu progresso de leitura e complete suas sagas bibliográficas.
           </p>
         </div>
 
-        {!isGuest && (
-          <button
-            type="button"
-            className="btn-action btn-primary btn-create-col"
-            onClick={() => navigate('/colecoes/nova')}
-            aria-label="Criar nova coleção"
-          >
-            <span className="material-symbols-rounded" aria-hidden="true">
-              add_circle
-            </span>
-            <span>Criar Coleção</span>
-          </button>
-        )}
+        <button
+          type="button"
+          className="btn-action btn-primary btn-create-col"
+          onClick={() => navigate('/colecoes/nova')}
+        >
+          <span className="material-symbols-rounded" aria-hidden="true">
+            add_circle
+          </span>
+          <span>Criar Coleção</span>
+        </button>
       </header>
 
       {isLoading ? (
@@ -95,22 +78,17 @@ const Collections = () => {
           <span className="material-symbols-rounded empty-icon" aria-hidden="true">
             layers_clear
           </span>
-          <h2>{isGuest ? 'Nenhuma coleção encontrada' : 'Ainda não tem nenhuma coleção!'}</h2>
-
-          {isGuest ? (
-            <p>Este usuário ainda não organizou os seus livros em coleções personalizadas.</p>
-          ) : (
-            <div className="empty-actions-wrapper">
-              <p>Que tal começar a catalogar aquela saga épica que você deseja completar?</p>
-              <button
-                type="button"
-                className="btn-action btn-primary"
-                onClick={() => navigate('/colecoes/nova')}
-              >
-                <span>Iniciar Minha Primeira Coleção</span>
-              </button>
-            </div>
-          )}
+          <h2>Ainda não tem nenhuma coleção!</h2>
+          <div className="empty-actions-wrapper">
+            <p>Que tal começar a catalogar aquela saga épica que deseja completar?</p>
+            <button
+              type="button"
+              className="btn-action btn-primary"
+              onClick={() => navigate('/colecoes/nova')}
+            >
+              <span>Iniciar Minha Primeira Coleção</span>
+            </button>
+          </div>
         </section>
       ) : (
         <section className="collections-grid" aria-label="Lista de álbuns da coleção">
@@ -127,7 +105,6 @@ const Collections = () => {
                 role="button"
                 tabIndex="0"
                 onKeyDown={(e) => handleCardKeyDown(e, col.id)}
-                aria-label={`Coleção ${col.title}, ${stats.progress}% concluída com ${stats.ownedItems} de ${stats.totalItems} itens adquiridos`}
               >
                 <div
                   className="collection-banner"

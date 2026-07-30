@@ -5,8 +5,8 @@ import useNetworkStatus from '../../hooks/useNetworkStatus';
 import './ProfileSettings.css';
 
 /**
- * Componente de configurações do perfil do usuário.
- * Integrado com sensor de rede para bloquear ações sensíveis quando offline.
+ * Componente de configurações do perfil com suporte a Upload de Avatar e Toggles de Privacidade.
+ * Funciona através de FormData para suportar multipart/form-data.
  */
 const ProfileSettings = () => {
   const { logout } = useContext(AuthContext);
@@ -14,12 +14,21 @@ const ProfileSettings = () => {
 
   const [profileData, setProfileData] = useState({
     name: '',
+    username: '',
     currentPassword: '',
     newPassword: '',
-    confirmNewPassword: ''
+    confirmNewPassword: '',
+    shareCollections: true,
+    shareReadingStatus: true,
+    shareNotes: true
   });
+
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+
   const [profileMsg, setProfileMsg] = useState({ type: '', text: '' });
   const [showPassword, setShowPassword] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
@@ -28,34 +37,79 @@ const ProfileSettings = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      await Promise.resolve(); // Barreira de segurança
       try {
         const res = await api.get('/users/profile');
-        setProfileData((prev) => ({ ...prev, name: res.data.name }));
+        const data = res.data;
+        setProfileData((prev) => ({
+          ...prev,
+          name: data.name || '',
+          username: data.username || '',
+          shareCollections: data.shareCollections ?? true,
+          shareReadingStatus: data.shareReadingStatus ?? true,
+          shareNotes: data.shareNotes ?? true
+        }));
+
+        if (data.avatarUrl) {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api';
+          setAvatarPreview(`${apiUrl.replace('/api', '/files')}/${data.avatarUrl}`);
+        }
       } catch (error) {
         console.error('Erro ao buscar perfil.', error);
       }
     };
-    fetchProfile();
+
+    const init = async () => {
+      await fetchProfile();
+    };
+    init();
   }, []);
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleToggleChange = (field) => {
+    setProfileData((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     if (!isOnline) return;
 
     setProfileMsg({ type: '', text: '' });
+    setIsSaving(true);
 
     if (profileData.newPassword && profileData.newPassword !== profileData.confirmNewPassword) {
+      setIsSaving(false);
       return setProfileMsg({ type: 'error', text: 'A confirmação não bate com a nova senha.' });
     }
 
     try {
-      const payload = { name: profileData.name };
+      const formData = new FormData();
+      formData.append('name', profileData.name);
+      formData.append('username', profileData.username.toLowerCase().trim());
+      formData.append('shareCollections', profileData.shareCollections);
+      formData.append('shareReadingStatus', profileData.shareReadingStatus);
+      formData.append('shareNotes', profileData.shareNotes);
+
       if (profileData.newPassword) {
-        payload.currentPassword = profileData.currentPassword;
-        payload.newPassword = profileData.newPassword;
+        formData.append('currentPassword', profileData.currentPassword);
+        formData.append('newPassword', profileData.newPassword);
       }
 
-      const response = await api.put('/users/profile', payload);
+      if (avatarFile) {
+        formData.append('avatar', avatarFile);
+      }
+
+      const response = await api.put('/users/profile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
       setProfileMsg({ type: 'success', text: response.data.message });
       setProfileData((prev) => ({
         ...prev,
@@ -65,6 +119,8 @@ const ProfileSettings = () => {
       }));
     } catch (error) {
       setProfileMsg({ type: 'error', text: error.response?.data?.error || 'Erro ao atualizar.' });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -73,35 +129,25 @@ const ProfileSettings = () => {
     setShowConfirmDelete(true);
     setDeleteMsg({ type: '', text: '' });
   };
-
   const handleCancelDeleteClick = () => {
     setShowConfirmDelete(false);
     setDeletePassword('');
     setDeleteMsg({ type: '', text: '' });
   };
-
   const handleConfirmDelete = async () => {
     if (!isOnline) return;
-
-    if (!deletePassword) {
+    if (!deletePassword)
       return setDeleteMsg({ type: 'error', text: 'Por favor, informe sua senha.' });
-    }
-
     setIsDeleting(true);
     setDeleteMsg({ type: '', text: '' });
-
     try {
       await api.delete('/users/profile', { data: { password: deletePassword } });
-
-      setDeleteMsg({ type: 'success', text: 'Conta excluída com sucesso. Redirecionando...' });
-
-      setTimeout(() => {
-        logout();
-      }, 2000);
+      setDeleteMsg({ type: 'success', text: 'Conta excluída. Redirecionando...' });
+      setTimeout(() => logout(), 2000);
     } catch (error) {
       setDeleteMsg({
         type: 'error',
-        text: error.response?.data?.error || 'Ocorreu um erro ao excluir a conta.'
+        text: error.response?.data?.error || 'Erro ao excluir a conta.'
       });
       setIsDeleting(false);
     }
@@ -109,55 +155,51 @@ const ProfileSettings = () => {
 
   return (
     <div className="settings-panel">
-      <h2>Editar Perfil</h2>
+      <h2>Perfil Pessoal</h2>
 
       {!isOnline && (
-        <div
-          style={{
-            padding: '12px',
-            backgroundColor: 'rgba(255, 153, 0, 0.1)',
-            color: '#ff9900',
-            border: '1px solid #ff9900',
-            borderRadius: '4px',
-            marginBottom: '15px',
-            fontSize: '0.9em',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            width: '100%'
-          }}
-        >
-          <span className="material-symbols-rounded" style={{ fontSize: '1.4em', flexShrink: 0 }}>
-            security
-          </span>
+        <div className="offline-alert-box">
+          <span className="material-symbols-rounded">security</span>
           <span>
-            ⚠️ <strong>Modo Offline:</strong> A alteração de dados sensíveis (nome, senha e exclusão
-            da conta) foi temporariamente desativada. Reconecte-se à internet para realizar estas
-            ações.
+            ⚠️ <strong>Modo Offline:</strong> A alteração de dados do perfil foi desativada
+            temporariamente.
           </span>
         </div>
       )}
 
       {profileMsg.text && (
-        <div
-          style={{
-            marginBottom: '20px',
-            padding: '10px',
-            borderRadius: '4px',
-            backgroundColor:
-              profileMsg.type === 'error' ? 'rgba(255,77,77,0.1)' : 'rgba(77,255,77,0.1)',
-            color: profileMsg.type === 'error' ? '#ff4d4d' : '#4dff4d',
-            border: `1px solid ${profileMsg.type === 'error' ? '#ff4d4d' : '#4dff4d'}`,
-            width: '100%'
-          }}
-        >
+        <div className={`profile-alert-msg ${profileMsg.type === 'error' ? 'error' : 'success'}`}>
           {profileMsg.text}
         </div>
       )}
 
       <form onSubmit={handleProfileUpdate} className="settings-form">
+        <div className="avatar-upload-area">
+          <div className="avatar-preview-circle">
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Preview do Avatar" />
+            ) : (
+              <span className="material-symbols-rounded">person</span>
+            )}
+          </div>
+          <div className="avatar-upload-actions">
+            <strong>Foto de Perfil</strong>
+            <label className="btn-action btn-upload" disabled={!isOnline}>
+              Escolher Imagem
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                disabled={!isOnline}
+                hidden
+              />
+            </label>
+            <span className="avatar-hint">Formatos: JPG, PNG (Max 2MB)</span>
+          </div>
+        </div>
+
         <div className="input-group">
-          <label>Nome de Usuário</label>
+          <label>Nome Completo</label>
           <input
             type="text"
             value={profileData.name}
@@ -168,16 +210,71 @@ const ProfileSettings = () => {
           />
         </div>
 
-        <h3
-          style={{
-            marginTop: '20px',
-            marginBottom: '10px',
-            color: 'var(--accent-gold)',
-            fontSize: '1.1rem'
-          }}
-        >
-          Segurança
-        </h3>
+        <div className="input-group">
+          <label>Nome de Utilizador (@username)</label>
+          <input
+            type="text"
+            value={profileData.username}
+            onChange={(e) =>
+              setProfileData({
+                ...profileData,
+                username: e.target.value.toLowerCase().replace(/\s/g, '')
+              })
+            }
+            className="auth-input"
+            placeholder="ex: machadodeassis"
+            required
+            disabled={!isOnline}
+          />
+        </div>
+
+        <h3 className="settings-section-title">Privacidade da Comunidade</h3>
+        <p className="settings-hint">
+          Defina o que os seus amigos podem ver quando visitarem o seu perfil.
+        </p>
+
+        <div className="privacy-toggles-container">
+          <label className="privacy-toggle">
+            <input
+              type="checkbox"
+              checked={profileData.shareCollections}
+              onChange={() => handleToggleChange('shareCollections')}
+              disabled={!isOnline}
+            />
+            <div className="privacy-toggle-text">
+              <strong>Mostrar minhas Coleções</strong>
+              <span>Permite que vejam os seus álbuns e progresso.</span>
+            </div>
+          </label>
+
+          <label className="privacy-toggle">
+            <input
+              type="checkbox"
+              checked={profileData.shareReadingStatus}
+              onChange={() => handleToggleChange('shareReadingStatus')}
+              disabled={!isOnline}
+            />
+            <div className="privacy-toggle-text">
+              <strong>Mostrar Status de Leitura</strong>
+              <span>Mostra se o livro está "Lido" ou "Lendo".</span>
+            </div>
+          </label>
+
+          <label className="privacy-toggle">
+            <input
+              type="checkbox"
+              checked={profileData.shareNotes}
+              onChange={() => handleToggleChange('shareNotes')}
+              disabled={!isOnline}
+            />
+            <div className="privacy-toggle-text">
+              <strong>Mostrar Notas Pessoais</strong>
+              <span>As suas resenhas e anotações nos livros ficam públicas para os amigos.</span>
+            </div>
+          </label>
+        </div>
+
+        <h3 className="settings-section-title">Segurança</h3>
 
         <div className="input-group">
           <label>Senha Atual (apenas p/ trocar de senha)</label>
@@ -233,34 +330,16 @@ const ProfileSettings = () => {
                 required
                 disabled={!isOnline}
               />
-              <span
-                className="material-symbols-rounded"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? 'visibility_off' : 'visibility'}
-              </span>
             </div>
           </div>
         )}
 
-        <button
-          type="submit"
-          className="btn-action btn-primary"
-          style={{ marginTop: '15px' }}
-          disabled={!isOnline || isDeleting}
-        >
-          Salvar Alterações
+        <button type="submit" className="btn-action btn-primary" disabled={!isOnline || isSaving}>
+          {isSaving ? 'A guardar...' : 'Salvar Alterações'}
         </button>
       </form>
 
-      <hr
-        style={{
-          margin: '40px 0 30px 0',
-          border: 'none',
-          borderTop: '1px solid var(--border-color)',
-          width: '100%'
-        }}
-      />
+      <hr className="settings-divider" />
 
       <div className="danger-zone" style={{ width: '100%' }}>
         <h3
@@ -279,18 +358,7 @@ const ProfileSettings = () => {
         </p>
 
         {deleteMsg.text && (
-          <div
-            style={{
-              padding: '12px',
-              marginBottom: '20px',
-              borderRadius: '4px',
-              backgroundColor:
-                deleteMsg.type === 'error' ? 'rgba(255, 77, 77, 0.1)' : 'rgba(77, 255, 136, 0.1)',
-              color: deleteMsg.type === 'error' ? '#ff4d4d' : '#4dff88',
-              border: `1px solid ${deleteMsg.type === 'error' ? '#ff4d4d' : '#4dff88'}`,
-              width: '100%'
-            }}
-          >
+          <div className={`profile-alert-msg ${deleteMsg.type === 'error' ? 'error' : 'success'}`}>
             {deleteMsg.text}
           </div>
         )}

@@ -7,7 +7,7 @@ const {
   Subgenre,
   Tag,
   Loan,
-  LibraryAccess,
+  Friendship,
   GlobalBook
 } = require('../models');
 
@@ -126,11 +126,9 @@ exports.createBook = async (req, res) => {
 
     await processCategories(book, genres, subgenres, userId, 'add');
 
-    // ALIMENTAÇÃO DA GLOBALBOOKS
     if (title && authors.length > 0) {
       try {
         const rawFingerprint = normalizeText(`${title}-${authors.join(',')}`);
-        // SOLUÇÃO AQUI: Trava de segurança cortando o texto em 1990 caracteres
         const fingerprint = rawFingerprint.substring(0, 1990);
 
         await GlobalBook.findOrCreate({
@@ -292,8 +290,14 @@ exports.getBookById = async (req, res) => {
 
     let isOwner = book.UserId === req.userId;
     if (!isOwner) {
-      const hasAccess = await LibraryAccess.findOne({
-        where: { ownerId: book.UserId, guestId: req.userId }
+      const hasAccess = await Friendship.findOne({
+        where: {
+          status: 'accepted',
+          [Op.or]: [
+            { requesterId: book.UserId, receiverId: req.userId },
+            { requesterId: req.userId, receiverId: book.UserId }
+          ]
+        }
       });
       if (!hasAccess)
         return res.status(403).json({ error: 'Você não tem permissão para ver este livro.' });

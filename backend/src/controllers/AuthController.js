@@ -6,12 +6,8 @@ const { User, Genre, Subgenre, sequelize } = require('../models');
 const mailService = require('../services/mailService');
 const { OAuth2Client } = require('google-auth-library');
 
-// Cliente do Google OAuth para o Login Social
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-/**
- * Constantes de domínio para configuração inicial de usuários.
- */
 const DEFAULT_GENRES = [
   { name: 'Biografia', subgenres: [] },
   { name: 'Fantasia', subgenres: ['Fantasia Medieval', 'Fantasia Urbana', 'Fantasia Sombria'] },
@@ -32,9 +28,6 @@ const DEFAULT_GENRES = [
   { name: 'Não Ficção', subgenres: ['Biografia', 'Crime Real', 'Autoajuda', 'História'] }
 ];
 
-/**
- * Função auxiliar para montar a estrutura inicial da biblioteca do usuário.
- */
 const initializeUserGenres = async (userId, transaction) => {
   await Promise.all(
     DEFAULT_GENRES.map(async (item) => {
@@ -50,15 +43,10 @@ const initializeUserGenres = async (userId, transaction) => {
   );
 };
 
-/**
- * Registra um novo usuário no sistema e inicializa suas categorias padrão.
- */
 exports.register = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
     const { name, password, language } = req.body;
-
-    // Tratamento rigoroso de Case Sensitive e espaços para o e-mail
     const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
 
     const existingUser = await User.findOne({ where: { email }, transaction });
@@ -82,10 +70,8 @@ exports.register = async (req, res) => {
       { transaction }
     );
 
-    // Inicialização paralela de categorias para performance
     await initializeUserGenres(user.id, transaction);
 
-    // MELHORIA CRUCIAL (Operação Atômica)
     try {
       await mailService.sendVerificationEmail(user.email, verificationToken);
     } catch (emailError) {
@@ -93,10 +79,9 @@ exports.register = async (req, res) => {
         `📧 ERRO DETALHADO NO SERVIÇO DE E-MAIL (Registo - ${user.email}):`,
         emailError
       );
-      throw emailError; // Re-lança o erro para forçar o rollback no catch principal
+      throw emailError;
     }
 
-    // Se o e-mail foi enviado com sucesso, consolidamos no banco de dados.
     await transaction.commit();
 
     res
@@ -107,7 +92,6 @@ exports.register = async (req, res) => {
       await transaction.rollback();
     }
     console.error('🕵️ ERRO NO AUTHCONTROLLER (REGISTER):', error);
-
     res.status(400).json({
       error:
         'Não foi possível enviar o e-mail de confirmação devido a uma instabilidade. O cadastro foi revertido, tente novamente em alguns instantes.'
@@ -115,9 +99,6 @@ exports.register = async (req, res) => {
   }
 };
 
-/**
- * Autentica o usuário e gera um JWT.
- */
 exports.login = async (req, res) => {
   try {
     const { password, rememberMe } = req.body;
@@ -136,22 +117,28 @@ exports.login = async (req, res) => {
     const expiresIn = rememberMe ? '30d' : '1d';
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn });
 
-    res.json({ user: { id: user.id, name: user.name, email: user.email }, token });
+    // Atualizado para expor os novos dados sociais ao frontend imediatamente após o login
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        avatarUrl: user.avatarUrl
+      },
+      token
+    });
   } catch (error) {
     console.error('🕵️ ERRO NO AUTHCONTROLLER (LOGIN):', error);
     res.status(500).json({ error: 'Erro interno ao realizar login.' });
   }
 };
 
-/**
- * Autentica ou cadastra o usuário através do Token do Google.
- */
 exports.googleLogin = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
     const { token } = req.body;
 
-    // O Google valida a assinatura da credencial para garantir que não foi forjada
     const ticket = await googleClient.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID
@@ -164,7 +151,6 @@ exports.googleLogin = async (req, res) => {
     let user = await User.findOne({ where: { email }, transaction });
 
     if (!user) {
-      // Como usuários do Google não usam senha no nosso app, geramos uma hash aleatória forte
       const randomPassword = crypto.randomBytes(16).toString('hex');
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
@@ -173,7 +159,7 @@ exports.googleLogin = async (req, res) => {
           name,
           email,
           password: hashedPassword,
-          isVerified: true, // Já validado pelo Google, pula validação de e-mail
+          isVerified: true,
           language: 'pt-BR'
         },
         { transaction }
@@ -184,10 +170,18 @@ exports.googleLogin = async (req, res) => {
 
     await transaction.commit();
 
-    // Login via Google por padrão gera uma sessão de longa duração
     const jwtToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
-    res.json({ user: { id: user.id, name: user.name, email: user.email }, token: jwtToken });
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        avatarUrl: user.avatarUrl
+      },
+      token: jwtToken
+    });
   } catch (error) {
     if (!transaction.finished) {
       await transaction.rollback();
@@ -197,9 +191,6 @@ exports.googleLogin = async (req, res) => {
   }
 };
 
-/**
- * Ativa a conta de usuário via token de e-mail.
- */
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
@@ -220,9 +211,6 @@ exports.verifyEmail = async (req, res) => {
   }
 };
 
-/**
- * Envia link para redefinição de senha.
- */
 exports.forgotPassword = async (req, res) => {
   try {
     const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
@@ -231,7 +219,7 @@ exports.forgotPassword = async (req, res) => {
     if (user) {
       const token = crypto.randomBytes(32).toString('hex');
       user.resetPasswordToken = token;
-      user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hora
+      user.resetPasswordExpires = new Date(Date.now() + 3600000);
       await user.save();
 
       try {
@@ -254,9 +242,6 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-/**
- * Redefine a senha do usuário utilizando token válido.
- */
 exports.resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;

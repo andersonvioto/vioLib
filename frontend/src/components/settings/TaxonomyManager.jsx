@@ -21,6 +21,7 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
   const [editName, setEditName] = useState('');
 
   const fetchItems = useCallback(async () => {
+    await Promise.resolve(); // Barreira assíncrona
     try {
       const response = await api.get(`/attributes/${endpoint}`);
       setItems(response.data);
@@ -30,7 +31,10 @@ const TaxonomyManager = ({ endpoint, title, itemLabel }) => {
   }, [endpoint]);
 
   useEffect(() => {
-    fetchItems();
+    const init = async () => {
+      await fetchItems();
+    };
+    init();
   }, [fetchItems]);
 
   const handleSubmitAdd = async (e) => {

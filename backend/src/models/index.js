@@ -7,12 +7,14 @@ const Genre = require('./Genre');
 const Subgenre = require('./Subgenre');
 const Tag = require('./Tag');
 const Loan = require('./Loan');
-const LibraryAccess = require('./LibraryAccess');
 const Collection = require('./Collection');
 const CollectionItem = require('./CollectionItem');
-const GlobalBook = require('./GlobalBook'); // O Catálogo Global
+const GlobalBook = require('./GlobalBook');
+const Friendship = require('./Friendship');
+const Comment = require('./Comment');
+const Notification = require('./Notification');
+const PushSubscription = require('./PushSubscription');
 
-// Relacionamentos 1:N (Listas autônomas e exclusivas do Usuário)
 User.hasMany(Book, { foreignKey: 'UserId', onDelete: 'CASCADE' });
 Book.belongsTo(User, { foreignKey: 'UserId' });
 User.hasMany(Author, { foreignKey: 'UserId', onDelete: 'CASCADE' });
@@ -26,43 +28,55 @@ Tag.belongsTo(User, { foreignKey: 'UserId' });
 User.hasMany(Collection, { foreignKey: 'UserId', onDelete: 'CASCADE' });
 Collection.belongsTo(User, { foreignKey: 'UserId' });
 
-// Relacionamento hierárquico Gênero -> Subgênero
 Genre.hasMany(Subgenre, { foreignKey: 'GenreId', onDelete: 'CASCADE' });
 Subgenre.belongsTo(Genre, { foreignKey: 'GenreId' });
-
-// Relacionamento 1:N (Livro -> Empréstimos)
 Book.hasMany(Loan, { foreignKey: 'BookId', onDelete: 'CASCADE' });
 Loan.belongsTo(Book, { foreignKey: 'BookId' });
 
-// Relacionamentos do Módulo de Coleções (Álbum e Figurinhas)
 Collection.hasMany(CollectionItem, { foreignKey: 'CollectionId', onDelete: 'CASCADE' });
 CollectionItem.belongsTo(Collection, { foreignKey: 'CollectionId' });
-
 Book.hasMany(CollectionItem, { foreignKey: 'BookId', onDelete: 'SET NULL' });
 CollectionItem.belongsTo(Book, { foreignKey: 'BookId' });
 
-// Relacionamentos N:M (Livros com suas propriedades)
 Book.belongsToMany(Author, { through: 'Book_Authors', timestamps: false });
 Author.belongsToMany(Book, { through: 'Book_Authors', timestamps: false });
-
 Book.belongsToMany(Translator, { through: 'Book_Translators', timestamps: false });
 Translator.belongsToMany(Book, { through: 'Book_Translators', timestamps: false });
-
 Book.belongsToMany(Genre, { through: 'Book_Genres', timestamps: false });
 Genre.belongsToMany(Book, { through: 'Book_Genres', timestamps: false });
-
 Book.belongsToMany(Subgenre, { through: 'Book_Subgenres', timestamps: false });
 Subgenre.belongsToMany(Book, { through: 'Book_Subgenres', timestamps: false });
-
 Book.belongsToMany(Tag, { through: 'Book_Tags', timestamps: false });
 Tag.belongsToMany(Book, { through: 'Book_Tags', timestamps: false });
 
-// Relacionamentos para Compartilhamento de Biblioteca (Acesso de Convidados)
-User.hasMany(LibraryAccess, { foreignKey: 'ownerId', as: 'SharedLibraries' });
-LibraryAccess.belongsTo(User, { foreignKey: 'ownerId', as: 'Owner' });
+// ==========================================
+// NOVOS RELACIONAMENTOS SOCIAIS
+// ==========================================
 
-User.hasMany(LibraryAccess, { foreignKey: 'guestId', as: 'AccessibleLibraries' });
-LibraryAccess.belongsTo(User, { foreignKey: 'guestId', as: 'Guest' });
+// Amizades
+User.hasMany(Friendship, { foreignKey: 'requesterId', as: 'SentRequests' });
+Friendship.belongsTo(User, { foreignKey: 'requesterId', as: 'Requester' });
+
+User.hasMany(Friendship, { foreignKey: 'receiverId', as: 'ReceivedRequests' });
+Friendship.belongsTo(User, { foreignKey: 'receiverId', as: 'Receiver' });
+
+// Comentários
+User.hasMany(Comment, { foreignKey: 'UserId' });
+Comment.belongsTo(User, { foreignKey: 'UserId' });
+
+Book.hasMany(Comment, { foreignKey: 'BookId' });
+Comment.belongsTo(Book, { foreignKey: 'BookId' });
+
+// Notificações
+User.hasMany(Notification, { foreignKey: 'UserId', as: 'MyNotifications' });
+Notification.belongsTo(User, { foreignKey: 'UserId', as: 'Owner' });
+
+User.hasMany(Notification, { foreignKey: 'senderId', as: 'TriggeredNotifications' });
+Notification.belongsTo(User, { foreignKey: 'senderId', as: 'Sender' });
+
+// Push Subscriptions
+User.hasMany(PushSubscription, { foreignKey: 'UserId', onDelete: 'CASCADE' });
+PushSubscription.belongsTo(User, { foreignKey: 'UserId' });
 
 module.exports = {
   sequelize,
@@ -74,8 +88,11 @@ module.exports = {
   Subgenre,
   Tag,
   Loan,
-  LibraryAccess,
   Collection,
   CollectionItem,
-  GlobalBook
+  GlobalBook,
+  Friendship,
+  Comment,
+  Notification,
+  PushSubscription
 };

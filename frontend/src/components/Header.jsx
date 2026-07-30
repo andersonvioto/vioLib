@@ -1,321 +1,348 @@
-import { useState, useContext } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useContext, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { LibraryContext } from '../contexts/LibraryContext';
 import api from '../services/api';
 import miniLogo from '../assets/violib-logo.png';
 import './Header.css';
 
+const getAvatarUrl = (filename) => {
+  if (!filename) return null;
+  if (filename.startsWith('http')) return filename;
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api';
+  return `${apiUrl.replace('/api', '/files')}/${filename}`;
+};
+
+const getInitials = (name) => {
+  if (!name) return 'U';
+  const parts = name.trim().split(' ');
+  if (parts.length > 1) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return parts[0][0].toUpperCase();
+};
+
+const timeAgo = (dateInput) => {
+  const date = new Date(dateInput);
+  const seconds = Math.floor((new Date() - date) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + ' anos atrás';
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + ' meses atrás';
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + ' dias atrás';
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + ' horas atrás';
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + ' min atrás';
+  return 'Agora mesmo';
+};
+
 const Header = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { logout } = useContext(AuthContext);
-  const { currentLibrary, setCurrentLibrary, sharedLibraries } = useContext(LibraryContext);
+  const { user, logout, socket } = useContext(AuthContext);
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [guestEmail, setGuestEmail] = useState('');
-  const [shareLibraryPerm, setShareLibraryPerm] = useState(true);
-  const [shareCollectionsPerm, setShareCollectionsPerm] = useState(true);
-  const [isSharing, setIsSharing] = useState(false);
-  const [shareMsg, setShareMsg] = useState({ type: '', text: '' });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNotifMenuOpen, setIsNotifMenuOpen] = useState(false);
 
-  const isCollectionsPath = location.pathname.startsWith('/colecoes');
+  const [notifications, setNotifications] = useState([]);
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  const openShareModal = () => {
-    setShareMsg({ type: '', text: '' });
-    setGuestEmail('');
-    setShareLibraryPerm(true);
-    setShareCollectionsPerm(true);
-    setShowShareModal(true);
-    setIsMenuOpen(false);
-  };
+  const profileMenuRef = useRef(null);
+  const notifMenuRef = useRef(null);
 
-  const handleShareSubmit = async (e) => {
-    e.preventDefault();
-    const formattedEmail = guestEmail ? guestEmail.toLowerCase().trim() : '';
-    if (!formattedEmail) return;
-
-    if (!shareLibraryPerm && !shareCollectionsPerm) {
-      return setShareMsg({
-        type: 'error',
-        text: 'Você precisa conceder acesso a pelo menos uma área.'
-      });
-    }
-
-    setIsSharing(true);
-    setShareMsg({ type: '', text: '' });
-
-    try {
-      const response = await api.post('/access/share', {
-        guestEmail: formattedEmail,
-        canViewLibrary: shareLibraryPerm,
-        canViewCollections: shareCollectionsPerm
-      });
-      setShareMsg({ type: 'success', text: response.data.message });
-      setGuestEmail('');
-
-      setTimeout(() => setShowShareModal(false), 2000);
-    } catch (error) {
-      setShareMsg({
-        type: 'error',
-        text: error.response?.data?.error || 'Não foi possível compartilhar a biblioteca.'
-      });
-    } finally {
-      setIsSharing(false);
-    }
-  };
-
-  const handleLibraryChange = (e) => {
-    const selectedId = e.target.value;
-    if (selectedId === 'mine') {
-      setCurrentLibrary(null);
-    } else {
-      const selectedLib = sharedLibraries.find((l) => l.ownerId.toString() === selectedId);
-      setCurrentLibrary(selectedLib);
-
-      if (selectedLib) {
-        if (selectedLib.canViewLibrary && !selectedLib.canViewCollections && isCollectionsPath) {
-          navigate('/biblioteca');
-        } else if (
-          !selectedLib.canViewLibrary &&
-          selectedLib.canViewCollections &&
-          !isCollectionsPath
-        ) {
-          navigate('/colecoes');
-        } else if (!selectedLib.canViewLibrary && !selectedLib.canViewCollections) {
-          setCurrentLibrary(null);
-          navigate('/biblioteca');
-        }
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
       }
+      if (notifMenuRef.current && !notifMenuRef.current.contains(event.target)) {
+        setIsNotifMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const fetchNotifications = useCallback(async () => {
+    await Promise.resolve(); // Barreira de micro-tarefa para evitar cascading renders
+    try {
+      const response = await api.get('/notifications');
+      setNotifications(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar notificações:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const loadNotifs = async () => {
+      await fetchNotifications();
+    };
+    loadNotifs();
+
+    if (socket) {
+      const handleNewNotif = () => {
+        fetchNotifications();
+      };
+      socket.on('new_notification', handleNewNotif);
+      return () => socket.off('new_notification', handleNewNotif);
+    }
+  }, [socket, fetchNotifications]);
+
+  const handleReadNotification = async (notif) => {
+    if (!notif.isRead) {
+      try {
+        await api.put(`/notifications/${notif.id}/read`);
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
+        );
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    setIsNotifMenuOpen(false);
+
+    if (notif.type === 'friend_request') navigate('/comunidade');
+    if (notif.type === 'friend_accepted') navigate(`/perfil/${notif.senderId}`);
+    if (notif.type === 'new_comment') navigate(`/livro/${notif.referenceId}`);
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await api.put('/notifications/read-all');
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const avatarSrc = getAvatarUrl(user?.avatarUrl);
+
+  const renderNotifMessage = (type, senderName) => {
+    switch (type) {
+      case 'friend_request':
+        return (
+          <span>
+            <strong>{senderName}</strong> enviou um pedido de amizade.
+          </span>
+        );
+      case 'friend_accepted':
+        return (
+          <span>
+            <strong>{senderName}</strong> aceitou o seu pedido de amizade.
+          </span>
+        );
+      case 'new_comment':
+        return (
+          <span>
+            <strong>{senderName}</strong> comentou num livro do seu acervo.
+          </span>
+        );
+      default:
+        return (
+          <span>
+            Nova notificação de <strong>{senderName}</strong>.
+          </span>
+        );
     }
   };
 
   return (
-    <>
-      <header className="dash-header">
-        <div className="dash-header-inner">
-          <div className="brand-container">
-            <img
-              src={miniLogo}
-              alt="vioLib — Página Inicial"
-              className="brand-logo"
-              onClick={() => {
-                setCurrentLibrary(null);
+    <header className="dash-header">
+      <div className="dash-header-inner">
+        <div className="brand-container">
+          <div
+            className="brand-clickable"
+            onClick={() => navigate('/biblioteca')}
+            role="button"
+            tabIndex="0"
+            aria-label="Ir para a Biblioteca Inicial"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
                 navigate('/biblioteca');
-              }}
-              role="button"
-              tabIndex="0"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  setCurrentLibrary(null);
-                  navigate('/biblioteca');
-                }
-              }}
-            />
-
-            <div className="library-switcher-wrapper">
-              <select
-                className="library-select"
-                value={currentLibrary ? currentLibrary.ownerId : 'mine'}
-                onChange={handleLibraryChange}
-                aria-label="Alternar entre biblioteca pessoal e compartilhadas"
-              >
-                <option value="mine">Minha Biblioteca</option>
-
-                {sharedLibraries.length > 0 && (
-                  <optgroup label="Compartilhadas Comigo">
-                    {sharedLibraries.map((lib) => {
-                      const ownerName =
-                        lib.ownerName || lib.Owner?.name || lib.User?.name || 'Convidado';
-                      return (
-                        <option key={lib.ownerId} value={lib.ownerId}>
-                          Biblioteca de {ownerName}
-                        </option>
-                      );
-                    })}
-                  </optgroup>
-                )}
-              </select>
-            </div>
+              }
+            }}
+          >
+            <img src={miniLogo} alt="" className="brand-logo" aria-hidden="true" />
+            <span className="brand-text">vioLib</span>
           </div>
+        </div>
 
-          <div className="user-actions-container">
+        <div className="user-actions-container">
+          <button
+            className="mobile-menu-toggle"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+            aria-expanded={isMobileMenuOpen}
+          >
+            <span className="material-symbols-rounded" aria-hidden="true">
+              {isMobileMenuOpen ? 'close' : 'menu'}
+            </span>
+          </button>
+
+          <nav
+            className={`header-actions ${isMobileMenuOpen ? 'open' : ''}`}
+            aria-label="Ações principais do acervo"
+          >
             <button
-              className="mobile-menu-toggle"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label={isMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
-              aria-expanded={isMenuOpen}
+              onClick={() => {
+                navigate('/biblioteca');
+                setIsMobileMenuOpen(false);
+              }}
+              className="btn-action"
             >
               <span className="material-symbols-rounded" aria-hidden="true">
-                {isMenuOpen ? 'close' : 'more_vert'}
+                library_books
               </span>
+              <span className="action-label">Biblioteca</span>
             </button>
 
-            <nav
-              className={`header-actions ${isMenuOpen ? 'open' : ''}`}
-              aria-label="Ações principais do acervo"
+            <button
+              onClick={() => {
+                navigate('/colecoes');
+                setIsMobileMenuOpen(false);
+              }}
+              className="btn-action"
             >
-              {(!currentLibrary || currentLibrary.canViewLibrary) && isCollectionsPath && (
-                <button
-                  onClick={() => {
-                    navigate('/biblioteca');
-                    setIsMenuOpen(false);
-                  }}
-                  className="btn-action"
-                >
-                  <span className="material-symbols-rounded" aria-hidden="true">
-                    library_books
-                  </span>
-                  <span className="action-label">Biblioteca</span>
-                </button>
-              )}
+              <span className="material-symbols-rounded" aria-hidden="true">
+                workspace_premium
+              </span>
+              <span className="action-label">Coleções</span>
+            </button>
 
-              {(!currentLibrary || currentLibrary.canViewCollections) && !isCollectionsPath && (
-                <button
-                  onClick={() => {
-                    navigate('/colecoes');
-                    setIsMenuOpen(false);
-                  }}
-                  className="btn-action"
-                >
-                  <span className="material-symbols-rounded" aria-hidden="true">
-                    workspace_premium
-                  </span>
-                  <span className="action-label">Coleções</span>
-                </button>
-              )}
+            <button
+              onClick={() => {
+                navigate('/comunidade');
+                setIsMobileMenuOpen(false);
+              }}
+              className="btn-action"
+            >
+              <span className="material-symbols-rounded" aria-hidden="true">
+                group
+              </span>
+              <span className="action-label">Amigos</span>
+            </button>
 
-              {!currentLibrary && (
-                <>
+            <button
+              onClick={() => {
+                navigate('/novo-livro');
+                setIsMobileMenuOpen(false);
+              }}
+              className="btn-action btn-primary"
+            >
+              <span className="material-symbols-rounded" aria-hidden="true">
+                library_add
+              </span>
+              <span className="action-label">Novo</span>
+            </button>
+
+            <button onClick={logout} className="btn-action btn-logout mobile-only-logout">
+              <span className="material-symbols-rounded" aria-hidden="true">
+                logout
+              </span>
+              <span className="action-label">Sair</span>
+            </button>
+          </nav>
+
+          <div className="personal-area-container">
+            <div className="profile-dropdown-wrapper" ref={notifMenuRef}>
+              <button
+                className="btn-notification"
+                aria-label="Notificações"
+                onClick={() => setIsNotifMenuOpen(!isNotifMenuOpen)}
+              >
+                <span className="material-symbols-rounded">notifications</span>
+                {unreadCount > 0 && (
+                  <span className="notification-badge">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {isNotifMenuOpen && (
+                <div className="notification-dropdown-menu">
+                  <div className="notif-dropdown-header">
+                    <strong>Notificações</strong>
+                    {unreadCount > 0 && (
+                      <button className="btn-mark-read" onClick={handleMarkAllRead}>
+                        Marcar todas lidas
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="notif-list-container">
+                    {notifications.length === 0 ? (
+                      <div className="notif-empty">Nenhum aviso novo.</div>
+                    ) : (
+                      notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`notif-item ${!notif.isRead ? 'unread' : ''}`}
+                          onClick={() => handleReadNotification(notif)}
+                        >
+                          <div className="notif-avatar">
+                            {notif.Sender?.avatarUrl ? (
+                              <img src={getAvatarUrl(notif.Sender.avatarUrl)} alt="Avatar" />
+                            ) : (
+                              <div className="notif-initials">
+                                {getInitials(notif.Sender?.name)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="notif-content">
+                            <p>{renderNotifMessage(notif.type, notif.Sender?.name)}</p>
+                            <span className="notif-time">{timeAgo(notif.createdAt)}</span>
+                          </div>
+                          {!notif.isRead && <div className="notif-dot-indicator"></div>}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="profile-dropdown-wrapper" ref={profileMenuRef}>
+              <button
+                className="btn-avatar"
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                aria-label="Menu do Perfil"
+              >
+                {avatarSrc ? (
+                  <img src={avatarSrc} alt="Avatar do Utilizador" className="avatar-image" />
+                ) : (
+                  <span className="avatar-initials">{getInitials(user?.name)}</span>
+                )}
+              </button>
+
+              {isProfileMenuOpen && (
+                <div className="profile-dropdown-menu">
+                  <div className="profile-dropdown-header">
+                    <strong>{user?.name}</strong>
+                    <span>@{user?.username || 'sem_username'}</span>
+                  </div>
                   <button
                     onClick={() => {
                       navigate('/configuracoes');
-                      setIsMenuOpen(false);
+                      setIsProfileMenuOpen(false);
                     }}
-                    className="btn-action"
+                    className="dropdown-item"
                   >
-                    <span className="material-symbols-rounded" aria-hidden="true">
-                      settings
-                    </span>
-                    <span className="action-label">Ajustes</span>
+                    <span className="material-symbols-rounded">settings</span> Configurações
                   </button>
-
-                  <button onClick={openShareModal} className="btn-action">
-                    <span className="material-symbols-rounded" aria-hidden="true">
-                      group_add
-                    </span>
-                    <span className="action-label">Compartilhar</span>
+                  <div className="dropdown-divider"></div>
+                  <button onClick={logout} className="dropdown-item danger">
+                    <span className="material-symbols-rounded">logout</span> Sair
                   </button>
-
-                  <button
-                    onClick={() => {
-                      navigate('/novo-livro');
-                      setIsMenuOpen(false);
-                    }}
-                    className="btn-action btn-primary"
-                  >
-                    <span className="material-symbols-rounded" aria-hidden="true">
-                      library_add
-                    </span>
-                    <span className="action-label">Novo</span>
-                  </button>
-                </>
+                </div>
               )}
-
-              <button
-                onClick={() => {
-                  logout();
-                  setIsMenuOpen(false);
-                }}
-                className="btn-action btn-logout"
-              >
-                <span className="material-symbols-rounded" aria-hidden="true">
-                  logout
-                </span>
-                <span className="action-label">Sair</span>
-              </button>
-            </nav>
+            </div>
           </div>
         </div>
-      </header>
-
-      {showShareModal && (
-        <div
-          className="share-modal-overlay"
-          role="dialog"
-          aria-labelledby="share-modal-title"
-          aria-modal="true"
-        >
-          <div className="share-modal-card">
-            <h2 id="share-modal-title" className="share-modal-title">
-              <span className="material-symbols-rounded" aria-hidden="true">
-                group_add
-              </span>
-              Compartilhar Acervo
-            </h2>
-            <p className="share-modal-description">
-              Convide alguém para visualizar a sua conta. Escolha o que essa pessoa poderá ver:
-            </p>
-
-            {shareMsg.text && (
-              <div
-                className={`share-modal-alert ${shareMsg.type === 'error' ? 'alert-error' : 'alert-success'}`}
-                role="alert"
-              >
-                {shareMsg.text}
-              </div>
-            )}
-
-            <form onSubmit={handleShareSubmit}>
-              <input
-                autoFocus
-                type="email"
-                required
-                placeholder="E-mail do convidado..."
-                value={guestEmail}
-                onChange={(e) => setGuestEmail(e.target.value)}
-                className="share-modal-input"
-              />
-
-              <div className="share-modal-permissions">
-                <label className="permission-label">
-                  <input
-                    type="checkbox"
-                    checked={shareLibraryPerm}
-                    onChange={(e) => setShareLibraryPerm(e.target.checked)}
-                    className="permission-checkbox"
-                  />
-                  <span>Acesso à Biblioteca Principal</span>
-                </label>
-                <label className="permission-label">
-                  <input
-                    type="checkbox"
-                    checked={shareCollectionsPerm}
-                    onChange={(e) => setShareCollectionsPerm(e.target.checked)}
-                    className="permission-checkbox"
-                  />
-                  <span>Acesso às Coleções</span>
-                </label>
-              </div>
-
-              <div className="share-modal-actions">
-                <button
-                  type="button"
-                  onClick={() => setShowShareModal(false)}
-                  className="btn-modal-cancel"
-                >
-                  Cancelar
-                </button>
-                <button type="submit" disabled={isSharing} className="btn-modal-submit">
-                  {isSharing ? 'Enviando...' : 'Enviar Convite'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
+      </div>
+    </header>
   );
 };
 

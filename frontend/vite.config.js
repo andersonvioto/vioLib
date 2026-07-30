@@ -6,36 +6,18 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // Mudança de Arquitetura Crítica: Controle Manual do Service Worker para injetar lógica Push
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
       registerType: 'prompt',
 
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
 
-      // Configuração avançada do Service Worker (Workbox)
-      workbox: {
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
-        navigateFallback: '/index.html',
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf}'],
-
-        // NOVO: Estratégia de Cache para Imagens Externas (Cloudinary, Backend, Amazon)
-        runtimeCaching: [
-          {
-            // Intercepta qualquer requisição cujo destino seja uma imagem
-            urlPattern: ({ request }) => request.destination === 'image',
-            handler: 'CacheFirst', // Tenta pegar do cache primeiro. Se não tiver, vai pra rede e depois faz o cache.
-            options: {
-              cacheName: 'violib-images-cache',
-              expiration: {
-                maxEntries: 500, // Limite de 500 capas para não lotar a memória do celular
-                maxAgeSeconds: 30 * 24 * 60 * 60 // Mantém no cache por 30 dias
-              },
-              cacheableResponse: {
-                statuses: [0, 200] // O status '0' é crucial para salvar imagens de domínios de terceiros (CORS opaco)
-              }
-            }
-          }
-        ]
+      // Quando usamos injectManifest, as regras de runtimeCaching e globPatterns
+      // são movidas para dentro deste objeto específico.
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf}']
       },
 
       manifest: {

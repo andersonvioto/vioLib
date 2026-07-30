@@ -1,13 +1,23 @@
 const bcrypt = require('bcryptjs');
+const { Op } = require('sequelize');
 const { User } = require('../models');
 
 /**
- * Busca os dados públicos do perfil do usuário logado.
+ * Busca os dados públicos e privados do perfil do usuário logado.
  */
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.userId, {
-      attributes: ['id', 'name', 'email']
+      attributes: [
+        'id',
+        'name',
+        'email',
+        'username',
+        'avatarUrl',
+        'shareCollections',
+        'shareReadingStatus',
+        'shareNotes'
+      ]
     });
 
     if (!user) {
@@ -22,18 +32,53 @@ exports.getProfile = async (req, res) => {
 };
 
 /**
- * Atualiza o nome e/ou a senha do usuário logado.
- * Exige a senha atual para autorizar alterações de senha.
+ * Atualiza os dados cadastrais, avatar, preferências sociais e senha do usuário.
  */
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, currentPassword, newPassword } = req.body;
+    const {
+      name,
+      username,
+      currentPassword,
+      newPassword,
+      shareCollections,
+      shareReadingStatus,
+      shareNotes
+    } = req.body;
+
     const user = await User.findByPk(req.userId);
 
     if (!user) {
       return res.status(404).json({ error: 'Usuário não encontrado.' });
     }
 
+    // Validação de Username (Apenas letras minúsculas, números, pontos e underscores)
+    if (username) {
+      const cleanUsername = username.toLowerCase().trim();
+      const usernameRegex = /^[a-z0-9_.-]+$/;
+
+      if (!usernameRegex.test(cleanUsername)) {
+        return res.status(400).json({
+          error: 'O username só pode conter letras minúsculas, números, pontos e underscores.'
+        });
+      }
+
+      // Verifica se o username já está em uso por OUTRA pessoa
+      const existingUser = await User.findOne({
+        where: {
+          username: cleanUsername,
+          id: { [Op.ne]: req.userId }
+        }
+      });
+
+      if (existingUser) {
+        return res.status(400).json({ error: 'Este nome de utilizador já está em uso.' });
+      }
+
+      user.username = cleanUsername;
+    }
+
+    // Processamento de Senha
     if (newPassword) {
       if (!currentPassword) {
         return res
@@ -53,15 +98,36 @@ exports.updateProfile = async (req, res) => {
       user.password = await bcrypt.hash(newPassword, 10);
     }
 
-    if (name) {
-      user.name = name;
+    // Processamento de Dados Textuais
+    if (name) user.name = name;
+
+    // Processamento de Imagem (Avatar)
+    if (req.file) {
+      user.avatarUrl = req.file.path;
+    }
+
+    // Processamento Rigoroso de Booleanos via FormData (Que os converte em String)
+    if (shareCollections !== undefined) {
+      user.shareCollections = shareCollections === 'true' || shareCollections === true;
+    }
+    if (shareReadingStatus !== undefined) {
+      user.shareReadingStatus = shareReadingStatus === 'true' || shareReadingStatus === true;
+    }
+    if (shareNotes !== undefined) {
+      user.shareNotes = shareNotes === 'true' || shareNotes === true;
     }
 
     await user.save();
 
     res.json({
       message: 'Perfil atualizado com sucesso!',
-      user: { name: user.name, email: user.email }
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        avatarUrl: user.avatarUrl
+      }
     });
   } catch (error) {
     console.error('🕵️ ERRO NO USER CONTROLLER (UPDATE PROFILE):', error);

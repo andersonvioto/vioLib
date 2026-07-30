@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCitationText } from '../utils/bookHelpers';
 import './BookContextMenu.css';
@@ -33,6 +33,7 @@ const BookContextMenu = ({ contextMenu, onClose, onUpdateStatus, onDeleteBook, i
       await navigator.clipboard.write([clipboardItem]);
       alert(`Referência em ${format} copiada com sucesso!`);
     } catch (err) {
+      console.error('Erro ao copiar referência:', err);
       const citationData = getCitationText(book, format);
       navigator.clipboard.writeText(citationData.plain);
       alert(`Referência em ${format} copiada como texto puro.`);
@@ -53,7 +54,6 @@ const BookContextMenu = ({ contextMenu, onClose, onUpdateStatus, onDeleteBook, i
       >
         <div className="context-menu-header">{book.title}</div>
 
-        {/* Oculta "Nova Aba" via CSS nativo se for Mobile, Tablet ou PWA Instalado */}
         <button
           className="context-menu-item hide-on-mobile-pwa"
           onClick={() => {
@@ -67,7 +67,6 @@ const BookContextMenu = ({ contextMenu, onClose, onUpdateStatus, onDeleteBook, i
           Abrir numa Nova Aba
         </button>
 
-        {/* Submenu de Citação em Acordeão */}
         <div className="context-menu-dropdown">
           <button
             className="context-menu-item"

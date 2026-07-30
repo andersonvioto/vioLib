@@ -1,39 +1,185 @@
 /* ==========================================================================
 COMPONENT CSS - ProfileSettings
-Formulários de atualização de dados e segurança da conta.
+Redesign com suporte a Avatar e Módulos de Privacidade
 ========================================================================== */
-
-/* Regra de Ouro: Garante que NENHUM elemento dentro do painel cause overflow horizontal */
-.settings-panel,
-.settings-panel * {
-  box-sizing: border-box;
-}
 
 .settings-panel {
   width: 100%;
-  max-width: 100%; /* Mais seguro que 100vw, evita scroll extra */
+  max-width: 100%;
   overflow-x: hidden;
 }
 
 .settings-form {
   width: 100%;
-  max-width: 500px;
+  max-width: 600px;
   margin-top: 20px;
 }
 
-/* ==========================================================================
-MÁGICA DO ESCOPO & "BOX INCEPTION":
-Aproveitamos a caixa externa do .input-group (vinda do Auth.css)
-e removemos as caixas internas para tudo ficar limpo e uniforme.
-========================================================================== */
+.settings-section-title {
+  margin-top: 30px;
+  margin-bottom: 5px;
+  color: var(--accent-gold);
+  font-size: 1.1rem;
+}
+
+.settings-hint {
+  color: var(--text-secondary);
+  font-size: 0.9em;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+/* --- Avatar Upload Area --- */
+.avatar-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 25px;
+  background: var(--bg-input);
+  padding: 15px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.avatar-preview-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: var(--bg-surface);
+  border: 2px solid var(--accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar-preview-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-preview-circle .material-symbols-rounded {
+  font-size: 2.5rem;
+  color: var(--text-muted);
+}
+
+.avatar-upload-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.avatar-upload-actions strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.btn-upload {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  display: inline-block;
+  width: fit-content;
+}
+
+.btn-upload[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.avatar-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* --- Privacidade Toggles --- */
+.privacy-toggles-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.privacy-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--bg-input);
+  padding: 15px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.privacy-toggle:hover:not([disabled]) {
+  border-color: var(--accent-gold);
+  background: var(--bg-surface);
+}
+
+.privacy-toggle input[type='checkbox'] {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+}
+
+.privacy-toggle input[type='checkbox']:checked {
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
+.privacy-toggle input[type='checkbox']:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #000;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.privacy-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.privacy-toggle-text strong {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.privacy-toggle-text span {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* --- Inputs e Box Model --- */
 .settings-panel .input-group {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   margin-bottom: 20px;
   width: 100%;
-  /* Adiciona respiro no topo e rodapé da caixa externa para abraçar o Label e o Input */
   padding: 12px 15px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  transition: var(--transition-smooth);
+}
+
+.settings-panel .input-group:focus-within {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 2px var(--accent-gold-glow);
 }
 
 .settings-panel .input-group label {
@@ -41,8 +187,6 @@ e removemos as caixas internas para tudo ficar limpo e uniforme.
   color: var(--text-secondary);
   font-size: 0.85rem;
   width: 100%;
-  word-break: normal;
-  overflow-wrap: break-word;
 }
 
 .settings-panel .auth-input,
@@ -50,7 +194,7 @@ e removemos as caixas internas para tudo ficar limpo e uniforme.
   background: transparent;
   border: none;
   width: 100%;
-  padding: 0; /* Remove paddings extras, a caixa pai já tem */
+  padding: 0;
 }
 
 .settings-panel .auth-input {
@@ -73,37 +217,71 @@ e removemos as caixas internas para tudo ficar limpo e uniforme.
   padding: 6px 0 2px 0;
   font-size: 1rem;
   outline: none;
-  min-width: 0; /* Previne que o input flex estoure a largura do pai */
+  min-width: 0;
 }
 
 .settings-panel .settings-input-wrapper .material-symbols-rounded {
   color: var(--text-muted);
   cursor: pointer;
   font-size: 1.2rem;
-  user-select: none;
-  transition: color 0.2s;
-  flex-shrink: 0;
-  margin-left: 10px; /* Descola o ícone do olho do texto */
+  margin-left: 10px;
 }
 
 .settings-panel .settings-input-wrapper .material-symbols-rounded:hover {
   color: var(--accent-gold);
 }
 
-/* ==========================================================================
-RESPONSIVIDADE (Tablets e Mobile)
-========================================================================== */
+/* --- Alertas e Zonas --- */
+.offline-alert-box {
+  padding: 12px;
+  background-color: rgba(255, 153, 0, 0.1);
+  color: #ff9900;
+  border: 1px solid #ff9900;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-alert-msg {
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.profile-alert-msg.error {
+  background-color: rgba(255, 77, 77, 0.1);
+  color: #ff4d4d;
+  border: 1px solid #ff4d4d;
+}
+
+.profile-alert-msg.success {
+  background-color: rgba(77, 255, 136, 0.1);
+  color: #4dff88;
+  border: 1px solid #4dff88;
+}
+
+.settings-divider {
+  margin: 40px 0 30px 0;
+  border: none;
+  border-top: 1px solid var(--border-color);
+}
 
 @media (max-width: 600px) {
   .settings-form {
     max-width: 100%;
   }
-
-  .settings-form .btn-action,
-  .settings-panel .btn-action {
+  .settings-form .btn-action {
     width: 100%;
     justify-content: center;
     padding: 14px;
     margin-bottom: 10px;
+  }
+  .avatar-upload-area {
+    flex-direction: column;
+    text-align: center;
   }
 }

@@ -1,0 +1,154 @@
+/* ==========================================================================
+   COMPONENT CSS - Public Profile
+   Estilos específicos para a página pública de um utilizador.
+   ========================================================================== */
+
+.profile-loading,
+.profile-error-state,
+.profile-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  margin-top: 20px;
+}
+
+.profile-error-state .material-symbols-rounded {
+  font-size: 4em;
+  color: var(--text-danger);
+  margin-bottom: 20px;
+}
+
+.profile-error-state h2 {
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.profile-error-state p {
+  margin-bottom: 25px;
+}
+
+/* --- HERO SECTION --- */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  background: var(--bg-surface);
+  padding: 30px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-hero-avatar {
+  flex-shrink: 0;
+}
+
+.profile-hero-avatar img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent-gold);
+}
+
+.profile-hero-initials {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5em;
+  font-weight: bold;
+  border: 2px solid var(--accent-gold);
+}
+
+.profile-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.profile-hero-info h1 {
+  margin: 0;
+  font-family: serif;
+  font-size: 2em;
+  color: var(--text-primary);
+}
+
+.profile-hero-info span {
+  color: var(--accent-gold);
+  font-size: 1.1em;
+  font-weight: 500;
+}
+
+/* --- TABS --- */
+.profile-tabs {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.profile-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.1em;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: var(--transition-smooth);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.profile-tab-btn.active {
+  color: var(--accent-gold);
+  border-bottom-color: var(--accent-gold);
+}
+
+.profile-content {
+  min-height: 400px;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE (Tablets e Mobile)
+   ========================================================================== */
+@media (max-width: 600px) {
+  .profile-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 25px 15px;
+  }
+
+  .profile-tabs {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .profile-tab-btn {
+    justify-content: center;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .profile-tab-btn.active {
+    border-bottom: 2px solid var(--accent-gold);
+  }
+}

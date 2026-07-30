@@ -19,6 +19,7 @@ const GenreManager = () => {
   const [editName, setEditName] = useState('');
 
   const fetchGenres = async () => {
+    await Promise.resolve(); // Barreira assíncrona
     try {
       const [genresRes, subRes] = await Promise.all([
         api.get('/attributes/genres'),
@@ -32,7 +33,10 @@ const GenreManager = () => {
   };
 
   useEffect(() => {
-    fetchGenres();
+    const init = async () => {
+      await fetchGenres();
+    };
+    init();
   }, []);
 
   const handleSubmitNewGenre = async (e) => {

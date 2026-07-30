@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useCallback } from 'react';
+import { io } from 'socket.io-client';
 import api from '../services/api';
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -6,12 +7,12 @@ export const AuthContext = createContext();
 
 /**
  * Provedor de Autenticação.
- * Garante a hidratação da sessão ao carregar a página, gerencia o login/logout
- * e controla o logout automático por inatividade caso o usuário não tenha
- * marcado a opção "Permanecer conectado".
+ * Garante a hidratação da sessão ao carregar a página, gerencia o login/logout,
+ * controla o logout automático por inatividade e gere o ciclo de vida do WebSocket.
  */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [socket, setSocket] = useState(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   /**
@@ -63,7 +64,47 @@ export const AuthProvider = ({ children }) => {
   }, [logout]);
 
   // ==========================================
-  // 2. DETECTOR DE INATIVIDADE (Idle Timer)
+  // 2. CICLO DE VIDA DO WEBSOCKET (CORRIGIDO)
+  // ==========================================
+  useEffect(() => {
+    let currentSocket;
+    const token = localStorage.getItem('token');
+
+    // Só inicia a ligação se existir um utilizador autenticado
+    if (user && token) {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api';
+      // Remove '/api' do final para conectar à raiz do servidor HTTP
+      const baseUrl = apiUrl.replace(/\/api\/?$/, '');
+
+      currentSocket = io(baseUrl, {
+        auth: { token },
+        transports: ['websocket', 'polling']
+      });
+
+      // A Solução Assíncrona: Sincroniza o React com o sistema externo.
+      // O Linter passa limpo porque o setState só ocorre no callback da rede.
+      currentSocket.on('connect', () => {
+        setSocket(currentSocket);
+      });
+
+      currentSocket.on('disconnect', () => {
+        setSocket(null);
+      });
+    }
+
+    // Cleanup: Destrói a ligação e remove listeners caso o componente desmonte ou faça logout
+    return () => {
+      if (currentSocket) {
+        currentSocket.off('connect');
+        currentSocket.off('disconnect');
+        currentSocket.disconnect();
+      }
+      setSocket(null);
+    };
+  }, [user]);
+
+  // ==========================================
+  // 3. DETECTOR DE INATIVIDADE (Idle Timer)
   // ==========================================
   useEffect(() => {
     const rememberMe = localStorage.getItem('rememberMe') === 'true';
@@ -125,7 +166,7 @@ export const AuthProvider = ({ children }) => {
       >
         <span
           className="material-symbols-rounded spinner-icon"
-          style={{ fontSize: '3rem', animation: 'authSpin 1s linear infinite reverse' }}
+          style={{ fontSize: '3rem', animation: 'authSpin 1s linear infinite' }}
         >
           sync
         </span>
@@ -133,5 +174,8 @@ export const AuthProvider = ({ children }) => {
     );
   }
 
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+  // Agora providenciamos o socket para toda a aplicação
+  return (
+    <AuthContext.Provider value={{ user, login, logout, socket }}>{children}</AuthContext.Provider>
+  );
 };

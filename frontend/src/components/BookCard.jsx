@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getCoverUrl } from '../utils/bookHelpers';
 import './BookCard.css';
 
@@ -10,6 +10,7 @@ import './BookCard.css';
  */
 const BookCard = ({ book, showTags, viewMode = 'grid', onContextMenu }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // CORREÇÃO: Captura a localização atual
 
   const isBorrowed = book.Loans?.some((loan) => !loan.returnDate);
   const readingStatus = book.readingStatus || 'unread';
@@ -43,14 +44,16 @@ const BookCard = ({ book, showTags, viewMode = 'grid', onContextMenu }) => {
   };
 
   const handleClick = (e) => {
-    // Previne a navegação se o clique foi apenas a finalização de um toque longo
     if (isLongPressRef.current) {
       e.preventDefault();
       e.stopPropagation();
       isLongPressRef.current = false;
       return;
     }
-    navigate(`/livro/${book.id}`);
+    // CORREÇÃO CRÍTICA: Envia a rota exata (incluindo query params como ?search=X)
+    // para que o BookDetails saiba exatamente para onde voltar.
+    const exactCurrentUrl = location.pathname + location.search;
+    navigate(`/livro/${book.id}`, { state: { backUrl: exactCurrentUrl } });
   };
 
   const handleContextMenuClick = (e) => {
@@ -67,7 +70,6 @@ const BookCard = ({ book, showTags, viewMode = 'grid', onContextMenu }) => {
     }
   };
 
-  // Empacotamento de propriedades compartilhadas por ambos os layouts (Grid e List)
   const interactionProps = {
     onClick: handleClick,
     onContextMenu: handleContextMenuClick,

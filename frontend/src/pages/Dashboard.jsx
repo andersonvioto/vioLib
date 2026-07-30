@@ -2,23 +2,15 @@ import { useState, useEffect, useCallback, useContext } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 
-// Contextos
-import { LibraryContext } from '../contexts/LibraryContext';
 import { ThemeContext } from '../contexts/ThemeContext';
-
-// Componentes
 import Header from '../components/Header';
 import FilterDrawer from '../components/FilterDrawer';
 import Shelf from '../components/Shelf';
 import BookCard from '../components/BookCard';
 import BookContextMenu from '../components/BookContextMenu';
 
-// Estilos
 import './dashboard.css';
 
-/**
- * Componente interno do Skeleton Screen, adaptado para os 3 modos de visualização.
- */
 const SkeletonCard = ({ viewMode }) => {
   if (viewMode === 'list') {
     return (
@@ -50,17 +42,10 @@ const SkeletonCard = ({ viewMode }) => {
   );
 };
 
-/**
- * Tela Principal da Biblioteca (Dashboard).
- */
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const { currentLibrary } = useContext(LibraryContext);
   const { viewMode, setViewMode } = useContext(ThemeContext);
-
-  const isGuest = !!currentLibrary;
 
   const [myBooks, setMyBooks] = useState([]);
   const [page, setPage] = useState(1);
@@ -77,7 +62,6 @@ const Dashboard = () => {
   const urlReadingStatus = searchParams.get('readingStatus') || '';
 
   const [searchInput, setSearchInput] = useState(urlSearch);
-
   const [sortBy, setSortBy] = useState(() => localStorage.getItem('violib_sortBy') || 'title');
   const [sortOrder, setSortOrder] = useState(
     () => localStorage.getItem('violib_sortOrder') || 'ASC'
@@ -93,55 +77,38 @@ const Dashboard = () => {
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [availableGenres, setAvailableGenres] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
-
-  // =========================================================================
-  // ESTADO DO MENU DE CONTEXTO (Right-Click / Long Press)
-  // =========================================================================
   const [contextMenu, setContextMenu] = useState(null);
 
-  // Agora o scroll só fecha o menu se o utilizador estiver num PC.
-  // No mobile, permitimos o scroll porque a gaveta inferior (Bottom Sheet)
-  // necessita de rolagem caso tenha muitas opções.
   useEffect(() => {
     const handleScroll = () => {
-      if (contextMenu && window.innerWidth > 600) {
-        setContextMenu(null);
-      }
+      if (contextMenu && window.innerWidth > 600) setContextMenu(null);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [contextMenu]);
 
-  // Função para abrir o menu garantindo limites da tela (Desktop)
   const handleContextMenu = useCallback((e, book, isTouch = false) => {
     e.preventDefault();
     let x = e.clientX;
     let y = e.clientY;
-
     if (isTouch && e.touches && e.touches.length > 0) {
       x = e.touches[0].clientX;
       y = e.touches[0].clientY;
     }
-
-    const menuWidth = 260; // Nova largura
-    const menuHeight = 400; // Estimativa com o submenu aberto
-
+    const menuWidth = 260;
+    const menuHeight = 400;
     if (window.innerWidth > 600) {
       if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
       if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
     }
-
     setContextMenu({ x, y, book });
   }, []);
 
-  // Lógica de Atualização Otimista do Status de Leitura
   const handleUpdateStatus = async (book, newStatus) => {
     try {
       const payloadForm = new FormData();
       payloadForm.append('title', book.title);
       payloadForm.append('readingStatus', newStatus);
-
-      // Preserva relacionamentos durante a atualização parcial
       if (book.Authors)
         payloadForm.append('authors', JSON.stringify(book.Authors.map((a) => a.name)));
       if (book.Translators)
@@ -152,36 +119,34 @@ const Dashboard = () => {
         payloadForm.append('subgenres', JSON.stringify(book.Subgenres.map((s) => s.name)));
 
       await api.put(`/books/${book.id}`, payloadForm);
-
-      // UI Otimista: Atualiza visualmente o card instantaneamente
       setMyBooks((prev) =>
         prev.map((b) => (b.id === book.id ? { ...b, readingStatus: newStatus } : b))
       );
     } catch (error) {
-      console.error(error);
+      console.error('Erro update status:', error);
       alert('Erro ao atualizar status de leitura.');
     }
   };
 
-  // Lógica de Exclusão com Atualização Otimista
   const handleDeleteBook = async (book) => {
     if (window.confirm(`Deseja realmente excluir permanentemente "${book.title}" da biblioteca?`)) {
       try {
         await api.delete(`/books/${book.id}`);
-        // Remove da lista instantaneamente
         setMyBooks((prev) => prev.filter((b) => b.id !== book.id));
         setTotalBooks((prev) => prev - 1);
       } catch (error) {
-        console.error(error);
+        console.error('Erro delete book:', error);
         alert('Erro ao excluir a obra.');
       }
     }
   };
 
-  // =========================================================================
-
   useEffect(() => {
-    setSearchInput(urlSearch);
+    const syncSearch = async () => {
+      await Promise.resolve();
+      setSearchInput(urlSearch);
+    };
+    syncSearch();
   }, [urlSearch]);
 
   useEffect(() => {
@@ -239,23 +204,24 @@ const Dashboard = () => {
   }, [sortBy, sortOrder, showOnlyBorrowed, showTagsOnCards]);
 
   useEffect(() => {
-    const params = new URLSearchParams();
-    params.append('usedOnly', 'true');
-    if (currentLibrary) {
-      params.append('ownerId', currentLibrary.ownerId);
-    }
-
-    api
-      .get(`/attributes?${params.toString()}`)
-      .then((res) => {
+    const fetchAttributes = async () => {
+      await Promise.resolve();
+      try {
+        const params = new URLSearchParams();
+        params.append('usedOnly', 'true');
+        const res = await api.get(`/attributes?${params.toString()}`);
         setAvailableGenres(res.data.genres || []);
         setAvailableTags(res.data.tags || []);
-      })
-      .catch(console.error);
-  }, [currentLibrary]);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchAttributes();
+  }, []);
 
   const fetchBooks = useCallback(
     async (targetPage, isReset = false) => {
+      await Promise.resolve();
       setIsLoading(true);
       if (isReset) setMyBooks([]);
 
@@ -275,11 +241,7 @@ const Dashboard = () => {
           borrowed: showOnlyBorrowed ? 'true' : 'false'
         });
 
-        const endpoint = currentLibrary
-          ? `/access/${currentLibrary.ownerId}/books?${params.toString()}`
-          : `/books?${params.toString()}`;
-
-        const response = await api.get(endpoint);
+        const response = await api.get(`/books?${params.toString()}`);
 
         let fetchedBooks = [];
         let totalItems = 0;
@@ -295,11 +257,8 @@ const Dashboard = () => {
           totalPages = 1;
         }
 
-        if (isReset) {
-          setMyBooks(fetchedBooks);
-        } else {
-          setMyBooks((prev) => [...prev, ...fetchedBooks]);
-        }
+        if (isReset) setMyBooks(fetchedBooks);
+        else setMyBooks((prev) => [...prev, ...fetchedBooks]);
 
         setTotalBooks(totalItems);
         setHasMore(targetPage < totalPages);
@@ -323,14 +282,17 @@ const Dashboard = () => {
       sortBy,
       sortOrder,
       showOnlyBorrowed,
-      currentLibrary,
       navigate
     ]
   );
 
   useEffect(() => {
-    setPage(1);
-    fetchBooks(1, true);
+    const initFetch = async () => {
+      await Promise.resolve();
+      setPage(1);
+      fetchBooks(1, true);
+    };
+    initFetch();
   }, [fetchBooks]);
 
   const handleLoadMore = () => {
@@ -346,19 +308,11 @@ const Dashboard = () => {
     ? activeGenreObj.Subgenres || activeGenreObj.subgenres || []
     : [];
 
-  const libraryOwnerName = currentLibrary
-    ? currentLibrary.ownerName ||
-      currentLibrary.Owner?.name ||
-      currentLibrary.User?.name ||
-      'Convidado'
-    : '';
-
   const renderSectionTitle = () => {
     if (urlAuthor) return `Obras de ${urlAuthor}`;
     if (urlTranslator) return `Traduções de ${urlTranslator}`;
     if (urlSubgenre) return urlSubgenre;
     if (urlGenre) return urlGenre;
-    if (currentLibrary) return `Acervo de ${libraryOwnerName}`;
     return 'Minha Biblioteca';
   };
 
@@ -387,7 +341,6 @@ const Dashboard = () => {
             className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
             onClick={() => setViewMode('grid')}
             title="Visualização Padrão"
-            aria-pressed={viewMode === 'grid'}
           >
             <span className="material-symbols-rounded" aria-hidden="true">
               grid_view
@@ -398,7 +351,6 @@ const Dashboard = () => {
             className={`view-toggle-btn ${viewMode === 'compact' ? 'active' : ''}`}
             onClick={() => setViewMode('compact')}
             title="Visualização Compacta"
-            aria-pressed={viewMode === 'compact'}
           >
             <span className="material-symbols-rounded" aria-hidden="true">
               apps
@@ -409,7 +361,6 @@ const Dashboard = () => {
             className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
             onClick={() => setViewMode('list')}
             title="Visualização em Lista"
-            aria-pressed={viewMode === 'list'}
           >
             <span className="material-symbols-rounded" aria-hidden="true">
               view_list
@@ -421,7 +372,6 @@ const Dashboard = () => {
           type="button"
           onClick={() => setIsFilterDrawerOpen(!isFilterDrawerOpen)}
           className={`btn-action btn-filter-trigger ${isFilterDrawerOpen ? 'active' : ''}`}
-          aria-expanded={isFilterDrawerOpen}
         >
           <span className="material-symbols-rounded" aria-hidden="true">
             tune
@@ -454,7 +404,6 @@ const Dashboard = () => {
         onSelect={handleSelectGenre}
         defaultLabel="Toda a Biblioteca"
       />
-
       {activeSubgenres.length > 0 && (
         <Shelf
           items={activeSubgenres}
@@ -494,8 +443,7 @@ const Dashboard = () => {
                   else if (urlTranslator) handleClearStrictFilter('translator');
                   else if (urlReadingStatus) handleClearStrictFilter('readingStatus');
                 }}
-                title="Limpar este filtro específico"
-                aria-label="Limpar filtro ativo"
+                title="Limpar filtro"
               >
                 <span className="material-symbols-rounded" aria-hidden="true">
                   cancel
@@ -526,7 +474,6 @@ const Dashboard = () => {
                 onContextMenu={handleContextMenu}
               />
             ))}
-
             {isLoading &&
               myBooks.length > 0 &&
               Array.from({ length: 5 }).map((_, idx) => (
@@ -553,7 +500,7 @@ const Dashboard = () => {
         onClose={() => setContextMenu(null)}
         onUpdateStatus={handleUpdateStatus}
         onDeleteBook={handleDeleteBook}
-        isGuest={isGuest}
+        isGuest={false}
       />
     </div>
   );

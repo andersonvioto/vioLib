@@ -22,6 +22,7 @@ import PushNotificationManager from './components/PushNotificationManager';
 
 import Community from './pages/Community';
 import PublicProfile from './pages/PublicProfile';
+import ModerationDashboard from './pages/ModerationDashboard'; // NOVO: Fase 4
 
 import './App.css';
 
@@ -236,6 +237,15 @@ function App() {
               element={
                 <PrivateRoute>
                   <PublicProfile />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/moderacao"
+              element={
+                <PrivateRoute>
+                  <ModerationDashboard />
                 </PrivateRoute>
               }
             />

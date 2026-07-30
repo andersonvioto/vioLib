@@ -5,6 +5,7 @@ import ShareSettings from '../components/settings/ShareSettings';
 import TaxonomyManager from '../components/settings/TaxonomyManager';
 import GenreManager from '../components/settings/GenreManager';
 import AppearanceSettings from '../components/settings/AppearanceSettings';
+import BlockManager from '../components/settings/BlockManager';
 import './Settings.css';
 
 /**
@@ -23,6 +24,8 @@ const Settings = () => {
         return <AppearanceSettings />;
       case 'shares':
         return <ShareSettings />;
+      case 'blocks':
+        return <BlockManager />;
       case 'authors':
         return <TaxonomyManager endpoint="authors" title="Gerenciar Autores" itemLabel="Autor" />;
       case 'translators':
@@ -78,7 +81,6 @@ const Settings = () => {
             role="tab"
             id="tab-profile"
             aria-selected={activeTab === 'profile'}
-            aria-controls="settings-tabpanel"
             className={`settings-tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
           >
@@ -93,7 +95,6 @@ const Settings = () => {
             role="tab"
             id="tab-appearance"
             aria-selected={activeTab === 'appearance'}
-            aria-controls="settings-tabpanel"
             className={`settings-tab-btn ${activeTab === 'appearance' ? 'active' : ''}`}
             onClick={() => setActiveTab('appearance')}
           >
@@ -108,7 +109,6 @@ const Settings = () => {
             role="tab"
             id="tab-shares"
             aria-selected={activeTab === 'shares'}
-            aria-controls="settings-tabpanel"
             className={`settings-tab-btn ${activeTab === 'shares' ? 'active' : ''}`}
             onClick={() => setActiveTab('shares')}
           >
@@ -118,12 +118,26 @@ const Settings = () => {
             <span>Compartilhamento</span>
           </button>
 
+          {/* NOVO: Tab de Bloqueios */}
+          <button
+            type="button"
+            role="tab"
+            id="tab-blocks"
+            aria-selected={activeTab === 'blocks'}
+            className={`settings-tab-btn ${activeTab === 'blocks' ? 'active' : ''}`}
+            onClick={() => setActiveTab('blocks')}
+          >
+            <span className="material-symbols-rounded" aria-hidden="true">
+              block
+            </span>
+            <span>Utilizadores Bloqueados</span>
+          </button>
+
           <button
             type="button"
             role="tab"
             id="tab-authors"
             aria-selected={activeTab === 'authors'}
-            aria-controls="settings-tabpanel"
             className={`settings-tab-btn ${activeTab === 'authors' ? 'active' : ''}`}
             onClick={() => setActiveTab('authors')}
           >
@@ -138,7 +152,6 @@ const Settings = () => {
             role="tab"
             id="tab-translators"
             aria-selected={activeTab === 'translators'}
-            aria-controls="settings-tabpanel"
             className={`settings-tab-btn ${activeTab === 'translators' ? 'active' : ''}`}
             onClick={() => setActiveTab('translators')}
           >
@@ -153,7 +166,6 @@ const Settings = () => {
             role="tab"
             id="tab-genres"
             aria-selected={activeTab === 'genres'}
-            aria-controls="settings-tabpanel"
             className={`settings-tab-btn ${activeTab === 'genres' ? 'active' : ''}`}
             onClick={() => setActiveTab('genres')}
           >

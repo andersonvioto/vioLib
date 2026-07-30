@@ -1,0 +1,120 @@
+.report-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.report-modal-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.report-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.report-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+  color: var(--text-danger);
+}
+
+.btn-close-report {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.btn-close-report:hover {
+  color: var(--text-primary);
+}
+
+.report-form {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.report-target-info {
+  background: var(--bg-input);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9em;
+  color: var(--text-secondary);
+}
+
+.report-comment-preview {
+  margin: 8px 0 0 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--border-color);
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.report-instructions {
+  margin: 0;
+  font-size: 0.9em;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.report-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.report-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-danger {
+  background-color: var(--text-danger);
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #ff3333;
+}
+
+.report-feedback {
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.report-feedback.success {
+  background: rgba(0, 255, 0, 0.1);
+  color: #4dff88;
+  border: 1px solid #4dff88;
+}
+
+.report-feedback.error {
+  background: rgba(255, 0, 0, 0.1);
+  color: #ff4d4d;
+  border: 1px solid #ff4d4d;
+}

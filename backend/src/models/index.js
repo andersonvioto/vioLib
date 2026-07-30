@@ -14,6 +14,8 @@ const Friendship = require('./Friendship');
 const Comment = require('./Comment');
 const Notification = require('./Notification');
 const PushSubscription = require('./PushSubscription');
+const Block = require('./Block');
+const Report = require('./Report');
 
 User.hasMany(Book, { foreignKey: 'UserId', onDelete: 'CASCADE' });
 Book.belongsTo(User, { foreignKey: 'UserId' });
@@ -78,6 +80,27 @@ Notification.belongsTo(User, { foreignKey: 'senderId', as: 'Sender' });
 User.hasMany(PushSubscription, { foreignKey: 'UserId', onDelete: 'CASCADE' });
 PushSubscription.belongsTo(User, { foreignKey: 'UserId' });
 
+// ==========================================
+// MODERAÇÃO E CONFIANÇA (UGC)
+// ==========================================
+
+// Bloqueios
+User.hasMany(Block, { foreignKey: 'blockerId', as: 'BlocksInitiated' });
+Block.belongsTo(User, { foreignKey: 'blockerId', as: 'Blocker' });
+
+User.hasMany(Block, { foreignKey: 'blockedId', as: 'BlocksReceived' });
+Block.belongsTo(User, { foreignKey: 'blockedId', as: 'Blocked' });
+
+// Denúncias (Reports)
+User.hasMany(Report, { foreignKey: 'reporterId', as: 'ReportsSubmitted' });
+Report.belongsTo(User, { foreignKey: 'reporterId', as: 'Reporter' });
+
+User.hasMany(Report, { foreignKey: 'reportedUserId', as: 'ReportsReceived' });
+Report.belongsTo(User, { foreignKey: 'reportedUserId', as: 'ReportedUser' });
+
+Comment.hasMany(Report, { foreignKey: 'reportedCommentId' });
+Report.belongsTo(Comment, { foreignKey: 'reportedCommentId' });
+
 module.exports = {
   sequelize,
   User,
@@ -94,5 +117,7 @@ module.exports = {
   Friendship,
   Comment,
   Notification,
-  PushSubscription
+  PushSubscription,
+  Block,
+  Report
 };

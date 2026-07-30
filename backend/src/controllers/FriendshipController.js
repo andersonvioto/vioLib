@@ -1,6 +1,19 @@
 const { Op } = require('sequelize');
-const { User, Friendship, Notification } = require('../models');
+const { User, Friendship, Notification, Block } = require('../models');
 const pushService = require('../services/pushService');
+
+/**
+ * Função utilitária para extrair todos os IDs de utilizadores
+ * que bloquearam o utilizador logado ou que foram bloqueados por ele.
+ */
+const getBlockedIds = async (userId) => {
+  const blocks = await Block.findAll({
+    where: {
+      [Op.or]: [{ blockerId: userId }, { blockedId: userId }]
+    }
+  });
+  return blocks.map((b) => (b.blockerId === userId ? b.blockedId : b.blockerId));
+};
 
 exports.searchUsers = async (req, res) => {
   try {
@@ -10,7 +23,6 @@ exports.searchUsers = async (req, res) => {
       return res.status(400).json({ error: 'Termo de pesquisa inválido.' });
     }
 
-    // HIGIENIZAÇÃO INTELIGENTE: Remove espaços nas pontas e o '@' inicial, se existir.
     const cleanQuery = q.trim().replace(/^@/, '');
 
     if (cleanQuery.length < 3) {
@@ -19,9 +31,13 @@ exports.searchUsers = async (req, res) => {
         .json({ error: 'Digite pelo menos 3 caracteres válidos para pesquisar.' });
     }
 
+    // Filtra utilizadores bloqueados ou que nos bloquearam (Filtro UGC)
+    const blockedIds = await getBlockedIds(req.userId);
+    const excludedIds = [req.userId, ...blockedIds];
+
     const users = await User.findAll({
       where: {
-        id: { [Op.ne]: req.userId },
+        id: { [Op.notIn]: excludedIds },
         [Op.or]: [
           { username: { [Op.like]: `%${cleanQuery.toLowerCase()}%` } },
           { name: { [Op.like]: `%${cleanQuery}%` } }
@@ -41,9 +57,18 @@ exports.sendRequest = async (req, res) => {
   try {
     const { receiverId } = req.body;
     const requesterId = req.userId;
+    const targetIdInt = parseInt(receiverId, 10);
 
-    if (requesterId === parseInt(receiverId, 10)) {
+    if (requesterId === targetIdInt) {
       return res.status(400).json({ error: 'Não pode enviar um convite a si mesmo.' });
+    }
+
+    // Intercetação UGC: Valida se existe um bloqueio entre as partes
+    const blockedIds = await getBlockedIds(requesterId);
+    if (blockedIds.includes(targetIdInt)) {
+      return res
+        .status(403)
+        .json({ error: 'Ação não permitida devido a restrições de privacidade.' });
     }
 
     const existingFriendship = await Friendship.findOne({
@@ -72,12 +97,10 @@ exports.sendRequest = async (req, res) => {
 
     const sender = await User.findByPk(requesterId);
 
-    // EMISSÃO SOCKET
     if (req.io) {
       req.io.to(`user_${receiverId}`).emit('new_notification', notification);
     }
 
-    // EMISSÃO WEB PUSH NATIVA (Ativa o telemóvel)
     await pushService.sendPushNotification(receiverId, {
       title: 'Novo Pedido de Amizade!',
       body: `${sender.name} enviou um convite.`,
@@ -104,6 +127,13 @@ exports.respondRequest = async (req, res) => {
       return res.status(404).json({ error: 'Pedido não encontrado ou já processado.' });
     }
 
+    // Intercetação UGC de Segurança Extra
+    const blockedIds = await getBlockedIds(req.userId);
+    if (blockedIds.includes(friendship.requesterId)) {
+      await friendship.destroy();
+      return res.status(403).json({ error: 'Ação bloqueada. Pedido removido silenciosamente.' });
+    }
+
     if (accept) {
       friendship.status = 'accepted';
       await friendship.save();
@@ -117,7 +147,6 @@ exports.respondRequest = async (req, res) => {
 
       const accepter = await User.findByPk(req.userId);
 
-      // EMISSÃO SOCKET E PUSH
       if (req.io) {
         req.io.to(`user_${friendship.requesterId}`).emit('new_notification', notification);
       }
@@ -172,6 +201,10 @@ exports.listFriends = async (req, res) => {
       ]
     });
 
+    // Intercetação UGC: Filtra para não enviar amigos que foram bloqueados
+    // (O BlockController já apaga a amizade, mas o filtro é uma camada extra de segurança)
+    const blockedIds = await getBlockedIds(userId);
+
     const friends = [];
     const pendingSent = [];
     const pendingReceived = [];
@@ -179,6 +212,9 @@ exports.listFriends = async (req, res) => {
     connections.forEach((conn) => {
       const isRequester = conn.requesterId === userId;
       const targetUser = isRequester ? conn.Receiver : conn.Requester;
+
+      // Ignora se o utilizador está na lista de bloqueios
+      if (blockedIds.includes(targetUser.id)) return;
 
       const payload = { friendshipId: conn.id, user: targetUser, since: conn.updatedAt };
 

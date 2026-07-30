@@ -4,6 +4,7 @@ const { User } = require('../models');
 
 /**
  * Busca os dados públicos e privados do perfil do usuário logado.
+ * (Inclui a role para hidratação correta de sessão e permissões)
  */
 exports.getProfile = async (req, res) => {
   try {
@@ -14,6 +15,7 @@ exports.getProfile = async (req, res) => {
         'email',
         'username',
         'avatarUrl',
+        'role', // GARANTIA DE SESSÃO: Retorna a role no F5
         'shareCollections',
         'shareReadingStatus',
         'shareNotes'
@@ -126,7 +128,8 @@ exports.updateProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         username: user.username,
-        avatarUrl: user.avatarUrl
+        avatarUrl: user.avatarUrl,
+        role: user.role // GARANTIA DE SESSÃO: Mantém o admin vivo após o Update
       }
     });
   } catch (error) {

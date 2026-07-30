@@ -65,7 +65,7 @@ const Header = () => {
   }, []);
 
   const fetchNotifications = useCallback(async () => {
-    await Promise.resolve(); // Barreira de micro-tarefa para evitar cascading renders
+    await Promise.resolve();
     try {
       const response = await api.get('/notifications');
       setNotifications(response.data);
@@ -323,6 +323,21 @@ const Header = () => {
                     <strong>{user?.name}</strong>
                     <span>@{user?.username || 'sem_username'}</span>
                   </div>
+
+                  {user?.role === 'admin' && (
+                    <button
+                      onClick={() => {
+                        navigate('/moderacao');
+                        setIsProfileMenuOpen(false);
+                      }}
+                      className="dropdown-item"
+                      style={{ color: 'var(--text-danger)' }}
+                    >
+                      <span className="material-symbols-rounded">admin_panel_settings</span> Painel
+                      Admin
+                    </button>
+                  )}
+
                   <button
                     onClick={() => {
                       navigate('/configuracoes');
@@ -332,7 +347,9 @@ const Header = () => {
                   >
                     <span className="material-symbols-rounded">settings</span> Configurações
                   </button>
+
                   <div className="dropdown-divider"></div>
+
                   <button onClick={logout} className="dropdown-item danger">
                     <span className="material-symbols-rounded">logout</span> Sair
                   </button>

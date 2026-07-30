@@ -44,6 +44,10 @@ const publicLibraryRoutes = require('./routes/publicLibraryRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 
+const blockRoutes = require('./routes/blockRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+const moderationRoutes = require('./routes/moderationRoutes');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/attributes', attributeRoutes);
@@ -55,6 +59,10 @@ app.use('/api/friendships', friendshipRoutes);
 app.use('/api/public-library', publicLibraryRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/notifications', notificationRoutes);
+
+app.use('/api/blocks', blockRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/moderation', moderationRoutes);
 
 const PORT = process.env.PORT || 3000;
 

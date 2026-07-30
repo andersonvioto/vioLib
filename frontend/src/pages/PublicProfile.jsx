@@ -1,8 +1,9 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
+import { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Header from '../components/Header';
 import BookCard from '../components/BookCard';
+import ReportModal from '../components/ReportModal';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { getCoverUrl } from '../utils/bookHelpers';
 import './PublicProfile.css';
@@ -24,7 +25,7 @@ const getInitials = (name) => {
 };
 
 const PublicProfile = () => {
-  const { friendId } = useParams();
+  const { friendId } = useParams(); // Usamos friendId de forma robusta como o ID do alvo
   const navigate = useNavigate();
   const { viewMode } = useContext(ThemeContext);
 
@@ -44,9 +45,30 @@ const PublicProfile = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [colErrorMsg, setColErrorMsg] = useState('');
 
+  // UGC: Estados de Moderação e Menus
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
+  // Novos estados para o Modal Moderno de Bloqueio (Substituindo o window.confirm)
+  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+  const [isBlockLoading, setIsBlockLoading] = useState(false);
+  const [blockError, setBlockError] = useState('');
+
+  const modMenuRef = useRef(null);
+
+  // Click-outside listener para o menu de moderação
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modMenuRef.current && !modMenuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const fetchProfileData = useCallback(
     async (targetPage = 1) => {
-      // Força uma quebra assíncrona antes de alterar o estado, anulando o aviso do Linter
       await Promise.resolve();
 
       if (targetPage === 1) {
@@ -57,7 +79,6 @@ const PublicProfile = () => {
       }
 
       try {
-        // Fetch Books com paginação
         const booksRes = await api.get(
           `/public-library/${friendId}/books?limit=20&page=${targetPage}`
         );
@@ -73,7 +94,6 @@ const PublicProfile = () => {
 
         setHasMore(targetPage < (booksRes.data.totalPages || 1));
 
-        // Fetch Collections (Apenas no primeiro load)
         if (targetPage === 1) {
           try {
             const colRes = await api.get(`/public-library/${friendId}/collections`);
@@ -86,7 +106,9 @@ const PublicProfile = () => {
         }
       } catch (err) {
         if (err.response?.status === 403) {
-          setErrorMsg('Acesso negado. Apenas amigos aprovados podem ver esta biblioteca.');
+          setErrorMsg(
+            'Acesso negado ou restrito pelas configurações de privacidade deste utilizador.'
+          );
         } else {
           setErrorMsg('Erro ao carregar perfil.');
         }
@@ -111,6 +133,19 @@ const PublicProfile = () => {
     fetchProfileData(nextPage);
   };
 
+  const executeBlockUser = async () => {
+    setIsBlockLoading(true);
+    setBlockError('');
+    try {
+      // Usa friendId diretamente, garantindo que o ID é enviado independente do payload do GET
+      await api.post('/blocks', { blockedId: friendId });
+      navigate('/comunidade'); // Redirecionamento limpo sem alert()
+    } catch (error) {
+      setBlockError(error.response?.data?.error || 'Erro ao bloquear utilizador.');
+      setIsBlockLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="dashboard-container">
@@ -132,7 +167,7 @@ const PublicProfile = () => {
           <h2>Acesso Restrito</h2>
           <p>{errorMsg}</p>
           <button className="btn-action btn-primary" onClick={() => navigate('/comunidade')}>
-            Voltar à Amigos
+            Voltar à Comunidade
           </button>
         </div>
       </div>
@@ -145,7 +180,152 @@ const PublicProfile = () => {
     <div className="dashboard-container">
       <Header />
 
-      <div className="profile-hero">
+      {/* Modal de Denúncia injetando explicitamente o ID do amigo para evitar falhas */}
+      {isReportModalOpen && owner && (
+        <ReportModal
+          targetUser={{ ...owner, id: friendId }}
+          onClose={() => setIsReportModalOpen(false)}
+        />
+      )}
+
+      {/* Modal Moderno de Confirmação de Bloqueio (Substitui o window.confirm e alert) */}
+      {isBlockModalOpen && (
+        <div className="report-modal-overlay" onClick={() => setIsBlockModalOpen(false)}>
+          <div
+            className="report-modal-box"
+            style={{ maxWidth: '400px', padding: '20px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              style={{
+                color: 'var(--text-danger)',
+                marginTop: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <span className="material-symbols-rounded">block</span> Bloquear Utilizador
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', lineHeight: '1.5', margin: '15px 0' }}>
+              Tem a certeza que deseja bloquear <strong>{owner?.name}</strong>? Vocês deixarão de
+              ser amigos e não poderão ver os perfis ou comentários um do outro.
+            </p>
+
+            {blockError && (
+              <div
+                style={{
+                  padding: '10px',
+                  background: 'rgba(255,0,0,0.1)',
+                  color: 'var(--text-danger)',
+                  borderRadius: '4px',
+                  marginBottom: '15px',
+                  fontSize: '0.9em'
+                }}
+              >
+                {blockError}
+              </div>
+            )}
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '10px',
+                marginTop: '10px'
+              }}
+            >
+              <button
+                className="btn-action"
+                onClick={() => setIsBlockModalOpen(false)}
+                disabled={isBlockLoading}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn-action btn-danger"
+                onClick={executeBlockUser}
+                disabled={isBlockLoading}
+              >
+                {isBlockLoading ? 'A Bloquear...' : 'Sim, Bloquear'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="profile-hero" style={{ position: 'relative' }}>
+        <div
+          className="profile-mod-menu"
+          ref={modMenuRef}
+          style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 100 }}
+        >
+          <button
+            className="btn-action"
+            style={{
+              background: 'rgba(0,0,0,0.5)',
+              border: 'none',
+              color: '#fff',
+              padding: '8px',
+              borderRadius: '50%'
+            }}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            title="Opções do Perfil"
+          >
+            <span className="material-symbols-rounded">more_vert</span>
+          </button>
+
+          {isMenuOpen && (
+            <div
+              className="profile-dropdown-menu"
+              style={{
+                position: 'absolute',
+                right: '0',
+                top: 'calc(100% + 5px)',
+                width: '210px',
+                zIndex: 101,
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                overflow: 'hidden'
+              }}
+            >
+              <button
+                className="dropdown-item"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  setIsReportModalOpen(true);
+                }}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  textAlign: 'left',
+                  padding: '12px'
+                }}
+              >
+                <span className="material-symbols-rounded">report</span> Denunciar Perfil
+              </button>
+              <div className="dropdown-divider" style={{ margin: 0 }}></div>
+              <button
+                className="dropdown-item danger"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  setIsBlockModalOpen(true);
+                }}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  textAlign: 'left',
+                  padding: '12px'
+                }}
+              >
+                <span className="material-symbols-rounded">block</span> Bloquear Utilizador
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="profile-hero-avatar">
           {avatarSrc ? (
             <img src={avatarSrc} alt={owner?.name} />
@@ -186,7 +366,6 @@ const PublicProfile = () => {
                 ))}
               </div>
 
-              {/* Botão de Paginação igual ao do Dashboard */}
               {hasMore && (
                 <div
                   className="pagination-trigger-zone"

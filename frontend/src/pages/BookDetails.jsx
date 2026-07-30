@@ -8,6 +8,7 @@ import BookDetailHeader from '../components/BookDetailHeader';
 import LoanManager from '../components/LoanManager';
 import BookMetadataGrid from '../components/BookMetadataGrid';
 import BookDetailSkeleton from '../components/BookDetailSkeleton';
+import ReportModal from '../components/ReportModal';
 
 import './BookDetails.css';
 
@@ -53,6 +54,9 @@ const BookDetails = () => {
   const [newComment, setNewComment] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
+  // Estado UGC
+  const [reportingComment, setReportingComment] = useState(null);
+
   const fetchBookDetails = useCallback(async () => {
     try {
       const response = await api.get(`/books/${id}`);
@@ -74,7 +78,6 @@ const BookDetails = () => {
   }, [id]);
 
   useEffect(() => {
-    // Solução para o erro do Linter: Isolamos a execução síncrona numa função async
     const loadPageData = async () => {
       await fetchBookDetails();
       await fetchComments();
@@ -131,6 +134,10 @@ const BookDetails = () => {
 
   return (
     <div className="details-container">
+      {reportingComment && (
+        <ReportModal targetComment={reportingComment} onClose={() => setReportingComment(null)} />
+      )}
+
       <div className="fixed-detail-header">
         <div className="fixed-detail-header-inner">
           <BookDetailHeader book={book} onDelete={handleDelete} />
@@ -247,14 +254,42 @@ const BookDetails = () => {
                       </div>
                       <p className="comment-text">{comment.content}</p>
 
-                      {isMyComment && (
-                        <button
-                          className="btn-delete-comment"
-                          onClick={() => handleDeleteComment(comment.id)}
-                        >
-                          Apagar
-                        </button>
-                      )}
+                      <div
+                        className="comment-actions-bar"
+                        style={{ display: 'flex', gap: '15px', marginTop: '8px' }}
+                      >
+                        {isMyComment && (
+                          <button
+                            className="btn-delete-comment"
+                            onClick={() => handleDeleteComment(comment.id)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--text-danger)',
+                              fontSize: '0.85em',
+                              cursor: 'pointer',
+                              padding: 0
+                            }}
+                          >
+                            Apagar
+                          </button>
+                        )}
+                        {!isMyComment && (
+                          <button
+                            onClick={() => setReportingComment(comment)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--text-muted)',
+                              fontSize: '0.85em',
+                              cursor: 'pointer',
+                              padding: 0
+                            }}
+                          >
+                            Denunciar
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

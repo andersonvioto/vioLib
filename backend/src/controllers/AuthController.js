@@ -114,17 +114,25 @@ exports.login = async (req, res) => {
       return res.status(403).json({ error: 'Por favor, confirme seu e-mail antes de acessar.' });
     }
 
+    // MODERAÇÃO: Bloqueia utilizadores banidos antes da emissão do token
+    if (user.role === 'banned') {
+      return res.status(403).json({
+        error: 'A sua conta foi banida permanentemente por violação das políticas da comunidade.'
+      });
+    }
+
     const expiresIn = rememberMe ? '30d' : '1d';
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn });
 
-    // Atualizado para expor os novos dados sociais ao frontend imediatamente após o login
+    // Inclui a "role" no payload para que o frontend saiba se o utilizador é admin
     res.json({
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
         username: user.username,
-        avatarUrl: user.avatarUrl
+        avatarUrl: user.avatarUrl,
+        role: user.role
       },
       token
     });
@@ -166,6 +174,11 @@ exports.googleLogin = async (req, res) => {
       );
 
       await initializeUserGenres(user.id, transaction);
+    } else if (user.role === 'banned') {
+      await transaction.rollback();
+      return res.status(403).json({
+        error: 'A sua conta foi banida permanentemente por violação das políticas da comunidade.'
+      });
     }
 
     await transaction.commit();
@@ -178,7 +191,8 @@ exports.googleLogin = async (req, res) => {
         name: user.name,
         email: user.email,
         username: user.username,
-        avatarUrl: user.avatarUrl
+        avatarUrl: user.avatarUrl,
+        role: user.role
       },
       token: jwtToken
     });
@@ -217,6 +231,12 @@ exports.forgotPassword = async (req, res) => {
     const user = await User.findOne({ where: { email } });
 
     if (user) {
+      if (user.role === 'banned') {
+        return res
+          .status(403)
+          .json({ error: 'Contas banidas não podem solicitar recuperação de senha.' });
+      }
+
       const token = crypto.randomBytes(32).toString('hex');
       user.resetPasswordToken = token;
       user.resetPasswordExpires = new Date(Date.now() + 3600000);

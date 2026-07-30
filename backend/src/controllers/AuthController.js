@@ -43,6 +43,44 @@ const initializeUserGenres = async (userId, transaction) => {
   );
 };
 
+/**
+ * Função utilitária para gerar um username único baseado no e-mail.
+ */
+const generateUniqueUsername = async (email, transaction) => {
+  // Pega a parte antes do @ e remove tudo que não for letra ou número
+  let baseUsername = email
+    .split('@')[0]
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase();
+
+  // Fallback caso o e-mail seja composto apenas por caracteres especiais (raro, mas possível)
+  if (!baseUsername) {
+    baseUsername = 'user';
+  }
+
+  let uniqueUsername = baseUsername;
+  let counter = 1;
+  let userExists = true;
+
+  // Loop para garantir que o username gerado não existe na base de dados
+  while (userExists) {
+    const existingUser = await User.findOne({
+      where: { username: uniqueUsername },
+      transaction
+    });
+
+    if (existingUser) {
+      // Se existir, adiciona o contador ao final (ex: joaosilva1, joaosilva2)
+      uniqueUsername = `${baseUsername}${counter}`;
+      counter++;
+    } else {
+      userExists = false;
+    }
+  }
+
+  return uniqueUsername;
+};
+
 exports.register = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
@@ -55,6 +93,9 @@ exports.register = async (req, res) => {
       return res.status(400).json({ error: 'Este e-mail já está em uso.' });
     }
 
+    // Gera o username único dinamicamente antes de criar o utilizador
+    const generatedUsername = await generateUniqueUsername(email, transaction);
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
@@ -62,6 +103,7 @@ exports.register = async (req, res) => {
       {
         name,
         email,
+        username: generatedUsername, // Injeta o username gerado aqui
         password: hashedPassword,
         language,
         verificationToken,
@@ -159,6 +201,9 @@ exports.googleLogin = async (req, res) => {
     let user = await User.findOne({ where: { email }, transaction });
 
     if (!user) {
+      // Gera o username único também para os utilizadores do Google
+      const generatedUsername = await generateUniqueUsername(email, transaction);
+
       const randomPassword = crypto.randomBytes(16).toString('hex');
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
@@ -166,6 +211,7 @@ exports.googleLogin = async (req, res) => {
         {
           name,
           email,
+          username: generatedUsername, // Injeta o username gerado aqui
           password: hashedPassword,
           isVerified: true,
           language: 'pt-BR'

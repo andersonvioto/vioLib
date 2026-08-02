@@ -502,6 +502,17 @@ const Dashboard = () => {
         onDeleteBook={handleDeleteBook}
         isGuest={false}
       />
+
+      {/* FAB - Floating Action Button para inserir novo livro */}
+      <button
+        type="button"
+        className="fab-add-book"
+        onClick={() => navigate('/novo-livro')}
+        title="Novo Livro"
+        aria-label="Adicionar novo livro"
+      >
+        <span className="material-symbols-rounded">add</span>
+      </button>
     </div>
   );
 };

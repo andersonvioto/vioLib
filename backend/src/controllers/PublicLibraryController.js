@@ -14,11 +14,8 @@ const {
 } = require('../models');
 
 /**
- * Novo Controlador para substituir o AccessController.
- * Implementa a regra rigorosa de Privacidade Global.
+ * Helper para validar a amizade antes de exibir dados
  */
-
-// Helper para validar a amizade antes de exibir dados
 const checkFriendship = async (userId, friendId) => {
   if (userId === parseInt(friendId, 10)) return true; // Eu vejo as minhas próprias coisas
 
@@ -37,7 +34,19 @@ const checkFriendship = async (userId, friendId) => {
 exports.getFriendBooks = async (req, res) => {
   try {
     const { friendId } = req.params;
-    const { page = 1, limit = 20, search = '' } = req.query;
+    const {
+      page = 1,
+      limit = 20,
+      search = '',
+      sortBy = 'title',
+      order = 'ASC',
+      genre = '',
+      subgenre = '',
+      tag = '',
+      author = '',
+      translator = '',
+      readingStatus = ''
+    } = req.query;
 
     const isFriend = await checkFriendship(req.userId, friendId);
     if (!isFriend) {
@@ -55,19 +64,46 @@ exports.getFriendBooks = async (req, res) => {
     const offset = (page - 1) * limit;
     const bookWhere = { UserId: friendId };
 
+    // Filtros de Texto
     if (search) bookWhere.title = { [Op.like]: `%${search}%` };
 
+    // Filtro de Privacidade: Só aplica o filtro de status se o amigo permitir partilhar essa info
+    if (readingStatus && friend.shareReadingStatus) {
+      bookWhere.readingStatus = readingStatus;
+    }
+
+    // Ordenação
+    const orderClause =
+      sortBy === 'author'
+        ? [
+            [Author, 'name', order],
+            ['title', 'ASC']
+          ]
+        : sortBy === 'releaseYear'
+          ? [
+              ['releaseYear', order],
+              ['title', 'ASC']
+            ]
+          : sortBy === 'createdAt'
+            ? [['createdAt', order]]
+            : [['title', order]];
+
+    // Joins Estritos para Filtros
     const { count, rows } = await Book.findAndCountAll({
       where: bookWhere,
       include: [
-        { model: Author },
-        { model: Translator },
-        { model: Subgenre },
-        { model: Genre },
-        { model: Tag },
+        { model: Author, where: author ? { name: author } : undefined, required: !!author },
+        {
+          model: Translator,
+          where: translator ? { name: translator } : undefined,
+          required: !!translator
+        },
+        { model: Subgenre, where: subgenre ? { name: subgenre } : undefined, required: !!subgenre },
+        { model: Genre, where: genre ? { name: genre } : undefined, required: !!genre },
+        { model: Tag, where: tag ? { name: tag } : undefined, required: !!tag },
         { model: Loan }
       ],
-      order: [['title', 'ASC']],
+      order: orderClause,
       limit: parseInt(limit, 10),
       offset: parseInt(offset, 10),
       distinct: true
@@ -82,7 +118,12 @@ exports.getFriendBooks = async (req, res) => {
     });
 
     res.json({
-      owner: { name: friend.name, username: friend.username },
+      owner: {
+        name: friend.name,
+        username: friend.username,
+        avatarUrl: friend.avatarUrl,
+        id: friend.id
+      },
       books: sanitizedBooks,
       totalItems: count,
       totalPages: Math.ceil(count / limit),

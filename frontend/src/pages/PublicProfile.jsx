@@ -1,11 +1,15 @@
 import { useState, useEffect, useContext, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
+
 import Header from '../components/Header';
 import BookCard from '../components/BookCard';
 import ReportModal from '../components/ReportModal';
+import FilterDrawer from '../components/FilterDrawer';
+import Shelf from '../components/Shelf';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { getCoverUrl } from '../utils/bookHelpers';
+
 import './PublicProfile.css';
 
 const getAvatarUrl = (filename) => {
@@ -25,19 +29,38 @@ const getInitials = (name) => {
 };
 
 const PublicProfile = () => {
-  const { friendId } = useParams(); // Usamos friendId de forma robusta como o ID do alvo
+  const { friendId } = useParams();
   const navigate = useNavigate();
-  const { viewMode } = useContext(ThemeContext);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { viewMode, setViewMode } = useContext(ThemeContext);
 
   const [activeTab, setActiveTab] = useState('books');
   const [owner, setOwner] = useState(null);
 
-  // Estados de Paginação dos Livros
+  // Estados dos Filtros na URL
+  const urlSearch = searchParams.get('search') || '';
+  const urlGenre = searchParams.get('genre') || '';
+  const urlSubgenre = searchParams.get('subgenre') || '';
+  const urlTag = searchParams.get('tag') || '';
+  const urlAuthor = searchParams.get('author') || '';
+  const urlTranslator = searchParams.get('translator') || '';
+  const urlReadingStatus = searchParams.get('readingStatus') || '';
+
+  const [searchInput, setSearchInput] = useState(urlSearch);
+  const [sortBy, setSortBy] = useState(() => localStorage.getItem('violib_sortBy') || 'title');
+  const [sortOrder, setSortOrder] = useState(
+    () => localStorage.getItem('violib_sortOrder') || 'ASC'
+  );
+
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [availableGenres, setAvailableGenres] = useState([]);
+  const [availableTags, setAvailableTags] = useState([]);
+
+  // Estados de Dados e Paginação
   const [books, setBooks] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [totalBooks, setTotalBooks] = useState(0);
-
   const [collections, setCollections] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -48,15 +71,13 @@ const PublicProfile = () => {
   // UGC: Estados de Moderação e Menus
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-
-  // Novos estados para o Modal Moderno de Bloqueio (Substituindo o window.confirm)
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [isBlockLoading, setIsBlockLoading] = useState(false);
   const [blockError, setBlockError] = useState('');
 
   const modMenuRef = useRef(null);
 
-  // Click-outside listener para o menu de moderação
+  // 1. Fecha Menu Moderação ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modMenuRef.current && !modMenuRef.current.contains(event.target)) {
@@ -67,26 +88,67 @@ const PublicProfile = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchProfileData = useCallback(
-    async (targetPage = 1) => {
-      await Promise.resolve();
+  // 2. Debounce para o input de pesquisa
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchInput !== urlSearch) {
+        const newParams = new URLSearchParams(searchParams);
+        if (searchInput) newParams.set('search', searchInput);
+        else newParams.delete('search');
+        setSearchParams(newParams);
+      }
+    }, 600);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchInput, urlSearch, searchParams, setSearchParams]);
 
-      if (targetPage === 1) {
+  // 3. Busca de Atributos Específicos deste Amigo
+  useEffect(() => {
+    const fetchAttributes = async () => {
+      await Promise.resolve();
+      try {
+        const res = await api.get(`/attributes?usedOnly=true&ownerId=${friendId}`);
+        setAvailableGenres(res.data.genres || []);
+        setAvailableTags(res.data.tags || []);
+      } catch (error) {
+        console.error('Erro ao buscar filtros do amigo', error);
+      }
+    };
+    fetchAttributes();
+  }, [friendId]);
+
+  // 4. Fetch Principal do Perfil
+  const fetchProfileData = useCallback(
+    async (targetPage, isReset = false) => {
+      await Promise.resolve();
+      if (isReset) {
         setIsLoading(true);
-        setPage(1);
+        setBooks([]);
       } else {
         setIsLoadingMore(true);
       }
 
       try {
-        const booksRes = await api.get(
-          `/public-library/${friendId}/books?limit=20&page=${targetPage}`
-        );
+        const params = new URLSearchParams({
+          page: targetPage,
+          limit: 20,
+          search: urlSearch,
+          sortBy: sortBy,
+          order: sortOrder,
+          genre: urlGenre,
+          subgenre: urlSubgenre,
+          tag: urlTag,
+          author: urlAuthor,
+          translator: urlTranslator,
+          readingStatus: urlReadingStatus
+        });
+
+        const booksRes = await api.get(`/public-library/${friendId}/books?${params.toString()}`);
+
         setOwner(booksRes.data.owner);
         setTotalBooks(booksRes.data.totalItems || 0);
 
         const newBooks = booksRes.data.books || [];
-        if (targetPage === 1) {
+        if (isReset) {
           setBooks(newBooks);
         } else {
           setBooks((prev) => [...prev, ...newBooks]);
@@ -94,20 +156,21 @@ const PublicProfile = () => {
 
         setHasMore(targetPage < (booksRes.data.totalPages || 1));
 
-        if (targetPage === 1) {
+        // Busca coleções apenas no load inicial
+        if (isReset) {
           try {
             const colRes = await api.get(`/public-library/${friendId}/collections`);
             setCollections(colRes.data || []);
           } catch (colErr) {
             if (colErr.response?.status === 403) {
-              setColErrorMsg('Este usuário configurou as suas coleções como privadas.');
+              setColErrorMsg('Este utilizador configurou as suas coleções como privadas.');
             }
           }
         }
       } catch (err) {
         if (err.response?.status === 403) {
           setErrorMsg(
-            'Acesso negado ou restrito pelas configurações de privacidade deste usuário.'
+            'Acesso negado ou restrito pelas configurações de privacidade deste utilizador.'
           );
         } else {
           setErrorMsg('Erro ao carregar perfil.');
@@ -117,12 +180,24 @@ const PublicProfile = () => {
         setIsLoadingMore(false);
       }
     },
-    [friendId]
+    [
+      friendId,
+      urlSearch,
+      urlGenre,
+      urlSubgenre,
+      urlTag,
+      urlAuthor,
+      urlTranslator,
+      urlReadingStatus,
+      sortBy,
+      sortOrder
+    ]
   );
 
   useEffect(() => {
     const initFetch = async () => {
-      await fetchProfileData(1);
+      setPage(1);
+      await fetchProfileData(1, true);
     };
     initFetch();
   }, [fetchProfileData]);
@@ -130,23 +205,44 @@ const PublicProfile = () => {
   const handleLoadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchProfileData(nextPage);
+    fetchProfileData(nextPage, false);
   };
 
   const executeBlockUser = async () => {
     setIsBlockLoading(true);
     setBlockError('');
     try {
-      // Usa friendId diretamente, garantindo que o ID é enviado independente do payload do GET
       await api.post('/blocks', { blockedId: friendId });
-      navigate('/comunidade'); // Redirecionamento limpo sem alert()
+      navigate('/comunidade');
     } catch (error) {
-      setBlockError(error.response?.data?.error || 'Erro ao bloquear usuário.');
+      setBlockError(error.response?.data?.error || 'Erro ao bloquear utilizador.');
       setIsBlockLoading(false);
     }
   };
 
-  if (isLoading) {
+  // Funções de manipulação da URL
+  const handleSelectGenre = (val) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (val) newParams.set('genre', val);
+    else newParams.delete('genre');
+    newParams.delete('subgenre');
+    setSearchParams(newParams);
+  };
+
+  const handleSelectSubgenre = (val) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (val) newParams.set('subgenre', val);
+    else newParams.delete('subgenre');
+    setSearchParams(newParams);
+  };
+
+  const handleClearStrictFilter = (paramKey) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete(paramKey);
+    setSearchParams(newParams);
+  };
+
+  if (isLoading && books.length === 0) {
     return (
       <div className="dashboard-container">
         <Header />
@@ -175,12 +271,25 @@ const PublicProfile = () => {
   }
 
   const avatarSrc = getAvatarUrl(owner?.avatarUrl);
+  const activeGenreObj = availableGenres.find(
+    (g) => g.name?.trim().toLowerCase() === urlGenre?.trim().toLowerCase()
+  );
+  const activeSubgenres = activeGenreObj
+    ? activeGenreObj.Subgenres || activeGenreObj.subgenres || []
+    : [];
+
+  const renderSectionTitle = () => {
+    if (urlAuthor) return `Obras de ${urlAuthor}`;
+    if (urlTranslator) return `Traduções de ${urlTranslator}`;
+    if (urlSubgenre) return urlSubgenre;
+    if (urlGenre) return urlGenre;
+    return 'Acervo do Amigo';
+  };
 
   return (
     <div className="dashboard-container">
       <Header />
 
-      {/* Modal de Denúncia injetando explicitamente o ID do amigo para evitar falhas */}
       {isReportModalOpen && owner && (
         <ReportModal
           targetUser={{ ...owner, id: friendId }}
@@ -188,7 +297,6 @@ const PublicProfile = () => {
         />
       )}
 
-      {/* Modal Moderno de Confirmação de Bloqueio (Substitui o window.confirm e alert) */}
       {isBlockModalOpen && (
         <div className="report-modal-overlay" onClick={() => setIsBlockModalOpen(false)}>
           <div
@@ -205,13 +313,12 @@ const PublicProfile = () => {
                 gap: '8px'
               }}
             >
-              <span className="material-symbols-rounded">block</span> Bloquear Usuário
+              <span className="material-symbols-rounded">block</span> Bloquear Utilizador
             </h2>
             <p style={{ color: 'var(--text-secondary)', lineHeight: '1.5', margin: '15px 0' }}>
               Tem a certeza que deseja bloquear <strong>{owner?.name}</strong>? Vocês deixarão de
               ser amigos e não poderão ver os perfis ou comentários um do outro.
             </p>
-
             {blockError && (
               <div
                 style={{
@@ -226,7 +333,6 @@ const PublicProfile = () => {
                 {blockError}
               </div>
             )}
-
             <div
               style={{
                 display: 'flex',
@@ -274,7 +380,6 @@ const PublicProfile = () => {
           >
             <span className="material-symbols-rounded">more_vert</span>
           </button>
-
           {isMenuOpen && (
             <div
               className="profile-dropdown-menu"
@@ -320,7 +425,7 @@ const PublicProfile = () => {
                   padding: '12px'
                 }}
               >
-                <span className="material-symbols-rounded">block</span> Bloquear Usuário
+                <span className="material-symbols-rounded">block</span> Bloquear Utilizador
               </button>
             </div>
           )}
@@ -356,33 +461,152 @@ const PublicProfile = () => {
 
       {activeTab === 'books' && (
         <div className="profile-content">
-          {books.length === 0 ? (
-            <div className="profile-empty">Esta biblioteca está vazia.</div>
-          ) : (
-            <>
-              <div className={`book-layout-${viewMode}`}>
-                {books.map((book) => (
-                  <BookCard key={book.id} book={book} showTags={true} viewMode={viewMode} />
-                ))}
-              </div>
+          <div
+            className="search-filter-bar"
+            role="search"
+            aria-label="Pesquisar e filtrar obras do amigo"
+          >
+            <div className="search-wrapper">
+              <span className="material-symbols-rounded search-icon">search</span>
+              <input
+                type="text"
+                placeholder={`Pesquisar na biblioteca de ${owner?.name}...`}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="search-input"
+              />
+            </div>
 
-              {hasMore && (
-                <div
-                  className="pagination-trigger-zone"
-                  style={{ marginTop: '30px', textAlign: 'center' }}
-                >
+            <div className="view-mode-toggles">
+              <button
+                type="button"
+                className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+              >
+                <span className="material-symbols-rounded">grid_view</span>
+              </button>
+              <button
+                type="button"
+                className={`view-toggle-btn ${viewMode === 'compact' ? 'active' : ''}`}
+                onClick={() => setViewMode('compact')}
+              >
+                <span className="material-symbols-rounded">apps</span>
+              </button>
+              <button
+                type="button"
+                className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+              >
+                <span className="material-symbols-rounded">view_list</span>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsFilterDrawerOpen(!isFilterDrawerOpen)}
+              className={`btn-action btn-filter-trigger ${isFilterDrawerOpen ? 'active' : ''}`}
+            >
+              <span className="material-symbols-rounded">tune</span>
+              <span className="action-label">Filtros</span>
+            </button>
+          </div>
+
+          <FilterDrawer
+            isOpen={isFilterDrawerOpen}
+            onClose={() => setIsFilterDrawerOpen(false)}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            sortOrder={sortOrder}
+            setSortOrder={setSortOrder}
+            selectedTag={urlTag}
+            setSelectedTag={(val) => {
+              const p = new URLSearchParams(searchParams);
+              if (val) p.set('tag', val);
+              else p.delete('tag');
+              setSearchParams(p);
+            }}
+            readingStatus={urlReadingStatus}
+            setReadingStatus={(val) => {
+              const p = new URLSearchParams(searchParams);
+              if (val) p.set('readingStatus', val);
+              else p.delete('readingStatus');
+              setSearchParams(p);
+            }}
+            availableTags={availableTags}
+            showOnlyBorrowed={false}
+            setShowOnlyBorrowed={() => {}}
+            showTagsOnCards={true}
+            setShowTagsOnCards={() => {}}
+          />
+
+          <Shelf
+            items={availableGenres}
+            activeItem={urlGenre}
+            onSelect={handleSelectGenre}
+            defaultLabel="Toda a Biblioteca"
+          />
+          {activeSubgenres.length > 0 && (
+            <Shelf
+              items={activeSubgenres}
+              activeItem={urlSubgenre}
+              onSelect={handleSelectSubgenre}
+              defaultLabel={`Todos em ${activeGenreObj.name}`}
+              isSubgenre={true}
+            />
+          )}
+
+          <div className="library-section">
+            <div className="section-header">
+              <h2
+                className="section-title"
+                style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+              >
+                {renderSectionTitle()} <span className="title-count">({totalBooks})</span>
+                {(urlAuthor || urlTranslator || urlReadingStatus) && (
                   <button
                     type="button"
-                    onClick={handleLoadMore}
-                    className="btn-action btn-primary btn-load-more"
-                    disabled={isLoadingMore}
+                    className="btn-clear-filter"
+                    onClick={() => {
+                      if (urlAuthor) handleClearStrictFilter('author');
+                      else if (urlTranslator) handleClearStrictFilter('translator');
+                      else if (urlReadingStatus) handleClearStrictFilter('readingStatus');
+                    }}
+                    title="Limpar filtro"
                   >
-                    {isLoadingMore ? 'A carregar...' : 'Carregar mais obras'}
+                    <span className="material-symbols-rounded">cancel</span>
                   </button>
+                )}
+              </h2>
+            </div>
+
+            {books.length === 0 ? (
+              <p className="empty-message">Nenhuma obra encontrada nesta prateleira.</p>
+            ) : (
+              <>
+                <div className={`book-layout-${viewMode}`}>
+                  {books.map((book) => (
+                    <BookCard key={book.id} book={book} showTags={true} viewMode={viewMode} />
+                  ))}
                 </div>
-              )}
-            </>
-          )}
+
+                {hasMore && (
+                  <div
+                    className="pagination-trigger-zone"
+                    style={{ marginTop: '30px', textAlign: 'center' }}
+                  >
+                    <button
+                      type="button"
+                      onClick={handleLoadMore}
+                      className="btn-action btn-primary btn-load-more"
+                      disabled={isLoadingMore}
+                    >
+                      {isLoadingMore ? 'A carregar...' : 'Carregar mais obras'}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       )}
 
@@ -400,13 +624,12 @@ const PublicProfile = () => {
               {colErrorMsg}
             </div>
           ) : collections.length === 0 ? (
-            <div className="profile-empty">Este usuário ainda não criou coleções.</div>
+            <div className="profile-empty">Este utilizador ainda não criou coleções.</div>
           ) : (
             <div className="collections-grid">
               {collections.map((col) => {
                 const { stats } = col;
                 const progressStyle = { '--progress': `${stats.progress}%` };
-
                 return (
                   <div key={col.id} className="collection-album-card" style={{ cursor: 'default' }}>
                     <div
@@ -424,7 +647,6 @@ const PublicProfile = () => {
                         </div>
                       </div>
                     </div>
-
                     <div className="collection-info">
                       <h3 className="collection-title">{col.title}</h3>
                       <div className="collection-stats-bar">

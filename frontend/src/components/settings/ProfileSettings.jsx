@@ -4,6 +4,13 @@ import api from '../../services/api';
 import useNetworkStatus from '../../hooks/useNetworkStatus';
 import './ProfileSettings.css';
 
+const getAvatarUrl = (filename) => {
+  if (!filename) return null;
+  if (filename.startsWith('http')) return filename;
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api';
+  return `${apiUrl.replace('/api', '/files')}/${filename}`;
+};
+
 /**
  * Componente de configurações do perfil com suporte a Upload de Avatar e Toggles de Privacidade.
  * Funciona através de FormData para suportar multipart/form-data.
@@ -37,7 +44,7 @@ const ProfileSettings = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      await Promise.resolve(); // Barreira de segurança
+      await Promise.resolve();
       try {
         const res = await api.get('/users/profile');
         const data = res.data;
@@ -51,8 +58,7 @@ const ProfileSettings = () => {
         }));
 
         if (data.avatarUrl) {
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000/api';
-          setAvatarPreview(`${apiUrl.replace('/api', '/files')}/${data.avatarUrl}`);
+          setAvatarPreview(getAvatarUrl(data.avatarUrl));
         }
       } catch (error) {
         console.error('Erro ao buscar perfil.', error);

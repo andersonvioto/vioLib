@@ -20,10 +20,19 @@
   font-size: 1.05em;
 }
 
+/* Modificado para suportar o alinhamento com os botões de layout */
+.comm-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
 .comm-tabs {
   display: flex;
   gap: 15px;
-  margin-bottom: 30px;
 }
 
 .comm-tab-btn {
@@ -58,6 +67,86 @@
   border-radius: 12px;
 }
 
+/* Toggles de Visualização com Ergonomia PWA */
+.view-mode-toggles {
+  display: flex;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  gap: 4px;
+  height: 48px;
+  box-sizing: border-box;
+}
+
+.view-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  width: 38px;
+  height: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+  outline: none;
+}
+
+.view-toggle-btn:hover,
+.view-toggle-btn:focus-visible {
+  color: var(--text-primary);
+  background: var(--bg-input);
+}
+
+.view-toggle-btn.active {
+  background: var(--bg-input);
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+}
+
+/* Banner de Feedback (Substitui Alert) */
+.comm-feedback-banner {
+  padding: 15px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fadeDown 0.3s ease-out;
+}
+
+.comm-feedback-banner.success {
+  background-color: rgba(77, 255, 136, 0.1);
+  color: #4dff88;
+  border: 1px solid #4dff88;
+}
+
+.comm-feedback-banner.error {
+  background-color: rgba(255, 77, 77, 0.1);
+  color: #ff4d4d;
+  border: 1px solid #ff4d4d;
+}
+
+.comm-feedback-banner.info {
+  background-color: rgba(212, 175, 55, 0.1);
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .comm-block {
   margin-bottom: 40px;
 }
@@ -78,10 +167,17 @@
   border: 1px dashed var(--border-color);
 }
 
+/* MODOS DE LAYOUT: GRELHA E LISTA */
 .comm-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
+}
+
+.comm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .comm-card {
@@ -90,11 +186,25 @@
   border-radius: var(--radius-md);
   padding: 20px;
   display: flex;
+  transition: var(--transition-smooth);
+}
+
+/* Adaptações do Card para o Modo Grelha */
+.comm-grid .comm-card {
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 15px;
-  transition: var(--transition-smooth);
+}
+
+/* Adaptações do Card para o Modo Lista */
+.comm-list .comm-card {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  gap: 20px;
+  text-align: left;
 }
 
 .comm-card:hover {
@@ -102,32 +212,51 @@
   transform: translateY(-2px);
 }
 
-.comm-avatar-img {
-  width: 80px;
-  height: 80px;
+.comm-avatar-img,
+.comm-avatar-initials {
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+/* Tamanhos de Avatar Dinâmicos */
+.comm-grid .comm-avatar-img,
+.comm-grid .comm-avatar-initials {
+  width: 80px;
+  height: 80px;
+}
+
+.comm-list .comm-avatar-img,
+.comm-list .comm-avatar-initials {
+  width: 50px;
+  height: 50px;
 }
 
 .comm-avatar-initials {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
   background: var(--bg-input);
   color: var(--accent-gold);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2em;
   font-weight: bold;
-  border: 2px solid var(--border-color);
+}
+
+.comm-grid .comm-avatar-initials {
+  font-size: 2em;
+}
+.comm-list .comm-avatar-initials {
+  font-size: 1.2em;
 }
 
 .comm-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.comm-list .comm-info {
+  flex: 1; /* Preenche o espaço no modo lista */
 }
 
 .comm-info strong {
@@ -143,11 +272,20 @@
 .comm-actions {
   display: flex;
   gap: 10px;
+}
+
+.comm-grid .comm-actions {
   width: 100%;
   margin-top: 10px;
 }
 
-.comm-actions .btn-action {
+.comm-list .comm-actions {
+  width: auto;
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.comm-grid .comm-actions .btn-action {
   flex: 1;
   justify-content: center;
   font-size: 0.9em;
@@ -160,8 +298,12 @@
   border-radius: 20px;
   font-size: 0.85em;
   font-weight: bold;
-  width: 100%;
   border: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.comm-grid .comm-status-badge {
+  width: 100%;
 }
 
 .comm-status-badge.pending {
@@ -197,12 +339,111 @@
   border-color: var(--accent-gold);
 }
 
+/* Botão de Perigo Suave */
+.btn-danger-soft {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-danger);
+}
+
+.btn-danger-soft:hover {
+  background: rgba(255, 77, 77, 0.1);
+  border-color: rgba(255, 77, 77, 0.3);
+}
+
+.btn-danger {
+  background: var(--text-danger);
+  color: #fff;
+  border: none;
+}
+
+.btn-danger:hover {
+  background: #e60000;
+}
+
+/* Modal de Confirmação Moderno */
+.comm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.comm-modal-box {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  width: 100%;
+  max-width: 400px;
+  padding: 25px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.comm-modal-title {
+  margin: 0 0 15px 0;
+  color: var(--text-danger);
+  font-size: 1.3em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comm-modal-text {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 25px;
+}
+
+.comm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (max-width: 600px) {
+  .comm-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
   .comm-tabs {
     flex-direction: column;
     gap: 10px;
   }
   .comm-tab-btn {
+    justify-content: center;
+  }
+  .view-mode-toggles {
+    justify-content: center;
+  }
+
+  /* SOLUÇÃO: Mantém o Avatar e o Texto em Linha (Row), 
+     mas permite que os botões (Actions) quebrem para a linha de baixo (Wrap) */
+  .comm-list .comm-card {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .comm-list .comm-actions {
+    width: 100%;
+    margin-top: 10px;
+  }
+  .comm-list .comm-actions .btn-action {
+    flex: 1;
     justify-content: center;
   }
 }

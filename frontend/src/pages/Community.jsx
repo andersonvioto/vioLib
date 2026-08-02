@@ -31,21 +31,39 @@ const Avatar = ({ user }) => {
 
 const Community = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('network'); // 'network' ou 'discover'
+  const [activeTab, setActiveTab] = useState('network');
 
-  // Estados de Rede (Amigos e Pedidos)
+  const [viewMode, setViewMode] = useState(() => {
+    return localStorage.getItem('violib_community_viewMode') || 'grid';
+  });
+
   const [friends, setFriends] = useState([]);
   const [pendingReceived, setPendingReceived] = useState([]);
   const [pendingSent, setPendingSent] = useState([]);
   const [isLoadingNetwork, setIsLoadingNetwork] = useState(true);
 
-  // Estados de Descoberta
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  const [feedback, setFeedback] = useState({ type: '', message: '' });
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    friendId: null,
+    friendName: ''
+  });
+
+  const showFeedback = (msg, type = 'info') => {
+    setFeedback({ type, message: msg });
+    setTimeout(() => setFeedback({ type: '', message: '' }), 4000);
+  };
+
+  useEffect(() => {
+    localStorage.setItem('violib_community_viewMode', viewMode);
+  }, [viewMode]);
+
   const fetchNetwork = useCallback(async () => {
-    await Promise.resolve(); // Barreira de segurança
+    await Promise.resolve();
     try {
       const response = await api.get('/friendships');
       setFriends(response.data.friends || []);
@@ -65,7 +83,6 @@ const Community = () => {
     init();
   }, [fetchNetwork]);
 
-  // Handler de Busca
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (searchQuery.trim().length >= 3) {
@@ -90,10 +107,10 @@ const Community = () => {
     try {
       await api.post('/friendships/request', { receiverId });
       fetchNetwork();
-      alert('Pedido enviado!');
+      showFeedback('Pedido de amizade enviado!', 'success');
     } catch (error) {
       console.error('Erro ao enviar pedido:', error);
-      alert(error.response?.data?.error || 'Erro ao enviar pedido.');
+      showFeedback(error.response?.data?.error || 'Erro ao enviar pedido.', 'error');
     }
   };
 
@@ -103,24 +120,55 @@ const Community = () => {
       fetchNetwork();
     } catch (error) {
       console.error('Erro ao processar pedido:', error);
-      alert('Erro ao processar pedido.');
+      showFeedback('Erro ao processar pedido.', 'error');
     }
   };
 
-  const handleRemoveFriend = async (friendId, name) => {
-    if (!window.confirm(`Deseja desfazer a conexão com ${name}?`)) return;
+  const executeRemoveFriend = async () => {
+    if (!confirmDialog.friendId) return;
     try {
-      await api.delete(`/friendships/${friendId}`);
+      await api.delete(`/friendships/${confirmDialog.friendId}`);
       fetchNetwork();
+      setConfirmDialog({ isOpen: false, friendId: null, friendName: '' });
+      showFeedback('Conexão desfeita com sucesso.', 'info');
     } catch (error) {
       console.error('Erro ao remover amigo:', error);
-      alert('Erro ao remover amigo.');
+      showFeedback('Erro ao remover amigo.', 'error');
+      setConfirmDialog({ isOpen: false, friendId: null, friendName: '' });
     }
   };
 
   return (
     <div className="dashboard-container">
       <Header />
+
+      {confirmDialog.isOpen && (
+        <div
+          className="comm-modal-overlay"
+          onClick={() => setConfirmDialog({ isOpen: false, friendId: null, friendName: '' })}
+        >
+          <div className="comm-modal-box" onClick={(e) => e.stopPropagation()}>
+            <h2 className="comm-modal-title">
+              <span className="material-symbols-rounded">person_remove</span> Desfazer Amizade
+            </h2>
+            <p className="comm-modal-text">
+              Deseja realmente desfazer a conexão com <strong>{confirmDialog.friendName}</strong>?
+              Vocês não poderão mais ver as bibliotecas um do outro.
+            </p>
+            <div className="comm-modal-actions">
+              <button
+                className="btn-action"
+                onClick={() => setConfirmDialog({ isOpen: false, friendId: null, friendName: '' })}
+              >
+                Cancelar
+              </button>
+              <button className="btn-action btn-danger" onClick={executeRemoveFriend}>
+                Sim, Remover
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="comm-header">
         <h1 className="comm-title">
@@ -129,22 +177,56 @@ const Community = () => {
         <p className="comm-subtitle">Conecte-se com amigos e explore as suas bibliotecas.</p>
       </div>
 
-      <div className="comm-tabs">
-        <button
-          className={`comm-tab-btn ${activeTab === 'network' ? 'active' : ''}`}
-          onClick={() => setActiveTab('network')}
-        >
-          Minha Rede
-          {pendingReceived.length > 0 && (
-            <span className="comm-tab-badge">{pendingReceived.length}</span>
-          )}
-        </button>
-        <button
-          className={`comm-tab-btn ${activeTab === 'discover' ? 'active' : ''}`}
-          onClick={() => setActiveTab('discover')}
-        >
-          Descobrir Pessoas
-        </button>
+      {feedback.message && (
+        <div className={`comm-feedback-banner ${feedback.type}`}>
+          <span className="material-symbols-rounded">
+            {feedback.type === 'error'
+              ? 'error'
+              : feedback.type === 'success'
+                ? 'check_circle'
+                : 'info'}
+          </span>
+          {feedback.message}
+        </div>
+      )}
+
+      <div className="comm-toolbar">
+        <div className="comm-tabs">
+          <button
+            className={`comm-tab-btn ${activeTab === 'network' ? 'active' : ''}`}
+            onClick={() => setActiveTab('network')}
+          >
+            Minha Rede
+            {pendingReceived.length > 0 && (
+              <span className="comm-tab-badge">{pendingReceived.length}</span>
+            )}
+          </button>
+          <button
+            className={`comm-tab-btn ${activeTab === 'discover' ? 'active' : ''}`}
+            onClick={() => setActiveTab('discover')}
+          >
+            Descobrir Pessoas
+          </button>
+        </div>
+
+        <div className="view-mode-toggles">
+          <button
+            type="button"
+            className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+            onClick={() => setViewMode('grid')}
+            title="Visualização em Grelha"
+          >
+            <span className="material-symbols-rounded">grid_view</span>
+          </button>
+          <button
+            type="button"
+            className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+            title="Visualização em Lista"
+          >
+            <span className="material-symbols-rounded">view_list</span>
+          </button>
+        </div>
       </div>
 
       {activeTab === 'network' && (
@@ -156,7 +238,7 @@ const Community = () => {
               {pendingReceived.length > 0 && (
                 <div className="comm-block">
                   <h3 className="comm-block-title">Pedidos Recebidos</h3>
-                  <div className="comm-grid">
+                  <div className={`comm-${viewMode}`}>
                     {pendingReceived.map(({ friendshipId, user }) => (
                       <div key={friendshipId} className="comm-card">
                         <Avatar user={user} />
@@ -191,7 +273,7 @@ const Community = () => {
                     Ainda não tem amigos na rede. Use a aba Descobrir!
                   </div>
                 ) : (
-                  <div className="comm-grid">
+                  <div className={`comm-${viewMode}`}>
                     {friends.map(({ user }) => (
                       <div key={user.id} className="comm-card">
                         <Avatar user={user} />
@@ -207,8 +289,14 @@ const Community = () => {
                             Ver Perfil
                           </button>
                           <button
-                            className="btn-action"
-                            onClick={() => handleRemoveFriend(user.id, user.name)}
+                            className="btn-action btn-danger-soft"
+                            onClick={() =>
+                              setConfirmDialog({
+                                isOpen: true,
+                                friendId: user.id,
+                                friendName: user.name
+                              })
+                            }
                           >
                             Remover
                           </button>
@@ -224,7 +312,7 @@ const Community = () => {
                   <h3 className="comm-block-title" style={{ color: 'var(--text-muted)' }}>
                     Pedidos Enviados (A Aguardar)
                   </h3>
-                  <div className="comm-grid">
+                  <div className={`comm-${viewMode}`}>
                     {pendingSent.map(({ user }) => (
                       <div key={user.id} className="comm-card" style={{ opacity: 0.7 }}>
                         <Avatar user={user} />
@@ -234,8 +322,14 @@ const Community = () => {
                         </div>
                         <div className="comm-actions">
                           <button
-                            className="btn-action"
-                            onClick={() => handleRemoveFriend(user.id, user.name)}
+                            className="btn-action btn-danger-soft"
+                            onClick={() =>
+                              setConfirmDialog({
+                                isOpen: true,
+                                friendId: user.id,
+                                friendName: user.name
+                              })
+                            }
                           >
                             Cancelar
                           </button>
@@ -262,7 +356,7 @@ const Community = () => {
             />
           </div>
 
-          <div className="comm-grid" style={{ marginTop: '20px' }}>
+          <div className={`comm-${viewMode}`} style={{ marginTop: '20px' }}>
             {isSearching && <div className="comm-empty">A pesquisar...</div>}
 
             {!isSearching && searchQuery.length >= 3 && searchResults.length === 0 && (

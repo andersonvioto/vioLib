@@ -74,7 +74,7 @@ const ReloadPrompt = () => {
               onClick={handleUpdate}
               disabled={isUpdating}
             >
-              {isUpdating ? 'A atualizar...' : 'Atualizar'}
+              {isUpdating ? 'Atualizando...' : 'Atualizar'}
             </button>
           )}
           <button className="ReloadPrompt-btn" onClick={close} disabled={isUpdating}>

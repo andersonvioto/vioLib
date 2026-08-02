@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import './ReloadPrompt.css';
 
@@ -7,6 +8,8 @@ import './ReloadPrompt.css';
  * ou quando há uma nova atualização de código disponível no servidor.
  */
 const ReloadPrompt = () => {
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
@@ -23,6 +26,15 @@ const ReloadPrompt = () => {
   const close = () => {
     setOfflineReady(false);
     setNeedRefresh(false);
+  };
+
+  const handleUpdate = () => {
+    // UX: Dá feedback visual imediato e previne múltiplos cliques
+    setIsUpdating(true);
+
+    // O true injeta o evento SKIP_WAITING no sw.js, que agora irá escutá-lo
+    // Após a conclusão, a página fará refresh automático.
+    updateServiceWorker(true);
   };
 
   // Se não estiver pronto para offline e não precisar atualizar, não renderiza nada
@@ -57,11 +69,15 @@ const ReloadPrompt = () => {
 
         <div className="ReloadPrompt-actions">
           {needRefresh && (
-            <button className="ReloadPrompt-btn primary" onClick={() => updateServiceWorker(true)}>
-              Atualizar
+            <button
+              className="ReloadPrompt-btn primary"
+              onClick={handleUpdate}
+              disabled={isUpdating}
+            >
+              {isUpdating ? 'A atualizar...' : 'Atualizar'}
             </button>
           )}
-          <button className="ReloadPrompt-btn" onClick={close}>
+          <button className="ReloadPrompt-btn" onClick={close} disabled={isUpdating}>
             Fechar
           </button>
         </div>

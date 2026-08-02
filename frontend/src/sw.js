@@ -8,6 +8,13 @@ import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 // Chamá-la garante a Regressão Zero: A App continua a funcionar offline.
 precacheAndRoute(self.__WB_MANIFEST || []);
 
+// Escuta a mensagem de atualização do ReloadPrompt para forçar a instalação do novo SW
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 // Estratégia de Cache para Imagens Externas e Nativas
 registerRoute(
   ({ request }) => request.destination === 'image',

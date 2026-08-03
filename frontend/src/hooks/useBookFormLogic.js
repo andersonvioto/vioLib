@@ -219,36 +219,89 @@ const useBookFormLogic = () => {
     setImageSrcForCrop(null);
   };
 
+  /**
+   * Módulo de Higienização Avançada de Autores
+   * Previne duplicações severas de APIs externas preservando casos especiais (McCartney, Jr.)
+   */
   const processFetchedAuthors = (fetchedAuthorsArray) => {
-    const removeAccents = (str) =>
+    if (!Array.isArray(fetchedAuthorsArray)) return [];
+
+    const seenKeys = new Set();
+    const finalAuthorsList = [];
+
+    // Helper: Cria uma chave cega (sem espaços, acentos ou pontuações) para detectar duplicatas
+    const createSanitizedKey = (str) =>
       str
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim();
-    return fetchedAuthorsArray.map((authorName) => {
-      let finalName = authorName.trim();
-      if (finalName.includes(',')) {
-        const parts = finalName.split(',');
-        if (parts.length === 2) {
-          const lastName = parts[0].trim();
-          const firstName = parts[1].trim();
-          const formattedLastName =
-            lastName === lastName.toUpperCase()
-              ? lastName
-                  .split(' ')
-                  .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-                  .join(' ')
-              : lastName;
-          finalName = `${firstName} ${formattedLastName}`;
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .toLowerCase();
+
+    // Helper: Remove pontuação suja do início e fim, mas poupa abreviaturas conhecidas
+    const cleanEdges = (str) => {
+      let cleaned = str.replace(/^[^a-zA-Z0-9]+/, '').trim(); // Limpa início (ex: "- Autor")
+      if (cleaned.endsWith('.')) {
+        const words = cleaned.split(' ');
+        const lastWord = words[words.length - 1];
+        // Se a última palavra for pequena (inicial) ou sufixo padrão, mantém o ponto. Senão, tira.
+        const keepDotList = ['jr.', 'sr.', 'inc.', 'ltd.'];
+        if (lastWord.length > 2 && !keepDotList.includes(lastWord.toLowerCase())) {
+          cleaned = cleaned.slice(0, -1).trim();
         }
       }
-      const sanitizedNewName = removeAccents(finalName);
+      // Limpa outros lixos no fim como vírgulas sobrando
+      return cleaned.replace(/[^a-zA-Z0-9.]+$/, '').trim();
+    };
+
+    // Helper: Converte de CAIXA ALTA ou caixa baixa para Title Case (mas não toca se já for misto)
+    const toTitleCaseSafe = (str) => {
+      const isAllUpper = str === str.toUpperCase();
+      const isAllLower = str === str.toLowerCase();
+
+      if (isAllUpper || isAllLower) {
+        return str
+          .toLowerCase()
+          .split(' ')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
+      return str; // Preserva nomes como "McCartney" ou "d'Artagnan"
+    };
+
+    fetchedAuthorsArray.forEach((rawAuthorName) => {
+      if (!rawAuthorName || typeof rawAuthorName !== 'string') return;
+
+      let processedName = cleanEdges(rawAuthorName);
+
+      // Tratamento especial: Se vier no formato "Apelido, Nome" inverte para "Nome Apelido"
+      if (processedName.includes(',')) {
+        const parts = processedName.split(',').map((p) => p.trim());
+        if (parts.length === 2 && parts[0].length > 0 && parts[1].length > 0) {
+          processedName = `${parts[1]} ${parts[0]}`;
+        }
+      }
+
+      processedName = toTitleCaseSafe(processedName);
+      const uniqueKey = createSanitizedKey(processedName);
+
+      // Se virou string vazia após a limpeza, ou se já vimos essa chave (duplicata), ignora.
+      if (!uniqueKey || seenKeys.has(uniqueKey)) return;
+
+      seenKeys.add(uniqueKey);
+
+      // Verifica se o utilizador já tem este autor na sua base local (mesmo que com casing ligeiramente diferente)
       const existingAuthor = availableAuthors.find(
-        (existing) => removeAccents(existing.value) === sanitizedNewName
+        (existing) => createSanitizedKey(existing.value) === uniqueKey
       );
-      return existingAuthor ? existingAuthor : { value: finalName, label: finalName };
+
+      if (existingAuthor) {
+        finalAuthorsList.push(existingAuthor);
+      } else {
+        finalAuthorsList.push({ value: processedName, label: processedName });
+      }
     });
+
+    return finalAuthorsList;
   };
 
   const handleHybridSearch = async () => {
@@ -263,7 +316,6 @@ const useBookFormLogic = () => {
     }
 
     setIsLoadingSearch(true);
-    // Feedback visual claro para o utilizador enquanto aguarda as APIs
     setFeedback({
       type: 'info',
       message: 'A pesquisar nas bases de dados globais... Aguarde um momento.'
@@ -276,7 +328,7 @@ const useBookFormLogic = () => {
       if (res.data.length === 0) {
         setFeedback({ type: 'error', message: 'Nenhuma edição encontrada com este termo.' });
       } else {
-        setFeedback({ type: '', message: '' }); // Limpa o banner ao abrir o modal
+        setFeedback({ type: '', message: '' });
         setIsSelectionModalOpen(true);
       }
     } catch (e) {
@@ -314,7 +366,7 @@ const useBookFormLogic = () => {
     setIsSelectionModalOpen(false);
     setSearchQuery('');
     setFeedback({
-      type: 'info',
+      type: 'success',
       message: 'Dados preenchidos com sucesso! Pode continuar a editar.'
     });
   };
@@ -556,8 +608,6 @@ const useBookFormLogic = () => {
     imageSrcForCrop,
     handleCropComplete,
     handleCropCancel,
-
-    // Exports da Busca Híbrida e Modal
     searchQuery,
     setSearchQuery,
     isLoadingSearch,

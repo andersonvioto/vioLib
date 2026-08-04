@@ -9,6 +9,7 @@ import FilterDrawer from '../components/FilterDrawer';
 import Shelf from '../components/Shelf';
 import { ThemeContext } from '../contexts/ThemeContext';
 import { getCoverUrl } from '../utils/bookHelpers';
+import useNetworkStatus from '../hooks/useNetworkStatus';
 
 import './PublicProfile.css';
 
@@ -33,6 +34,7 @@ const PublicProfile = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { viewMode, setViewMode } = useContext(ThemeContext);
+  const isOnline = useNetworkStatus();
 
   const [activeTab, setActiveTab] = useState('books');
   const [owner, setOwner] = useState(null);
@@ -77,7 +79,6 @@ const PublicProfile = () => {
 
   const modMenuRef = useRef(null);
 
-  // 1. Fecha Menu Moderação ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modMenuRef.current && !modMenuRef.current.contains(event.target)) {
@@ -88,7 +89,6 @@ const PublicProfile = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 2. Debounce para o input de pesquisa
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searchInput !== urlSearch) {
@@ -101,8 +101,8 @@ const PublicProfile = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchInput, urlSearch, searchParams, setSearchParams]);
 
-  // 3. Busca de Atributos Específicos deste Amigo
   useEffect(() => {
+    if (!isOnline) return;
     const fetchAttributes = async () => {
       await Promise.resolve();
       try {
@@ -114,11 +114,11 @@ const PublicProfile = () => {
       }
     };
     fetchAttributes();
-  }, [friendId]);
+  }, [friendId, isOnline]);
 
-  // 4. Fetch Principal do Perfil
   const fetchProfileData = useCallback(
     async (targetPage, isReset = false) => {
+      if (!isOnline) return;
       await Promise.resolve();
       if (isReset) {
         setIsLoading(true);
@@ -156,7 +156,6 @@ const PublicProfile = () => {
 
         setHasMore(targetPage < (booksRes.data.totalPages || 1));
 
-        // Busca coleções apenas no load inicial
         if (isReset) {
           try {
             const colRes = await api.get(`/public-library/${friendId}/collections`);
@@ -190,17 +189,20 @@ const PublicProfile = () => {
       urlTranslator,
       urlReadingStatus,
       sortBy,
-      sortOrder
+      sortOrder,
+      isOnline
     ]
   );
 
   useEffect(() => {
-    const initFetch = async () => {
-      setPage(1);
-      await fetchProfileData(1, true);
-    };
-    initFetch();
-  }, [fetchProfileData]);
+    if (isOnline) {
+      const initFetch = async () => {
+        setPage(1);
+        await fetchProfileData(1, true);
+      };
+      initFetch();
+    }
+  }, [fetchProfileData, isOnline]);
 
   const handleLoadMore = () => {
     const nextPage = page + 1;
@@ -220,7 +222,6 @@ const PublicProfile = () => {
     }
   };
 
-  // Funções de manipulação da URL
   const handleSelectGenre = (val) => {
     const newParams = new URLSearchParams(searchParams);
     if (val) newParams.set('genre', val);
@@ -241,6 +242,51 @@ const PublicProfile = () => {
     newParams.delete(paramKey);
     setSearchParams(newParams);
   };
+
+  // ==========================================
+  // BARREIRA OFFLINE
+  // ==========================================
+  if (!isOnline) {
+    return (
+      <div className="dashboard-container">
+        <Header />
+        <div
+          className="profile-empty"
+          style={{
+            marginTop: '80px',
+            padding: '60px 20px',
+            border: '1px dashed var(--border-color)',
+            borderRadius: 'var(--radius-md)'
+          }}
+        >
+          <span
+            className="material-symbols-rounded"
+            style={{ fontSize: '4em', color: 'var(--text-muted)', marginBottom: '15px' }}
+          >
+            cloud_off
+          </span>
+          <h2 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>Modo Offline Ativo</h2>
+          <p
+            style={{
+              marginBottom: '25px',
+              maxWidth: '400px',
+              margin: '0 auto 25px auto',
+              color: 'var(--text-secondary)'
+            }}
+          >
+            Não é possível carregar o perfil de outras pessoas sem conexão à Internet.
+          </p>
+          <button
+            className="btn-action btn-primary"
+            onClick={() => navigate('/biblioteca')}
+            style={{ margin: '0 auto' }}
+          >
+            Ir para Minha Biblioteca
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading && books.length === 0) {
     return (

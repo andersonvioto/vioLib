@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Header from '../components/Header';
+import useNetworkStatus from '../hooks/useNetworkStatus';
 import './Community.css';
 
 const getAvatarUrl = (filename) => {
@@ -31,6 +32,8 @@ const Avatar = ({ user }) => {
 
 const Community = () => {
   const navigate = useNavigate();
+  const isOnline = useNetworkStatus();
+
   const [activeTab, setActiveTab] = useState('network');
 
   const [viewMode, setViewMode] = useState(() => {
@@ -63,6 +66,8 @@ const Community = () => {
   }, [viewMode]);
 
   const fetchNetwork = useCallback(async () => {
+    if (!isOnline) return;
+
     await Promise.resolve();
     try {
       const response = await api.get('/friendships');
@@ -74,16 +79,20 @@ const Community = () => {
     } finally {
       setIsLoadingNetwork(false);
     }
-  }, []);
+  }, [isOnline]);
 
   useEffect(() => {
-    const init = async () => {
-      await fetchNetwork();
-    };
-    init();
-  }, [fetchNetwork]);
+    if (isOnline) {
+      const init = async () => {
+        await fetchNetwork();
+      };
+      init();
+    }
+  }, [fetchNetwork, isOnline]);
 
   useEffect(() => {
+    if (!isOnline) return;
+
     const delayDebounceFn = setTimeout(async () => {
       if (searchQuery.trim().length >= 3) {
         setIsSearching(true);
@@ -101,7 +110,7 @@ const Community = () => {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
+  }, [searchQuery, isOnline]);
 
   const handleSendRequest = async (receiverId) => {
     try {
@@ -137,6 +146,37 @@ const Community = () => {
       setConfirmDialog({ isOpen: false, friendId: null, friendName: '' });
     }
   };
+
+  // ==========================================
+  // BARREIRA OFFLINE
+  // ==========================================
+  if (!isOnline) {
+    return (
+      <div className="dashboard-container">
+        <Header />
+        <div className="comm-empty" style={{ marginTop: '80px' }}>
+          <span
+            className="material-symbols-rounded"
+            style={{ fontSize: '4em', color: 'var(--text-muted)', marginBottom: '15px' }}
+          >
+            wifi_off
+          </span>
+          <h2 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>Modo Offline Ativo</h2>
+          <p style={{ marginBottom: '25px', maxWidth: '400px', margin: '0 auto 25px auto' }}>
+            As funcionalidades da comunidade requerem conexão à Internet. Conecte-se para explorar e
+            partilhar a sua biblioteca com os amigos.
+          </p>
+          <button
+            className="btn-action btn-primary"
+            onClick={() => navigate('/biblioteca')}
+            style={{ margin: '0 auto' }}
+          >
+            Ir para Minha Biblioteca
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container">

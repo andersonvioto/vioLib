@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async'; // <-- IMPORTAÇÃO DO HELMET
 import api from '../services/api';
 
 import Header from '../components/Header';
@@ -249,6 +250,9 @@ const PublicProfile = () => {
   if (!isOnline) {
     return (
       <div className="dashboard-container">
+        <Helmet>
+          <title>Modo Offline | vioLib</title>
+        </Helmet>
         <Header />
         <div
           className="profile-empty"
@@ -291,6 +295,9 @@ const PublicProfile = () => {
   if (isLoading && books.length === 0) {
     return (
       <div className="dashboard-container">
+        <Helmet>
+          <title>A carregar acervo... | vioLib</title>
+        </Helmet>
         <Header />
         <div className="profile-loading">
           <span className="material-symbols-rounded spinner-icon">sync</span> A aceder à
@@ -303,6 +310,9 @@ const PublicProfile = () => {
   if (errorMsg) {
     return (
       <div className="dashboard-container">
+        <Helmet>
+          <title>Acesso Restrito | vioLib</title>
+        </Helmet>
         <Header />
         <div className="profile-error-state">
           <span className="material-symbols-rounded">lock</span>
@@ -334,6 +344,34 @@ const PublicProfile = () => {
 
   return (
     <div className="dashboard-container">
+      {/* INJEÇÃO DINÂMICA DE SEO */}
+      <Helmet>
+        <title>
+          {owner?.name ? `Biblioteca de ${owner.name} | vioLib` : 'Perfil Público | vioLib'}
+        </title>
+        <meta
+          name="description"
+          content={
+            owner?.name
+              ? `Explore a biblioteca pessoal de ${owner.name} com ${totalBooks} obras catalogadas, coleções e notas de leitura na vioLib.`
+              : 'Explore esta biblioteca pública na vioLib.'
+          }
+        />
+        <meta
+          property="og:title"
+          content={owner?.name ? `Biblioteca de ${owner.name} | vioLib` : 'Perfil Público | vioLib'}
+        />
+        <meta
+          property="og:description"
+          content={
+            owner?.name
+              ? `Explore a biblioteca pessoal de ${owner.name} com ${totalBooks} obras catalogadas, coleções e notas de leitura na vioLib.`
+              : 'Explore esta biblioteca pública na vioLib.'
+          }
+        />
+        {avatarSrc && <meta property="og:image" content={avatarSrc} />}
+      </Helmet>
+
       <Header />
 
       {isReportModalOpen && owner && (

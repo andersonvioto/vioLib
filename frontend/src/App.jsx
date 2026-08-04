@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async'; // <-- IMPORTAÇÃO DO HELMET
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { processOutbox, syncFullLibrary } from './services/api';
@@ -22,7 +23,7 @@ import PushNotificationManager from './components/PushNotificationManager';
 
 import Community from './pages/Community';
 import PublicProfile from './pages/PublicProfile';
-import ModerationDashboard from './pages/ModerationDashboard'; // NOVO: Fase 4
+import ModerationDashboard from './pages/ModerationDashboard';
 
 import './App.css';
 
@@ -127,134 +128,136 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ReloadPrompt />
-        <SyncIndicator />
-        <PushNotificationManager />
-        <Router>
-          <Routes>
-            <Route path="/" element={<Navigate to="/biblioteca" replace />} />
+    <HelmetProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ReloadPrompt />
+          <SyncIndicator />
+          <PushNotificationManager />
+          <Router>
+            <Routes>
+              <Route path="/" element={<Navigate to="/biblioteca" replace />} />
 
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <Auth />
-                </PublicRoute>
-              }
-            />
-            <Route path="/excluir-conta" element={<DeleteAccountInfo />} />
-            <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
-            <Route path="/termos-de-servico" element={<TermsOfService />} />
-            <Route path="/verificar-email/:token" element={<VerifyEmail />} />
-            <Route path="/redefinir-senha/:token" element={<ResetPassword />} />
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Auth />
+                  </PublicRoute>
+                }
+              />
+              <Route path="/excluir-conta" element={<DeleteAccountInfo />} />
+              <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+              <Route path="/termos-de-servico" element={<TermsOfService />} />
+              <Route path="/verificar-email/:token" element={<VerifyEmail />} />
+              <Route path="/redefinir-senha/:token" element={<ResetPassword />} />
 
-            <Route
-              path="/biblioteca"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/novo-livro"
-              element={
-                <PrivateRoute>
-                  <BookForm />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/livro/:id"
-              element={
-                <PrivateRoute>
-                  <BookDetails />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/editar-livro/:id"
-              element={
-                <PrivateRoute>
-                  <BookForm />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/configuracoes"
-              element={
-                <PrivateRoute>
-                  <Settings />
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/biblioteca"
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/novo-livro"
+                element={
+                  <PrivateRoute>
+                    <BookForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/livro/:id"
+                element={
+                  <PrivateRoute>
+                    <BookDetails />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/editar-livro/:id"
+                element={
+                  <PrivateRoute>
+                    <BookForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/configuracoes"
+                element={
+                  <PrivateRoute>
+                    <Settings />
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/colecoes"
-              element={
-                <PrivateRoute>
-                  <Collections />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/colecoes/nova"
-              element={
-                <PrivateRoute>
-                  <CollectionForm />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/colecoes/editar/:id"
-              element={
-                <PrivateRoute>
-                  <CollectionForm />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/colecoes/:id"
-              element={
-                <PrivateRoute>
-                  <CollectionDashboard />
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/colecoes"
+                element={
+                  <PrivateRoute>
+                    <Collections />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/colecoes/nova"
+                element={
+                  <PrivateRoute>
+                    <CollectionForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/colecoes/editar/:id"
+                element={
+                  <PrivateRoute>
+                    <CollectionForm />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/colecoes/:id"
+                element={
+                  <PrivateRoute>
+                    <CollectionDashboard />
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/comunidade"
-              element={
-                <PrivateRoute>
-                  <Community />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/perfil/:friendId"
-              element={
-                <PrivateRoute>
-                  <PublicProfile />
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/comunidade"
+                element={
+                  <PrivateRoute>
+                    <Community />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/perfil/:friendId"
+                element={
+                  <PrivateRoute>
+                    <PublicProfile />
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/moderacao"
-              element={
-                <PrivateRoute>
-                  <ModerationDashboard />
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/moderacao"
+                element={
+                  <PrivateRoute>
+                    <ModerationDashboard />
+                  </PrivateRoute>
+                }
+              />
 
-            <Route path="*" element={<Navigate to="/biblioteca" replace />} />
-          </Routes>
-        </Router>
-      </AuthProvider>
-    </ThemeProvider>
+              <Route path="*" element={<Navigate to="/biblioteca" replace />} />
+            </Routes>
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
+    </HelmetProvider>
   );
 }
 

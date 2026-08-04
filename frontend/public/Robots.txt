@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /termos-de-servico
+Allow: /politica-de-privacidade
+Allow: /perfil/
+
+Bloqueia rotas privadas para não gastar o "crawl budget" do Google
+
+Disallow: /biblioteca
+Disallow: /novo-livro
+Disallow: /editar-livro/
+Disallow: /configuracoes
+Disallow: /colecoes
+Disallow: /comunidade
+Disallow: /moderacao
+Disallow: /redefinir-senha/
+Disallow: /verificar-email/
+
+Aponta para o mapa do site
+
+Sitemap: https://vio-lib.vercel.app/sitemap.xml

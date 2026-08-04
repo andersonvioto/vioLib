@@ -55,8 +55,9 @@ exports.getFriendBooks = async (req, res) => {
         .json({ error: 'Acesso negado. Apenas amigos podem visualizar esta biblioteca.' });
     }
 
+    // CORREÇÃO: Adicionado 'avatarUrl' na lista de atributos permitidos
     const friend = await User.findByPk(friendId, {
-      attributes: ['id', 'name', 'username', 'shareReadingStatus', 'shareNotes']
+      attributes: ['id', 'name', 'username', 'avatarUrl', 'shareReadingStatus', 'shareNotes']
     });
 
     if (!friend) return res.status(404).json({ error: 'Utilizador não encontrado.' });

@@ -21,7 +21,11 @@ const customSelectStyles = {
     backgroundColor: 'var(--bg-surface)',
     border: '1px solid var(--border-color)',
     borderRadius: '8px',
-    zIndex: 100
+    zIndex: 99999
+  }),
+  menuPortal: (provided) => ({
+    ...provided,
+    zIndex: 99999
   }),
   option: (provided, state) => ({
     ...provided,
@@ -319,7 +323,7 @@ const CollectionDashboard = () => {
           </div>
           <div className="hero-progress-ring" style={{ '--progress': `${stats.progress}%` }}>
             <div className="hero-progress-inner">
-              <span className="hero-progress-value">{stats.progress}%</span>
+              <span className="progress-value">{stats.progress}%</span>
             </div>
           </div>
         </div>
